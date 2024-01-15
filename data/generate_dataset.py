@@ -1,1 +1,0 @@
-# Script to generate synthetic toy dataset for testing
