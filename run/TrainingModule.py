@@ -22,7 +22,9 @@ class TrainingModule(LightningModule):
         # Generate predictions
         label_hat = self.model(features).squeeze()
         # train_loss = F.mse_loss(label_hat, labels)
-        train_loss = F.binary_cross_entropy(label_hat, labels)
+        # train_loss = F.binary_cross_entropy(label_hat, labels)
+        train_loss = F.cross_entropy(label_hat, labels)
+
         self.log("train_loss", train_loss, on_step=True)
 
         return train_loss

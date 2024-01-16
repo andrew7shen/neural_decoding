@@ -3,6 +3,7 @@
 # Import packages
 import pytorch_lightning as pl
 import torch
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 
@@ -15,6 +16,7 @@ class M1Dataset_Toy(pl.LightningDataModule):
         self.batch_size = batch_size
         self.features = None
         self.labels = None
+        self.num_modes = 2
 
         # Generate toy features and labels
         self.features, self.labels = self.generate_toy_dataset(self.num_samples, self.num_neurons)
@@ -31,9 +33,9 @@ class M1Dataset_Toy(pl.LightningDataModule):
                 ([num_samples] tensor) labels: output behavioral labels 
         """
         if mode == "mode1":
-            labels = torch.zeros(num_samples)
+            labels = F.one_hot(torch.zeros(num_samples, dtype=int), self.num_modes)
         elif mode == "mode2":
-            labels = torch.ones(num_samples)
+            labels = F.one_hot(torch.ones(num_samples, dtype=int), self.num_modes)
 
         features = torch.full((num_samples, num_neurons), rate)
             
@@ -80,7 +82,7 @@ class M1Dataset_Toy(pl.LightningDataModule):
             X.append(sample[0])
             Y.append(sample[1])
         final_batch["features"] = torch.stack(X)
-        final_batch["labels"] = torch.stack(Y)
+        final_batch["labels"] = torch.stack(Y).float()
 
         return final_batch
 
