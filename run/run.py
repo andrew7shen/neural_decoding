@@ -24,7 +24,6 @@ if __name__ == "__main__":
 
     # Load in dataset
     dataset = M1Dataset_Toy(num_samples=T, num_neurons=N, batch_size=batch_size)
-    # import pdb; pdb.set_trace()
 
     # Define model
     model = ClusterModel(N)
@@ -40,8 +39,7 @@ if __name__ == "__main__":
         trainer = Trainer(max_epochs=epochs)
 
     # Fit the model
-    # import pdb; pdb.set_trace()
-    trainer.fit(model, dataset.train_dataloader())
+    trainer.fit(model, train_dataloaders=dataset.train_dataloader(), val_dataloaders=dataset.val_dataloader())
 
     wandb.finish()
 

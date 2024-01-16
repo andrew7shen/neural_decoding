@@ -14,12 +14,13 @@ class M1Dataset_Toy(pl.LightningDataModule):
         self.num_samples = num_samples
         self.num_neurons = num_neurons
         self.batch_size = batch_size
-        self.features = None
-        self.labels = None
+        self.train_dataset = None
+        self.val_dataset = None
         self.num_modes = 2
 
         # Generate toy features and labels
-        self.features, self.labels = self.generate_toy_dataset(self.num_samples, self.num_neurons)
+        self.train_dataset = self.generate_toy_dataset(self.num_samples, self.num_neurons)
+        self.val_dataset = self.generate_toy_dataset(self.num_samples*0.2, self.num_neurons)
 
     def generate_helper(self, num_samples, num_neurons, rate, mode):
         """
@@ -46,9 +47,8 @@ class M1Dataset_Toy(pl.LightningDataModule):
         """
         Generates the final toy dataset
         Input: (int) num_samples: number of samples
-            (int) num_neurons: number of neurons
-        Output: ([num_samples, num_neurons] tensor) features: output features
-                ([num_samples] tensor) labels: output behavioral labels 
+               (int) num_neurons: number of neurons
+        Output: ((feature, label) tuple) dataset: output dataset
         """
 
         # Generate datasets
@@ -56,13 +56,15 @@ class M1Dataset_Toy(pl.LightningDataModule):
         num_samples = int(num_samples_total/2)
         rate_mode1 = 10.0
         rate_mode2 = 0.0
-        
         features_mode1, labels_mode1 = self.generate_helper(num_samples, num_neurons, rate=rate_mode1, mode="mode1")
         features_mode2, labels_mode2 = self.generate_helper(num_samples, num_neurons, rate=rate_mode2, mode="mode2")
-        features = torch.cat((features_mode1, features_mode2), 0)
-        labels = torch.cat((labels_mode1, labels_mode2), 0)
+        
+        # Format datasets in pairs of (feature, label)
+        dataset_mode1 = [(features_mode1[i], labels_mode1[i]) for i in range(len(features_mode1))]
+        dataset_mode2 = [(features_mode2[i], labels_mode2[i]) for i in range(len(features_mode2))]
+        dataset = dataset_mode1 + dataset_mode2
 
-        return features, labels
+        return dataset
     
 
     def __len__(self):
@@ -70,7 +72,9 @@ class M1Dataset_Toy(pl.LightningDataModule):
 
 
     def __getitem__(self, index):
-        return self.features[index], self.labels[index]
+
+        # Not used for the training
+        return self.train_dataset[index]
 
 
     def collate_fn(self, batch):
@@ -88,10 +92,10 @@ class M1Dataset_Toy(pl.LightningDataModule):
 
 
     def train_dataloader(self):
-        return DataLoader(self, batch_size=self.batch_size, collate_fn=self.collate_fn, shuffle=True)
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn, shuffle=True)
 
 
-    # def val_dataloader(self):
-    #     return DataLoader(self, batch_size=self.batch_size, collate_fn=self.collate_fn)
+    def val_dataloader(self):
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn, shuffle=True)
 
 
