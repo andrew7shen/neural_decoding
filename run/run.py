@@ -20,7 +20,7 @@ if __name__ == "__main__":
     batch_size = 16
     epochs = 250
     lr = 0.0001
-    record = True
+    record = False
 
     # Load in dataset
     dataset = M1Dataset_Toy(num_samples=T, num_neurons=N, batch_size=batch_size)
@@ -34,9 +34,9 @@ if __name__ == "__main__":
     # Define trainer
     if record:
         wandb_logger = WandbLogger(project="neural_decoding")
-        trainer = Trainer(max_epochs=epochs, logger=wandb_logger)
+        trainer = Trainer(max_epochs=epochs, logger=wandb_logger, callbacks=Callback(dataset))
     else:
-        trainer = Trainer(max_epochs=epochs)
+        trainer = Trainer(max_epochs=epochs, callbacks=Callback(dataset))
 
     # Fit the model
     trainer.fit(model, train_dataloaders=dataset.train_dataloader(), val_dataloaders=dataset.val_dataloader())
