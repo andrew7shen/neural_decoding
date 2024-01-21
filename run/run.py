@@ -3,6 +3,7 @@
 # Run script using command "python3 run/run.py" in home directory
 import sys
 import wandb
+import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import WandbLogger
 sys.path.append('/Users/andrewshen/Desktop/neural_decoding')
@@ -17,19 +18,21 @@ if __name__ == "__main__":
     # Define parameters
     T = 5000
     N = 10
-    batch_size = 16
-    epochs = 250
-    lr = 0.0001
+    M = 3
+    d = 2  # num_modes
+    b = 16
+    type = "emg"
+    epochs = 100
+    lr = 0.001
     record = False
+    
 
     # Load in dataset
-    dataset = M1Dataset_Toy(num_samples=T, num_neurons=N, batch_size=batch_size)
+    dataset = M1_EMG_Dataset_Toy(num_samples=T, num_neurons=N, num_muscles=M, batch_size=b, dataset_type=type)
 
     # Define model
-    model = ClusterModel(N)
-
-    # Define TrainingModule
-    model = TrainingModule(model, lr, record)
+    model = CombinedModel(N, M, d)
+    model = TrainingModule(model, lr, record, type)
 
     # Define trainer
     if record:
