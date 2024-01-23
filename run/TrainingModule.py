@@ -24,8 +24,8 @@ class TrainingModule(LightningModule):
     def training_step(self, batch):
 
         # Read in batch
-        features = batch["features"]
-        labels = batch["labels"]
+        features = batch["m1"]
+        labels = batch["emg"]
 
         # Generate predictions
         labels_hat = self.model(features).squeeze()
@@ -43,8 +43,8 @@ class TrainingModule(LightningModule):
     def validation_step(self, batch):
 
         # Read in batch
-        features = batch["features"]
-        labels = batch["labels"]
+        features = batch["m1"]
+        labels = batch["emg"]
 
         # Generate predictions
         labels_hat = self.model(features).squeeze()
