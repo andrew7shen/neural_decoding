@@ -16,9 +16,11 @@ class Config():
         self.epochs = args["epochs"]
         self.lr = args["lr"]
         self.record = args["record"]
+        self.ev = args["ev"]
         self.m1_path = args["m1_path"]
         self.emg_path = args["emg_path"]
         self.behavioral_path = args["behavioral_path"]
+        self.save_path = args["save_path"]
 
 
 def load_config():

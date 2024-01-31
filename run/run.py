@@ -6,6 +6,7 @@ import wandb
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
 sys.path.append('/Users/andrewshen/Desktop/neural_decoding')
 
 from data.data import *
@@ -27,15 +28,18 @@ if __name__ == "__main__":
 
     # Define model
     # model = CombinedModel(N, M, d)
-    model = CombinedModel(dataset.N, dataset.M, config.d)
+    model = CombinedModel(dataset.N, dataset.M, config.d, config.ev)
     model = TrainingModule(model, config.lr, config.record, config.type)
+
+    # Define model checkpoints
+    save_callback = ModelCheckpoint(dirpath = config.save_path, filename='checkpoint_{epoch}')
 
     # Define trainer
     if config.record:
         wandb_logger = WandbLogger(project="neural_decoding")
-        trainer = Trainer(max_epochs=config.epochs, logger=wandb_logger, callbacks=Callback(dataset))
+        trainer = Trainer(max_epochs=config.epochs, logger=wandb_logger, callbacks=[Callback(dataset), save_callback])
     else:
-        trainer = Trainer(max_epochs=config.epochs, callbacks=Callback(dataset))
+        trainer = Trainer(max_epochs=config.epochs, callbacks=[Callback(dataset), save_callback])
 
     # Fit the model
     trainer.fit(model, train_dataloaders=dataset.train_dataloader(), val_dataloaders=dataset.val_dataloader())

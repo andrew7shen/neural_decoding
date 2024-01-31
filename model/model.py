@@ -22,7 +22,7 @@ class ClusterModel(nn.Module):
         for linear in self.linears:
             x_d.append(linear(x))
         x = torch.stack(x_d, 2)
-        x = self.softmax(x)
+        x = self.softmax(x) 
         return x
     
     
@@ -50,15 +50,20 @@ class DecoderModel(nn.Module):
 
 class CombinedModel(nn.Module):
 
-    def __init__(self, input_dim, output_dim, num_modes):
+    def __init__(self, input_dim, output_dim, num_modes, ev):
         super(CombinedModel, self).__init__()
         self.cm = ClusterModel(input_dim, num_modes)
         self.dm = DecoderModel(input_dim, output_dim, num_modes)
+        self.ev = ev
 
     def forward(self, x):
         x1 = self.cm(x)
         x2 = self.dm(x)
         output = torch.sum(x1 * x2, dim=-1)
+
+        # Return softmax outputs if mode is "eval"
+        if self.ev == True:
+            return x1
         return output
     
 

@@ -6,6 +6,7 @@ import torch
 import torch.optim as optim
 import torch.nn.functional as F
 import pytorch_lightning as pl
+from sklearn.metrics import r2_score
 
 class TrainingModule(LightningModule):
 
@@ -19,6 +20,9 @@ class TrainingModule(LightningModule):
         self.training_step_preds = []
         self.val_step_labels = []
         self.val_step_preds = []
+
+    def forward(self, x):
+        return self.model.forward(x)
 
     
     def training_step(self, batch):
@@ -82,6 +86,10 @@ class Callback(pl.Callback):
         elif self.dataset.dataset_type == "emg":
             train_loss_epoch = F.mse_loss(labels_hat, labels)
 
+        # Calculate R^2 metric
+        train_r2 = r2_score(labels, labels_hat)
+        pl_module.log("train_r2", train_r2)
+
         # Reset stored labels and preds for current epoch
         pl_module.training_step_labels = []
         pl_module.training_step_preds = []
@@ -97,6 +105,10 @@ class Callback(pl.Callback):
             val_loss_epoch = F.cross_entropy(labels_hat, labels)
         elif self.dataset.dataset_type == "emg":
             val_loss_epoch = F.mse_loss(labels_hat, labels)
+
+        # Calculate R^2 metric
+        val_r2 = r2_score(labels, labels_hat)
+        pl_module.log("val_r2", val_r2)
 
         # Reset stored labels and preds for current epoch
         pl_module.val_step_labels = []
