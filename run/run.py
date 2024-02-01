@@ -28,6 +28,7 @@ if __name__ == "__main__":
 
     # Define model
     # model = CombinedModel(N, M, d)
+    # model = DecoderModel(dataset.N, dataset.M, config.d)
     model = CombinedModel(dataset.N, dataset.M, config.d, config.ev)
     model = TrainingModule(model, config.lr, config.record, config.type)
 
