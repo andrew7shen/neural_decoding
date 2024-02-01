@@ -3,11 +3,13 @@
 # Run script using command "python3 run/run.py configs/configs_cage.yaml" in home directory
 import sys
 import wandb
+import os
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
-sys.path.append('/Users/andrewshen/Desktop/neural_decoding')
+cwd = os.getcwd()
+sys.path.append(cwd)
 
 from data.data import *
 from model.model import *

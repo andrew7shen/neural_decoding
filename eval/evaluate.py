@@ -1,8 +1,10 @@
 # Script to evaluate performance of trained models
 
 import sys
+import os
 import matplotlib.pyplot as plt
-sys.path.append('/Users/andrewshen/Desktop/neural_decoding')
+cwd = os.getcwd()
+sys.path.append(cwd)
 
 from data.data import *
 from model.model import *
