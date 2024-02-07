@@ -28,11 +28,31 @@ class Cage_Dataset(pl.LightningDataModule):
         behavioral = np.load(behavioral_path)
         labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
         X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
-        self.train_dataset = [((X_train[i]), y_train[i][0], y_train[i][1]) for i in range(len(X_train))]
-        self.val_dataset = [(X_val[i], y_val[i][0], y_val[i][1]) for i in range(len(X_val))]
-        self.N = m1.size()[1]
-        self.M = emg.size()[1]
 
+        # Format depending on whether data was split based on trials
+        if len(m1.size()) == 2: # Not trial format
+            self.train_dataset = [(X_train[i], y_train[i][0], y_train[i][1]) for i in range(len(X_train))]
+            self.val_dataset = [(X_val[i], y_val[i][0], y_val[i][1]) for i in range(len(X_val))]
+            self.N = m1.size()[1]
+            self.M = emg.size()[1]
+        elif len(m1.size()) == 3: # Trial format
+            # Reformat back into timestamps
+            X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
+            X_val = torch.reshape(X_val, (X_val.size()[0]*X_val.size()[1], X_val.size()[2]))
+            y_train_emg = torch.stack([v[0] for v in y_train])
+            y_train_emg = torch.reshape(y_train_emg, (y_train_emg.size()[0]*y_train_emg.size()[1], y_train_emg.size()[2]))
+            y_train_behavioral = np.stack([v[1] for v in y_train])
+            y_train_behavioral = np.reshape(y_train_behavioral, (y_train_behavioral.shape[0]*y_train_behavioral.shape[1]))
+            y_val_emg = torch.stack([v[0] for v in y_val])
+            y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
+            y_val_behavioral = np.stack([v[1] for v in y_val])
+            y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
+
+            self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+            self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+            self.N = m1.size()[2]
+            self.M = emg.size()[2]
+            
 
     def __len__(self):
         """
