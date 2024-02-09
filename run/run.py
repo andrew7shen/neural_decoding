@@ -35,7 +35,7 @@ if __name__ == "__main__":
     model = TrainingModule(model, config.lr, config.record, config.type)
 
     # Define model checkpoints
-    save_callback = ModelCheckpoint(dirpath = config.save_path, filename='checkpoint_{epoch}')
+    save_callback = ModelCheckpoint(dirpath = config.save_path, filename='checkpoint_{epoch}_%s' % config.d)
 
     # Define trainer
     if config.record:
