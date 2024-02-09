@@ -96,28 +96,36 @@ def full_R2(dataset, config):
     model_power.load_state_dict(state_dict)
 
     # Generate predicted value for each input training sample
-    emgs = []
-    preds = []
-    for val in dataset.train_dataset:
-        curr_m1 = val[0].unsqueeze(0)
-        curr_emg = val[1]
-        curr_behavioral = val[2]
-        emgs.append(curr_emg)
+    r2_list = []
+    splits = ["train", "val"]
+    for split in splits:
+        emgs = []
+        preds = []
+        if split == "train":
+            curr_dataset = dataset.train_dataset
+        elif split == "val":
+            curr_dataset = dataset.val_dataset
+        for val in curr_dataset:
+            curr_m1 = val[0].unsqueeze(0)
+            curr_emg = val[1]
+            curr_behavioral = val[2]
+            emgs.append(curr_emg)
 
-        # Get predicted value from pretrained model depending on behavioral label
-        if curr_behavioral == "crawl":
-            preds.append(model_crawl.forward(curr_m1).squeeze())
-        elif curr_behavioral == "precision":
-            preds.append(model_precision.forward(curr_m1).squeeze())
-        elif curr_behavioral == "power":
-            preds.append(model_power.forward(curr_m1).squeeze())
-    
-    # Calculate final R^2 value
-    emgs = torch.stack(emgs)
-    preds = torch.stack(preds).detach()
-    r2 = r2_score(emgs, preds)
+            # Get predicted value from pretrained model depending on behavioral label
+            if curr_behavioral == "crawl":
+                preds.append(model_crawl.forward(curr_m1).squeeze())
+            elif curr_behavioral == "precision":
+                preds.append(model_precision.forward(curr_m1).squeeze())
+            elif curr_behavioral == "power":
+                preds.append(model_power.forward(curr_m1).squeeze())
+        
+        # Calculate final R^2 value
+        emgs = torch.stack(emgs)
+        preds = torch.stack(preds).detach()
+        r2 = r2_score(emgs, preds)
+        r2_list.append(r2)
 
-    return r2
+    return r2_list
 
 
 
@@ -134,30 +142,39 @@ def sep_R2(dataset, config):
     model.load_state_dict(state_dict)
 
     # Generate predicted value for each input training sample
-    emg_dict = {}
-    preds_dict = {}
-    for val in dataset.train_dataset:
-        curr_m1 = val[0].unsqueeze(0)
-        curr_emg = val[1]
-        curr_behavioral = val[2]
+    r2_list = []
+    splits = ["train", "val"]
+    for split in splits:
+        emg_dict = {}
+        preds_dict = {}
+        if split == "train":
+            curr_dataset = dataset.train_dataset
+        elif split == "val":
+            curr_dataset = dataset.val_dataset
+        for val in curr_dataset:
+            curr_m1 = val[0].unsqueeze(0)
+            curr_emg = val[1]
+            curr_behavioral = val[2]
 
-        # Store the emg labels and predicted values in dicts
-        if curr_behavioral not in emg_dict.keys():
-            emg_dict[curr_behavioral] = [curr_emg]
-            preds_dict[curr_behavioral] = [model.forward(curr_m1).squeeze()]
-        else:
-            emg_dict[curr_behavioral].append(curr_emg)
-            preds_dict[curr_behavioral].append(model.forward(curr_m1).squeeze())
-    
-    # Calculate separate R^2 values
-    r2_values = []
-    for key in emg_dict.keys():
-        emg_dict[key] = torch.stack(emg_dict[key])
-        preds_dict[key] = torch.stack(preds_dict[key]).detach()
-        curr_r2 = r2_score(emg_dict[key], preds_dict[key])
-        r2_values.append(curr_r2)
+            # Store the emg labels and predicted values in dicts
+            if curr_behavioral not in emg_dict.keys():
+                emg_dict[curr_behavioral] = [curr_emg]
+                preds_dict[curr_behavioral] = [model.forward(curr_m1).squeeze()]
+            else:
+                emg_dict[curr_behavioral].append(curr_emg)
+                preds_dict[curr_behavioral].append(model.forward(curr_m1).squeeze())
+        
+        # Calculate separate R^2 values
+        r2_values = []
+        for key in emg_dict.keys():
+            emg_dict[key] = torch.stack(emg_dict[key])
+            preds_dict[key] = torch.stack(preds_dict[key]).detach()
+            curr_r2 = r2_score(emg_dict[key], preds_dict[key])
+            r2_values.append(curr_r2)
 
-    return r2_values
+        r2_list.append(r2_values)
+
+    return r2_list
         
 
 
@@ -177,15 +194,15 @@ if __name__ == "__main__":
     # Evaluate model clustering 
     model_path = "checkpoints/checkpoint32_epoch=499.ckpt"
     num_to_print = 300
-    # check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print)
+    # check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print, config=config)
 
     # Calculate full R^2 over separate models
-    full_r2_value = full_R2(dataset=dataset, config=config)
-    # print(full_r2_value)
+    full_r2_list = full_R2(dataset=dataset, config=config)
+    # print(full_r2_list)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_values = sep_R2(dataset=dataset, config=config)
-    # print(sep_r2_values)
+    sep_r2_list = sep_R2(dataset=dataset, config=config)
+    print(sep_r2_list)
 
 
 
