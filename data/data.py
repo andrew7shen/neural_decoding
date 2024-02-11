@@ -29,7 +29,7 @@ class Cage_Dataset(pl.LightningDataModule):
         labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
         X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
 
-        # Format depending on whether data was split based on trials
+        # Format depending on whether data was split based on trials (TODO: should be outdated now, since always splitting by trials)
         if len(m1.size()) == 2: # Not trial format
             self.train_dataset = [(X_train[i], y_train[i][0], y_train[i][1]) for i in range(len(X_train))]
             self.val_dataset = [(X_val[i], y_val[i][0], y_val[i][1]) for i in range(len(X_val))]

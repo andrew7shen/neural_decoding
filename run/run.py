@@ -29,9 +29,10 @@ if __name__ == "__main__":
     # dataset = M1_EMG_Dataset_Toy(num_samples=T, num_neurons=N, num_muscles=M, num_modes=d, batch_size=b, dataset_type=type)
 
     # Define model
-    # model = CombinedModel(N, M, d)
-    # model = DecoderModel(dataset.N, dataset.M, config.d)
-    model = CombinedModel(dataset.N, dataset.M, config.d, config.ev)
+    if config.model == "decoder":
+        model = DecoderModel(dataset.N, dataset.M, config.d)
+    elif config.model == "combined":
+        model = CombinedModel(dataset.N, dataset.M, config.d, config.ev)
     model = TrainingModule(model, config.lr, config.record, config.type)
 
     # Define model checkpoints

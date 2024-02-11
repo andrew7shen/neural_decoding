@@ -21,6 +21,7 @@ class Config():
         self.emg_path = args["emg_path"]
         self.behavioral_path = args["behavioral_path"]
         self.save_path = args["save_path"]
+        self.model = args["model"]
 
 
 def load_config():
