@@ -38,7 +38,7 @@ class DecoderModel(nn.Module):
     def __init__(self, input_dim, output_dim, num_modes):
         super().__init__()
         self.linears = nn.ModuleList([nn.Linear(input_dim, output_dim) for i in range(num_modes)])
-        self.sigmoid = nn.Sigmoid()
+        self.sigmoid = nn.Sigmoid() # not used right now
     
     def forward(self, x):
         x_d = []

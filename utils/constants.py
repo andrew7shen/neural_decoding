@@ -22,6 +22,7 @@ class Config():
         self.behavioral_path = args["behavioral_path"]
         self.save_path = args["save_path"]
         self.model = args["model"]
+        self.seed = args["seed"]
 
 
 def load_config():

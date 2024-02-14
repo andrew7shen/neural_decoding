@@ -8,11 +8,9 @@ import numpy as np
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
-torch.manual_seed(42)
-
 class Cage_Dataset(pl.LightningDataModule):
     
-    def __init__(self, m1_path, emg_path, behavioral_path, num_modes, batch_size, dataset_type):
+    def __init__(self, m1_path, emg_path, behavioral_path, num_modes, batch_size, dataset_type, seed):
         super().__init__()
         self.batch_size = batch_size
         self.num_modes = num_modes
@@ -21,6 +19,10 @@ class Cage_Dataset(pl.LightningDataModule):
         self.dataset_type = dataset_type
         self.N = None
         self.M = None
+        self.seed = seed
+
+        # Set manual seed
+        torch.manual_seed(seed)
 
         # Read in data
         m1 = torch.Tensor(np.load(m1_path))

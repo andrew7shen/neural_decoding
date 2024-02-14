@@ -40,6 +40,8 @@ class TrainingModule(LightningModule):
         self.log("train_loss", train_loss, on_step=True)
         self.training_step_labels += labels.tolist()
         self.training_step_preds += labels_hat.tolist()
+        print(train_loss)
+        import pdb; pdb.set_trace()
 
         return train_loss
     

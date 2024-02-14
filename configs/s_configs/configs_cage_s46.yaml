@@ -13,4 +13,4 @@ emg_path: "data/set2_data/emg_set2.npy"
 behavioral_path: "data/set2_data/behavioral_set2.npy"
 save_path: "checkpoints"
 model: "combined"
-seed: 42
+seed: 46

@@ -4,6 +4,9 @@ import sys
 import os
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, r2_score
+# import ssm
+# from ssm.plots import gradient_cmap
+import seaborn as sns
 cwd = os.getcwd()
 sys.path.append(cwd)
 
@@ -14,7 +17,7 @@ from utils.constants import *
 
 # Run script using command "python3 eval/evaluate.py configs/configs_cage.yaml" in home directory
 
-def check_clustering(model_path, num_to_print, dataset, config):
+def check_clustering(model_path, num_to_print, dataset, config, verbose):
     """
     Checks clustering for trained model by comparing behavioral labels to learned clusters.
     Input: (str) model_path: path to model to evaluate
@@ -36,13 +39,11 @@ def check_clustering(model_path, num_to_print, dataset, config):
     ids = [id_dict[val] for val in train_behavioral_labels]
 
     # Print ids of ground truth behavioral labels
-    # print(ids[:num_to_print])
     plt.bar(timestamps[:num_to_print], ids[:num_to_print], width=1.0, alpha=0.5)
-    # plt.show()
 
     # Load trained model
-    config.ev = True
-    model = CombinedModel(dataset.N, dataset.M, config.d, config.ev)
+    eval_mode = True
+    model = CombinedModel(dataset.N, dataset.M, config.d, eval_mode)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model, config.lr, config.record, config.type)
@@ -56,41 +57,59 @@ def check_clustering(model_path, num_to_print, dataset, config):
         cluster_probs.append(curr_probs.squeeze())
     cluster_probs = torch.stack(cluster_probs).tolist()
     torch.set_printoptions(sci_mode=False)
-    # print(cluster_probs[:num_to_print])
     cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
-    # print(cluster_ids[:num_to_print])
     plt.bar(timestamps[:num_to_print], cluster_ids[:num_to_print], width=1.0, alpha=0.5)
     plt.title("Behavioral Labels and Majority Cluster Mode over Time")
     plt.xlabel("Timestamp")
     plt.ylabel("Mode ID")
-    plt.show()
 
-    # Print confusion matrix
-    print("Printing confusion matrix, C[i,j] is number of observations in group 'i' but predicted to be 'j'")
-    print(confusion_matrix(ids, cluster_ids))
+    # TODO: add new hmm graph
+    # color_names = [
+    # "windows blue",
+    # "red",
+    # "amber",
+    # "faded green",
+    # "dusty purple",
+    # "orange"
+    # ]
+    # colors = sns.xkcd_palette(color_names)
+    # cmap = gradient_cmap(colors)
+    # import pdb; pdb.set_trace()
+    # ids = np.array(ids)
+    # plt.imshow(ids,
+    #        aspect="auto",
+    #        extent=(0, timestamps))
+    # plt.show()
+
+    if verbose:
+        plt.show()
+
+        # Print confusion matrix
+        print("Printing confusion matrix, C[i,j] is number of observations in group 'i' but predicted to be 'j'")
+        print(confusion_matrix(ids, cluster_ids))
 
 
 
-def full_R2(dataset, config):
+def full_R2(dataset, config, verbose):
     """
     Calculates full R^2 value over the three separately trained linear decoders on Set2 labels.
     """
 
     # Load in trained models for each behavioral label
     model_crawl = DecoderModel(dataset.N, dataset.M, 1)
-    checkpoint = torch.load("checkpoints/checkpoint33_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint58_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
     model_crawl = TrainingModule(model_crawl, config.lr, config.record, config.type)
     model_crawl.load_state_dict(state_dict)
     
     model_precision = DecoderModel(dataset.N, dataset.M, 1)
-    checkpoint = torch.load("checkpoints/checkpoint34_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint59_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
     model_precision = TrainingModule(model_precision, config.lr, config.record, config.type)
     model_precision.load_state_dict(state_dict)
 
     model_power = DecoderModel(dataset.N, dataset.M, 1)
-    checkpoint = torch.load("checkpoints/checkpoint35_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint60_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
     model_power = TrainingModule(model_power, config.lr, config.record, config.type)
     model_power.load_state_dict(state_dict)
@@ -98,6 +117,7 @@ def full_R2(dataset, config):
     # Generate predicted value for each input training sample
     r2_list = []
     splits = ["train", "val"]
+    out_str = "Full R2 values:\n\n"
     for split in splits:
         emgs = []
         preds = []
@@ -125,18 +145,24 @@ def full_R2(dataset, config):
         r2 = r2_score(emgs, preds)
         r2_list.append(r2)
 
+        # Format output string
+        out_str += "%s\n%s\n\n" % (split, r2)
+    
+    if verbose:
+        print(out_str)
+
     return r2_list
 
 
 
-def sep_R2(dataset, config):
+def sep_R2(dataset, config, verbose):
     """
     Calculates separate R^2 values for each of the individual behavioral labels in Set2 for our model.
     """
 
     # Load in trained model
     model = CombinedModel(dataset.N, dataset.M, config.d, config.ev)
-    checkpoint = torch.load("checkpoints/checkpoint32_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint57_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model, config.lr, config.record, config.type)
     model.load_state_dict(state_dict)
@@ -163,14 +189,19 @@ def sep_R2(dataset, config):
             else:
                 emg_dict[curr_behavioral].append(curr_emg)
                 preds_dict[curr_behavioral].append(model.forward(curr_m1).squeeze())
-        
+
         # Calculate separate R^2 values
         r2_values = []
+        out_str = ("Separate R2 values:\n\n%s\n" % split)
         for key in emg_dict.keys():
             emg_dict[key] = torch.stack(emg_dict[key])
             preds_dict[key] = torch.stack(preds_dict[key]).detach()
             curr_r2 = r2_score(emg_dict[key], preds_dict[key])
             r2_values.append(curr_r2)
+            out_str += ("%s: %s\n" % (key, curr_r2))
+        out_str += "\n"
+        if verbose:
+            print(out_str)
 
         r2_list.append(r2_values)
 
@@ -192,17 +223,15 @@ if __name__ == "__main__":
                            batch_size=config.b, dataset_type=config.type)
 
     # Evaluate model clustering 
-    model_path = "checkpoints/checkpoint32_epoch=499.ckpt"
+    model_path = "checkpoints/checkpoint57_epoch=499.ckpt"
     num_to_print = 300
-    # check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print, config=config)
+    check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print, config=config, verbose=False)
 
     # Calculate full R^2 over separate models
-    full_r2_list = full_R2(dataset=dataset, config=config)
-    # print(full_r2_list)
+    full_r2_list = full_R2(dataset=dataset, config=config, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2(dataset=dataset, config=config)
-    print(sep_r2_list)
+    sep_r2_list = sep_R2(dataset=dataset, config=config, verbose=False)
 
 
 
