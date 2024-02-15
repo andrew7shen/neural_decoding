@@ -3,10 +3,9 @@
 import sys
 import os
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
+from matplotlib.colors import ListedColormap
 from sklearn.metrics import confusion_matrix, r2_score
-# import ssm
-# from ssm.plots import gradient_cmap
-import seaborn as sns
 cwd = os.getcwd()
 sys.path.append(cwd)
 
@@ -26,6 +25,7 @@ def check_clustering(model_path, num_to_print, dataset, config, verbose):
     
     # Access train dataset
     train = dataset.train_dataset
+    train_emg_1 = torch.stack([val[1][0] for val in train]).tolist()
     train_behavioral_labels = [val[2] for val in train]
 
     # Convert ground truth behavioral labels into numbers
@@ -39,7 +39,7 @@ def check_clustering(model_path, num_to_print, dataset, config, verbose):
     ids = [id_dict[val] for val in train_behavioral_labels]
 
     # Print ids of ground truth behavioral labels
-    plt.bar(timestamps[:num_to_print], ids[:num_to_print], width=1.0, alpha=0.5)
+    # plt.bar(timestamps[:num_to_print], ids[:num_to_print], width=1.0, alpha=0.5)
 
     # Load trained model
     eval_mode = True
@@ -58,28 +58,29 @@ def check_clustering(model_path, num_to_print, dataset, config, verbose):
     cluster_probs = torch.stack(cluster_probs).tolist()
     torch.set_printoptions(sci_mode=False)
     cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
-    plt.bar(timestamps[:num_to_print], cluster_ids[:num_to_print], width=1.0, alpha=0.5)
-    plt.title("Behavioral Labels and Majority Cluster Mode over Time")
-    plt.xlabel("Timestamp")
-    plt.ylabel("Mode ID")
+    # plt.bar(timestamps[:num_to_print], cluster_ids[:num_to_print], width=1.0, alpha=0.5)
+    # plt.title("Behavioral Labels and Majority Cluster Mode over Time")
+    # plt.xlabel("Timestamp")
+    # plt.ylabel("Mode ID")
 
-    # TODO: add new hmm graph
-    # color_names = [
-    # "windows blue",
-    # "red",
-    # "amber",
-    # "faded green",
-    # "dusty purple",
-    # "orange"
-    # ]
-    # colors = sns.xkcd_palette(color_names)
-    # cmap = gradient_cmap(colors)
-    # import pdb; pdb.set_trace()
-    # ids = np.array(ids)
-    # plt.imshow(ids,
-    #        aspect="auto",
-    #        extent=(0, timestamps))
-    # plt.show()
+    # Graph of EMG with behavioral label and learned cluster labels overlaid with color
+    ids_array = np.array(ids)
+    cluster_ids_array = np.array(cluster_ids)
+    num_timestamps = len(ids_array)
+    fig, (ax1, ax2) = plt.subplots(2, figsize=(10,3))
+    ax1.plot(timestamps, train_emg_1, color="black")
+    cmap = ListedColormap(["yellow","green","blue"], name='from_list', N=None)
+    ax1.imshow(np.expand_dims(ids_array, 0),
+               cmap=cmap,
+               alpha=1.0,
+               extent=[0, num_timestamps, -200, 200])
+    ax1.title.set_text("Behavioral Labels")
+    ax2.plot(timestamps, train_emg_1, color="black")
+    ax2.imshow(np.expand_dims(cluster_ids_array, 0),
+               cmap=cmap,
+               alpha=1.0,
+               extent=[0, num_timestamps, -200, 200])
+    ax2.title.set_text("Learned Cluster Labels")
 
     if verbose:
         plt.show()
@@ -220,7 +221,7 @@ if __name__ == "__main__":
     config = load_config()
     dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type)
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed)
 
     # Evaluate model clustering 
     model_path = "checkpoints/checkpoint57_epoch=499.ckpt"
