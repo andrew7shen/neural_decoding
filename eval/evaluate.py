@@ -224,9 +224,10 @@ if __name__ == "__main__":
                            batch_size=config.b, dataset_type=config.type, seed=config.seed)
 
     # Evaluate model clustering 
-    model_path = "checkpoints/checkpoint57_epoch=499.ckpt"
+    model_id = 57
+    model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     num_to_print = 300
-    check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print, config=config, verbose=False)
+    check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print, config=config, verbose=True)
 
     # Calculate full R^2 over separate models
     full_r2_list = full_R2(dataset=dataset, config=config, verbose=False)

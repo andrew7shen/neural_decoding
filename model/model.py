@@ -45,7 +45,7 @@ class DecoderModel(nn.Module):
         for linear in self.linears:
             x_d.append(linear(x))
         x = torch.stack(x_d, 2)
-        x = self.leaky_relu(x)
+        # x = self.leaky_relu(x)
         return x
 
 
