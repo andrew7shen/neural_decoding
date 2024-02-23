@@ -65,7 +65,7 @@ class TrainingModule(LightningModule):
 
     def configure_optimizers(self):
         # optimizer = optim.AdamW(self.parameters(), lr=self.lr)
-        optimizer = optim.SGD(self.parameters(), lr=self.lr)
+        optimizer = optim.SGD(self.parameters(), lr=self.lr, weight_decay=1e-4)
         return optimizer
     
 
