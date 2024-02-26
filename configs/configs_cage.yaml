@@ -5,8 +5,8 @@ d: 3  # num_modes
 b: 8
 type: "emg"
 epochs: 500
-lr: 0.001
-record: True
+lr: 0.0001
+record: False
 ev: False
 m1_path: "data/set2_data/m1_set2.npy"
 emg_path: "data/set2_data/emg_set2.npy"

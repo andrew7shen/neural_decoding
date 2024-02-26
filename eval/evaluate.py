@@ -156,14 +156,14 @@ def full_R2(dataset, config, verbose):
 
 
 
-def sep_R2(dataset, config, verbose):
+def sep_R2(dataset, model_path, config, verbose):
     """
     Calculates separate R^2 values for each of the individual behavioral labels in Set2 for our model.
     """
 
     # Load in trained model
     model = CombinedModel(dataset.N, dataset.M, config.d, config.ev)
-    checkpoint = torch.load("checkpoints/checkpoint57_epoch=499.ckpt")
+    checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model, config.lr, config.record, config.type)
     model.load_state_dict(state_dict)
@@ -224,7 +224,7 @@ if __name__ == "__main__":
                            batch_size=config.b, dataset_type=config.type, seed=config.seed)
 
     # Evaluate model clustering 
-    model_id = 57
+    model_id = 37
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     num_to_print = 300
     check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print, config=config, verbose=True)
@@ -233,7 +233,7 @@ if __name__ == "__main__":
     full_r2_list = full_R2(dataset=dataset, config=config, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2(dataset=dataset, config=config, verbose=False)
+    sep_r2_list = sep_R2(dataset=dataset, model_path=model_path, config=config, verbose=False)
 
 
 
