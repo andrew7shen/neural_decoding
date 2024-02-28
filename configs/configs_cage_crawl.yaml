@@ -6,7 +6,7 @@ b: 8
 type: "emg"
 epochs: 500
 lr: 0.0001
-record: True
+record: False
 ev: False
 m1_path: "data/set2_data/m1_set2_crawl.npy"
 emg_path: "data/set2_data/emg_set2_crawl.npy"

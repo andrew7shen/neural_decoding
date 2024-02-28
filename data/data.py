@@ -24,6 +24,39 @@ class Cage_Dataset(pl.LightningDataModule):
         # Set manual seed
         torch.manual_seed(seed)
 
+        # TODO: temp code to train linear model
+        # mode_name = ["crawl", "precision", "power"]
+        # for mode in mode_name:
+        #     curr_m1_path = "%s%s.npy" % (m1_path[:-9], mode)
+        #     curr_emg_path = "%s%s.npy" % (emg_path[:-9], mode)
+        #     curr_behavioral_path = "%s%s.npy" % (behavioral_path[:-9], mode)
+        #     m1 = torch.Tensor(np.load(curr_m1_path))
+        #     emg = torch.Tensor(np.load(curr_emg_path))
+        #     behavioral = np.load(curr_behavioral_path)
+        #     labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
+        #     X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
+
+        #     # Reformat back into timestamps
+        #     X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
+        #     X_val = torch.reshape(X_val, (X_val.size()[0]*X_val.size()[1], X_val.size()[2]))
+        #     y_train_emg = torch.stack([v[0] for v in y_train])
+        #     y_train_emg = torch.reshape(y_train_emg, (y_train_emg.size()[0]*y_train_emg.size()[1], y_train_emg.size()[2]))
+        #     y_train_behavioral = np.stack([v[1] for v in y_train])
+        #     y_train_behavioral = np.reshape(y_train_behavioral, (y_train_behavioral.shape[0]*y_train_behavioral.shape[1]))
+        #     y_val_emg = torch.stack([v[0] for v in y_val])
+        #     y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
+        #     y_val_behavioral = np.stack([v[1] for v in y_val])
+        #     y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
+
+        #     if mode == "crawl":
+        #         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+        #         self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        #         self.N = m1.size()[2]
+        #         self.M = emg.size()[2]
+        #     else:
+        #         self.train_dataset = self.train_dataset + [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+        #         self.val_dataset = self.val_dataset + [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+
         # Read in data
         m1 = torch.Tensor(np.load(m1_path))
         emg = torch.Tensor(np.load(emg_path))
@@ -31,29 +64,22 @@ class Cage_Dataset(pl.LightningDataModule):
         labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
         X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
 
-        # Format depending on whether data was split based on trials (TODO: should be outdated now, since always splitting by trials)
-        if len(m1.size()) == 2: # Not trial format
-            self.train_dataset = [(X_train[i], y_train[i][0], y_train[i][1]) for i in range(len(X_train))]
-            self.val_dataset = [(X_val[i], y_val[i][0], y_val[i][1]) for i in range(len(X_val))]
-            self.N = m1.size()[1]
-            self.M = emg.size()[1]
-        elif len(m1.size()) == 3: # Trial format
-            # Reformat back into timestamps
-            X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
-            X_val = torch.reshape(X_val, (X_val.size()[0]*X_val.size()[1], X_val.size()[2]))
-            y_train_emg = torch.stack([v[0] for v in y_train])
-            y_train_emg = torch.reshape(y_train_emg, (y_train_emg.size()[0]*y_train_emg.size()[1], y_train_emg.size()[2]))
-            y_train_behavioral = np.stack([v[1] for v in y_train])
-            y_train_behavioral = np.reshape(y_train_behavioral, (y_train_behavioral.shape[0]*y_train_behavioral.shape[1]))
-            y_val_emg = torch.stack([v[0] for v in y_val])
-            y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
-            y_val_behavioral = np.stack([v[1] for v in y_val])
-            y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
+        # Reformat back into timestamps
+        X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
+        X_val = torch.reshape(X_val, (X_val.size()[0]*X_val.size()[1], X_val.size()[2]))
+        y_train_emg = torch.stack([v[0] for v in y_train])
+        y_train_emg = torch.reshape(y_train_emg, (y_train_emg.size()[0]*y_train_emg.size()[1], y_train_emg.size()[2]))
+        y_train_behavioral = np.stack([v[1] for v in y_train])
+        y_train_behavioral = np.reshape(y_train_behavioral, (y_train_behavioral.shape[0]*y_train_behavioral.shape[1]))
+        y_val_emg = torch.stack([v[0] for v in y_val])
+        y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
+        y_val_behavioral = np.stack([v[1] for v in y_val])
+        y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
 
-            self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-            self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
-            self.N = m1.size()[2]
-            self.M = emg.size()[2]
+        self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.N = m1.size()[2]
+        self.M = emg.size()[2]
             
 
     def __len__(self):
