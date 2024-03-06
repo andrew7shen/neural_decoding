@@ -23,6 +23,7 @@ class Config():
         self.save_path = args["save_path"]
         self.model = args["model"]
         self.seed = args["seed"]
+        self.temperature = args["temperature"]
 
 
 def load_config():

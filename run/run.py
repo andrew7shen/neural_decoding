@@ -32,7 +32,11 @@ if __name__ == "__main__":
     if config.model == "decoder":
         model = DecoderModel(dataset.N, dataset.M, config.d)
     elif config.model == "combined":
-        model = CombinedModel(dataset.N, dataset.M, config.d, config.ev)
+        model = CombinedModel(input_dim=dataset.N,
+                              output_dim=dataset.M,
+                              num_modes=config.d, 
+                              temperature=config.temperature,
+                              ev=config.ev)
     model = TrainingModule(model, config.lr, config.record, config.type)
 
     # Define model checkpoints

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 from matplotlib.colors import ListedColormap
 from sklearn.metrics import confusion_matrix, r2_score
+import umap.umap_ as umap
 cwd = os.getcwd()
 sys.path.append(cwd)
 
@@ -43,7 +44,11 @@ def check_clustering(model_path, num_to_print, dataset, config, verbose):
 
     # Load trained model
     eval_mode = True
-    model = CombinedModel(dataset.N, dataset.M, config.d, eval_mode)
+    model = CombinedModel(input_dim=dataset.N,
+                              output_dim=dataset.M,
+                              num_modes=config.d, 
+                              temperature=config.temperature,
+                              ev=config.ev)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model, config.lr, config.record, config.type)
@@ -162,7 +167,11 @@ def sep_R2(dataset, model_path, config, verbose):
     """
 
     # Load in trained model
-    model = CombinedModel(dataset.N, dataset.M, config.d, config.ev)
+    model = CombinedModel(input_dim=dataset.N,
+                              output_dim=dataset.M,
+                              num_modes=config.d, 
+                              temperature=config.temperature,
+                              ev=config.ev)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model, config.lr, config.record, config.type)
@@ -207,6 +216,14 @@ def sep_R2(dataset, model_path, config, verbose):
         r2_list.append(r2_values)
 
     return r2_list
+
+
+def run_umap(dataset, verbose):
+    # print(dataset.shape)
+    reducer = umap.UMAP()
+    # embedding = reducer.fit_transform(scaled_penguin_data)
+    if verbose:
+        print("umap")
         
 
 
@@ -222,9 +239,12 @@ if __name__ == "__main__":
     dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed)
+    
+    # Perform UMAP on input dataset
+    # run_umap(dataset=dataset, verbose=False)
 
     # Evaluate model clustering 
-    model_id = 37
+    model_id = 1
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     num_to_print = 300
     check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print, config=config, verbose=True)
