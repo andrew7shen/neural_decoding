@@ -24,7 +24,7 @@ class Cage_Dataset(pl.LightningDataModule):
         # Set manual seed
         torch.manual_seed(seed)
 
-        # TODO: temp code to train linear model
+        # TODO: temp code to train single linear model
         # mode_name = ["crawl", "precision", "power"]
         # for mode in mode_name:
         #     curr_m1_path = "%s%s.npy" % (m1_path[:-9], mode)

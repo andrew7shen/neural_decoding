@@ -17,6 +17,48 @@ from utils.constants import *
 
 # Run script using command "python3 eval/evaluate.py configs/configs_cage.yaml" in home directory
 
+def dataset_statistics(dataset, verbose):
+    train_timestamps = len(dataset.train_dataset)
+    val_timestamps = len(dataset.val_dataset)
+    total_timestamps = train_timestamps + val_timestamps
+    train_mode_timestamps_dict = {}
+    val_mode_timestamps_dict = {}
+    for mode in [v[2] for v in dataset.train_dataset]:
+        if mode not in train_mode_timestamps_dict.keys():
+            train_mode_timestamps_dict[mode] = 1
+        else:
+            train_mode_timestamps_dict[mode] += 1
+    for mode in [v[2] for v in dataset.val_dataset]:
+        if mode not in val_mode_timestamps_dict.keys():
+            val_mode_timestamps_dict[mode] = 1
+        else:
+            val_mode_timestamps_dict[mode] += 1
+
+    train_crawl = train_mode_timestamps_dict["crawl"]
+    train_precision = train_mode_timestamps_dict["precision"]
+    train_power = train_mode_timestamps_dict["power"]
+    val_crawl = val_mode_timestamps_dict["crawl"]
+    val_precision = val_mode_timestamps_dict["precision"]
+    val_power = val_mode_timestamps_dict["power"]
+    tot_crawl = train_crawl + val_crawl
+    tot_precision = train_precision + val_precision
+    tot_power = train_power + val_power
+    if verbose:
+        print("Train timestamps: %s" % train_timestamps)
+        print("\tTrain crawl timestamps: %s (%s)" % (train_crawl, (train_crawl/train_timestamps)))
+        print("\tTrain precision timestamps: %s (%s)" % (train_precision, (train_precision/train_timestamps)))
+        print("\tTrain power timestamps: %s (%s)" % (train_power, (train_power/train_timestamps)))
+        print("Valid timestamps: %s" % val_timestamps)
+        print("\tValid crawl timestamps: %s (%s)" % (val_crawl, (val_crawl/val_timestamps)))
+        print("\tValid precision timestamps: %s (%s)" % (val_precision, (val_precision/val_timestamps)))
+        print("\tValid power timestamps: %s (%s)" % (val_power, (val_power/val_timestamps)))
+        print("Total timestamps: %s" % total_timestamps)
+        print("\tTotal crawl timestamps: %s (%s)" % (tot_crawl, (tot_crawl/total_timestamps)))
+        print("\tTotal precision timestamps: %s (%s)" % (tot_precision, (tot_precision/total_timestamps)))
+        print("\tTotal power timestamps: %s (%s)" % (tot_power, (tot_power/total_timestamps)))
+        print("N: %s" % dataset.N)
+        print("M: %s" % dataset.M)
+
 def check_clustering(model_path, num_to_print, dataset, config, verbose):
     """
     Checks clustering for trained model by comparing behavioral labels to learned clusters.
@@ -48,7 +90,7 @@ def check_clustering(model_path, num_to_print, dataset, config, verbose):
                               output_dim=dataset.M,
                               num_modes=config.d, 
                               temperature=config.temperature,
-                              ev=config.ev)
+                              ev=eval_mode)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model, config.lr, config.record, config.type)
@@ -239,12 +281,15 @@ if __name__ == "__main__":
     dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed)
+
+    # Print dataset statistics
+    dataset_statistics(dataset=dataset, verbose=False)
     
     # Perform UMAP on input dataset
     # run_umap(dataset=dataset, verbose=False)
 
     # Evaluate model clustering 
-    model_id = 1
+    model_id = 93
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     num_to_print = 300
     check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print, config=config, verbose=True)

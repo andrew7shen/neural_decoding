@@ -14,4 +14,4 @@ behavioral_path: "data/set2_data/behavioral_set2.npy"
 save_path: "checkpoints"
 model: "combined"
 seed: 42
-temperature: 5
+temperature: 1
