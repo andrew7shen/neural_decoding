@@ -10,10 +10,11 @@ from sklearn.metrics import r2_score
 
 class TrainingModule(LightningModule):
 
-    def __init__(self, model, lr, record, type):
+    def __init__(self, model, lr, weight_decay, record, type):
         super().__init__()
         self.model = model
         self.lr = lr
+        self.weight_decay = weight_decay
         self.record = record
         self.dataset_type = type
         self.training_step_labels = []
@@ -64,7 +65,8 @@ class TrainingModule(LightningModule):
     
 
     def configure_optimizers(self):
-        optimizer = optim.AdamW(self.parameters(), lr=self.lr)
+        # optimizer = optim.AdamW(self.parameters(), lr=self.lr)
+        optimizer = optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         # optimizer = optim.SGD(self.parameters(), lr=self.lr, weight_decay=1e-4)
         return optimizer
     

@@ -1,6 +1,9 @@
 # Script to train the end-to-end decoder
 
-# Run script using command "python3 run/run.py configs/configs_cage.yaml" in home directory
+"""
+Run script using command "python3 run/run.py configs/configs_cage.yaml" in home directory
+New command for expanded trial ranges: "python3 run/run.py configs/t100_configs/configs_cage_t100.yaml"
+"""
 import sys
 import wandb
 import os
@@ -37,7 +40,11 @@ if __name__ == "__main__":
                               num_modes=config.d, 
                               temperature=config.temperature,
                               ev=config.ev)
-    model = TrainingModule(model, config.lr, config.record, config.type)
+    model = TrainingModule(model=model,
+                           lr=config.lr,
+                           weight_decay=config.weight_decay,
+                           record=config.record,
+                           type=config.type)
 
     # Define model checkpoints
     save_callback = ModelCheckpoint(dirpath = config.save_path, filename='checkpoint_{epoch}_%s' % config.d)

@@ -15,7 +15,11 @@ from model.model import *
 from run.TrainingModule import *
 from utils.constants import *
 
-# Run script using command "python3 eval/evaluate.py configs/configs_cage.yaml" in home directory
+"""
+Run script using command "python3 eval/evaluate.py configs/configs_cage.yaml" in home directory
+Or can use "python3 eval/evaluate.py configs/t100_configs/configs_cage_t100.yaml"
+"""
+
 
 def dataset_statistics(dataset, verbose):
     train_timestamps = len(dataset.train_dataset)
@@ -58,6 +62,7 @@ def dataset_statistics(dataset, verbose):
         print("\tTotal power timestamps: %s (%s)" % (tot_power, (tot_power/total_timestamps)))
         print("N: %s" % dataset.N)
         print("M: %s" % dataset.M)
+
 
 def check_clustering(model_path, num_to_print, dataset, config, verbose):
     """
@@ -137,7 +142,6 @@ def check_clustering(model_path, num_to_print, dataset, config, verbose):
         print(confusion_matrix(ids, cluster_ids))
 
 
-
 def full_R2(dataset, config, verbose):
     """
     Calculates full R^2 value over the three separately trained linear decoders on Set2 labels.
@@ -145,19 +149,19 @@ def full_R2(dataset, config, verbose):
 
     # Load in trained models for each behavioral label
     model_crawl = DecoderModel(dataset.N, dataset.M, 1)
-    checkpoint = torch.load("checkpoints/checkpoint58_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint96_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
     model_crawl = TrainingModule(model_crawl, config.lr, config.record, config.type)
     model_crawl.load_state_dict(state_dict)
     
     model_precision = DecoderModel(dataset.N, dataset.M, 1)
-    checkpoint = torch.load("checkpoints/checkpoint59_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint97_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
     model_precision = TrainingModule(model_precision, config.lr, config.record, config.type)
     model_precision.load_state_dict(state_dict)
 
     model_power = DecoderModel(dataset.N, dataset.M, 1)
-    checkpoint = torch.load("checkpoints/checkpoint60_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint98_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
     model_power = TrainingModule(model_power, config.lr, config.record, config.type)
     model_power.load_state_dict(state_dict)
@@ -214,6 +218,7 @@ def sep_R2(dataset, model_path, config, verbose):
                               num_modes=config.d, 
                               temperature=config.temperature,
                               ev=config.ev)
+    # model = DecoderModel(dataset.N, dataset.M, config.d)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model, config.lr, config.record, config.type)
@@ -292,13 +297,13 @@ if __name__ == "__main__":
     model_id = 93
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     num_to_print = 300
-    check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print, config=config, verbose=True)
+    check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print, config=config, verbose=False)
 
     # Calculate full R^2 over separate models
     full_r2_list = full_R2(dataset=dataset, config=config, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2(dataset=dataset, model_path=model_path, config=config, verbose=False)
+    sep_r2_list = sep_R2(dataset=dataset, model_path=model_path, config=config, verbose=True)
 
 
 

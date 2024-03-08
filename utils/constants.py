@@ -24,6 +24,7 @@ class Config():
         self.model = args["model"]
         self.seed = args["seed"]
         self.temperature = args["temperature"]
+        self.weight_decay = args["weight_decay"]
 
 
 def load_config():
