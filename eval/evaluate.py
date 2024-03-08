@@ -64,7 +64,7 @@ def dataset_statistics(dataset, verbose):
         print("M: %s" % dataset.M)
 
 
-def check_clustering(model_path, num_to_print, dataset, config, verbose):
+def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbose):
     """
     Checks clustering for trained model by comparing behavioral labels to learned clusters.
     Input: (str) model_path: path to model to evaluate
@@ -86,9 +86,6 @@ def check_clustering(model_path, num_to_print, dataset, config, verbose):
     timestamps = range(0, len(train_behavioral_labels))
     ids = [id_dict[val] for val in train_behavioral_labels]
 
-    # Print ids of ground truth behavioral labels
-    # plt.bar(timestamps[:num_to_print], ids[:num_to_print], width=1.0, alpha=0.5)
-
     # Load trained model
     eval_mode = True
     model = CombinedModel(input_dim=dataset.N,
@@ -98,10 +95,14 @@ def check_clustering(model_path, num_to_print, dataset, config, verbose):
                               ev=eval_mode)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
-    model = TrainingModule(model, config.lr, config.record, config.type)
+    model = TrainingModule(model=model,
+                           lr=config.lr,
+                           weight_decay=config.weight_decay,
+                           record=config.record,
+                           type=config.type)
     model.load_state_dict(state_dict)
 
-    # Print learned cluster labels
+    # Calculate learned cluster labels
     cluster_probs = []
     for sample in train:
         x = sample[0].unsqueeze(0)
@@ -110,29 +111,54 @@ def check_clustering(model_path, num_to_print, dataset, config, verbose):
     cluster_probs = torch.stack(cluster_probs).tolist()
     torch.set_printoptions(sci_mode=False)
     cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
-    # plt.bar(timestamps[:num_to_print], cluster_ids[:num_to_print], width=1.0, alpha=0.5)
-    # plt.title("Behavioral Labels and Majority Cluster Mode over Time")
-    # plt.xlabel("Timestamp")
-    # plt.ylabel("Mode ID")
+
 
     # Graph of EMG with behavioral label and learned cluster labels overlaid with color
-    ids_array = np.array(ids)
-    cluster_ids_array = np.array(cluster_ids)
-    num_timestamps = len(ids_array)
-    fig, (ax1, ax2) = plt.subplots(2, figsize=(10,3))
-    ax1.plot(timestamps, train_emg_1, color="black")
-    cmap = ListedColormap(["yellow","green","blue"], name='from_list', N=None)
-    ax1.imshow(np.expand_dims(ids_array, 0),
-               cmap=cmap,
-               alpha=1.0,
-               extent=[0, num_timestamps, -200, 200])
-    ax1.title.set_text("Behavioral Labels")
-    ax2.plot(timestamps, train_emg_1, color="black")
-    ax2.imshow(np.expand_dims(cluster_ids_array, 0),
-               cmap=cmap,
-               alpha=1.0,
-               extent=[0, num_timestamps, -200, 200])
-    ax2.title.set_text("Learned Cluster Labels")
+    if plot_type == "majority":
+        ids_array = np.array(ids)
+        cluster_ids_array = np.array(cluster_ids)
+        num_timestamps = len(ids_array)
+        fig, (ax1, ax2) = plt.subplots(2, figsize=(10,3))
+        ax1.plot(timestamps, train_emg_1, color="black")
+        cmap = ListedColormap(["yellow","green","blue"], name='from_list', N=None)
+        ax1.imshow(np.expand_dims(ids_array, 0),
+                cmap=cmap,
+                alpha=1.0,
+                extent=[0, num_timestamps, -200, 200])
+        ax1.title.set_text("Behavioral Labels")
+        ax2.plot(timestamps, train_emg_1, color="black")
+        ax2.imshow(np.expand_dims(cluster_ids_array, 0),
+                cmap=cmap,
+                alpha=1.0,
+                extent=[0, num_timestamps, -200, 200])
+        ax2.title.set_text("Learned Cluster Labels")
+    elif plot_type == "distributions":
+
+        # Calculate learned clustering distributions
+        x = timestamps[:num_to_print]
+        y = [
+            [v[0] for v in cluster_probs[:num_to_print]],
+            [v[1] for v in cluster_probs[:num_to_print]],
+            [v[2] for v in cluster_probs[:num_to_print]],
+        ]
+
+        # Add slider
+        range_to_show = 100
+        Plot, Axis = plt.subplots()
+        plt.subplots_adjust(bottom=0.25)
+        plt.stackplot(x, y, labels=['1','2','3'], colors=["yellow", "green", "blue"])
+        plt.title("Learned Cluster Distributions")
+        plt.xlabel("Timestamp")
+        slider_color = 'White'
+        axis_position = plt.axes([0.2, 0.1, 0.65, 0.03],
+                                facecolor = slider_color)
+        slider_position = Slider(axis_position,
+                                'Pos', 0.1, num_to_print)
+        def update(val):
+            pos = slider_position.val
+            Axis.axis([pos, pos+range_to_show, 0, 1])
+            Plot.canvas.draw_idle()
+        slider_position.on_changed(update)
 
     if verbose:
         plt.show()
@@ -151,19 +177,31 @@ def full_R2(dataset, config, verbose):
     model_crawl = DecoderModel(dataset.N, dataset.M, 1)
     checkpoint = torch.load("checkpoints/checkpoint96_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
-    model_crawl = TrainingModule(model_crawl, config.lr, config.record, config.type)
+    model_crawl = TrainingModule(model=model_crawl,
+                           lr=config.lr,
+                           weight_decay=config.weight_decay,
+                           record=config.record,
+                           type=config.type)
     model_crawl.load_state_dict(state_dict)
     
     model_precision = DecoderModel(dataset.N, dataset.M, 1)
     checkpoint = torch.load("checkpoints/checkpoint97_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
-    model_precision = TrainingModule(model_precision, config.lr, config.record, config.type)
+    model_precision = TrainingModule(model=model_precision,
+                           lr=config.lr,
+                           weight_decay=config.weight_decay,
+                           record=config.record,
+                           type=config.type)
     model_precision.load_state_dict(state_dict)
 
     model_power = DecoderModel(dataset.N, dataset.M, 1)
     checkpoint = torch.load("checkpoints/checkpoint98_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
-    model_power = TrainingModule(model_power, config.lr, config.record, config.type)
+    model_power = TrainingModule(model=model_power,
+                           lr=config.lr,
+                           weight_decay=config.weight_decay,
+                           record=config.record,
+                           type=config.type)
     model_power.load_state_dict(state_dict)
 
     # Generate predicted value for each input training sample
@@ -206,7 +244,6 @@ def full_R2(dataset, config, verbose):
     return r2_list
 
 
-
 def sep_R2(dataset, model_path, config, verbose):
     """
     Calculates separate R^2 values for each of the individual behavioral labels in Set2 for our model.
@@ -221,7 +258,11 @@ def sep_R2(dataset, model_path, config, verbose):
     # model = DecoderModel(dataset.N, dataset.M, config.d)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
-    model = TrainingModule(model, config.lr, config.record, config.type)
+    model = TrainingModule(model=model,
+                           lr=config.lr,
+                           weight_decay=config.weight_decay,
+                           record=config.record,
+                           type=config.type)
     model.load_state_dict(state_dict)
 
     # Generate predicted value for each input training sample
@@ -273,10 +314,6 @@ def run_umap(dataset, verbose):
         print("umap")
         
 
-
-
-
-
 if __name__ == "__main__":
     
     print("\nRunning 'evaluate.py'...\n")
@@ -296,14 +333,20 @@ if __name__ == "__main__":
     # Evaluate model clustering 
     model_id = 93
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
-    num_to_print = 300
-    check_clustering(dataset=dataset, model_path=model_path, num_to_print=num_to_print, config=config, verbose=False)
+    num_to_print = 7800
+    plot_type = "distributions"
+    check_clustering(dataset=dataset,
+                     model_path=model_path,
+                     num_to_print=num_to_print,
+                     config=config,
+                     plot_type=plot_type,
+                     verbose=True)
 
     # Calculate full R^2 over separate models
     full_r2_list = full_R2(dataset=dataset, config=config, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2(dataset=dataset, model_path=model_path, config=config, verbose=True)
+    sep_r2_list = sep_R2(dataset=dataset, model_path=model_path, config=config, verbose=False)
 
 
 

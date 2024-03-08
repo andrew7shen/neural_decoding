@@ -15,3 +15,4 @@ save_path: "checkpoints"
 model: "combined"
 seed: 42
 temperature: 1
+weight_decay: 0.01
