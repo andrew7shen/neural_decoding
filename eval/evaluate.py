@@ -335,6 +335,7 @@ if __name__ == "__main__":
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     num_to_print = 7800
     plot_type = "distributions"
+    # plot_type = "majority"
     check_clustering(dataset=dataset,
                      model_path=model_path,
                      num_to_print=num_to_print,
