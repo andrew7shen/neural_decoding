@@ -104,10 +104,13 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbo
 
     # Calculate learned cluster labels
     cluster_probs = []
+    sample_modes = []
     for sample in train:
         x = sample[0].unsqueeze(0)
         curr_probs = model.forward(x)
+        curr_mode = sample[2]
         cluster_probs.append(curr_probs.squeeze())
+        sample_modes.append(curr_mode)
     cluster_probs = torch.stack(cluster_probs).tolist()
     torch.set_printoptions(sci_mode=False)
     cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
@@ -132,9 +135,10 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbo
                 alpha=1.0,
                 extent=[0, num_timestamps, -200, 200])
         ax2.title.set_text("Learned Cluster Labels")
+
     elif plot_type == "distributions":
 
-        # Calculate learned clustering distributions
+        # Format input data
         x = timestamps[:num_to_print]
         y = [
             [v[0] for v in cluster_probs[:num_to_print]],
@@ -142,7 +146,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbo
             [v[2] for v in cluster_probs[:num_to_print]],
         ]
 
-        # Add slider
+        # Plot cluster distributions with sliding functionality
         range_to_show = 100
         Plot, Axis = plt.subplots()
         plt.subplots_adjust(bottom=0.25)
@@ -160,12 +164,47 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbo
             Plot.canvas.draw_idle()
         slider_position.on_changed(update)
 
-    if verbose:
-        plt.show()
+    elif plot_type == "mode_average":
 
+        # Split up predictions into each mode
+        modes_dict = {}
+        for i in range(len(sample_modes)):
+            curr_mode = sample_modes[i]
+            curr_probs = cluster_probs[i]
+            if curr_mode not in modes_dict.keys():
+                modes_dict[curr_mode] = [curr_probs]
+            else:
+                modes_dict[curr_mode].append(curr_probs)
+
+        # Calculate average over all trials across each mode
+        trial_range = 100
+        for k,v in modes_dict.items():
+            num_items = len(v)
+            modes_dict[k] = torch.reshape(torch.Tensor(v), (num_items//trial_range, trial_range, dataset.num_modes))
+            modes_dict[k] = torch.mean(modes_dict[k], dim=0)
+
+        # Plot averaged cluster predictions for each mode
+        for k,v in modes_dict.items():
+            x = timestamps[:trial_range]
+            y = [
+                [v[0] for v in v[:trial_range]],
+                [v[1] for v in v[:trial_range]],
+                [v[2] for v in v[:trial_range]],
+            ]
+
+            # Plot cluster distributions with sliding functionality
+            plt.title("Learned Cluster Distributions for Mode %s" % k)
+            plt.stackplot(x, y, labels=['1','2','3'], colors=["yellow", "green", "blue"])
+            if verbose:
+                plt.show()
+    
+    elif plot_type == "confusion_matrix":
         # Print confusion matrix
         print("Printing confusion matrix, C[i,j] is number of observations in group 'i' but predicted to be 'j'")
         print(confusion_matrix(ids, cluster_ids))
+
+    if verbose:
+        plt.show()
 
 
 def full_R2(dataset, config, verbose):
@@ -334,14 +373,16 @@ if __name__ == "__main__":
     model_id = 93
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     num_to_print = 7800
-    plot_type = "distributions"
+    # plot_type = "distributions"
     # plot_type = "majority"
+    plot_type = "mode_average"
+    # plot_type = "confusion_matrix"
     check_clustering(dataset=dataset,
                      model_path=model_path,
                      num_to_print=num_to_print,
                      config=config,
                      plot_type=plot_type,
-                     verbose=True)
+                     verbose=False)
 
     # Calculate full R^2 over separate models
     full_r2_list = full_R2(dataset=dataset, config=config, verbose=False)
