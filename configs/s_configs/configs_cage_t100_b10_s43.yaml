@@ -1,0 +1,18 @@
+T: None
+N: None
+M: None
+d: 3  # num_modes
+b: 8
+type: "emg"
+epochs: 500
+lr: 0.0001
+record: True
+ev: False
+m1_path: "data/set2_data/m1_set2_t100_b10.npy"
+emg_path: "data/set2_data/emg_set2_t100_b10.npy"
+behavioral_path: "data/set2_data/behavioral_set2_t100_b10.npy"
+save_path: "checkpoints"
+model: "combined"
+seed: 43
+temperature: 1
+weight_decay: 0.01

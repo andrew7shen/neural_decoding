@@ -148,21 +148,28 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbo
 
         # Plot cluster distributions with sliding functionality
         range_to_show = 100
-        Plot, Axis = plt.subplots()
-        plt.subplots_adjust(bottom=0.25)
-        plt.stackplot(x, y, labels=['1','2','3'], colors=["yellow", "green", "blue"])
-        plt.title("Learned Cluster Distributions")
-        plt.xlabel("Timestamp")
-        slider_color = 'White'
-        axis_position = plt.axes([0.2, 0.1, 0.65, 0.03],
-                                facecolor = slider_color)
-        slider_position = Slider(axis_position,
-                                'Pos', 0.1, num_to_print)
-        def update(val):
-            pos = slider_position.val
-            Axis.axis([pos, pos+range_to_show, 0, 1])
-            Plot.canvas.draw_idle()
-        slider_position.on_changed(update)
+        slider = False
+        if not slider:
+            plt.figure(figsize=(12,2))
+            plt.stackplot(x, y, labels=['1','2','3'], colors=["yellow", "green", "blue"])
+            plt.title("Learned Cluster Distributions")
+            plt.xlabel("Timestamp")
+        else:
+            Plot, Axis = plt.subplots()
+            plt.subplots_adjust(bottom=0.25)
+            plt.stackplot(x, y, labels=['1','2','3'], colors=["yellow", "green", "blue"])
+            plt.title("Learned Cluster Distributions")
+            plt.xlabel("Timestamp")
+            slider_color = 'White'
+            axis_position = plt.axes([0.2, 0.1, 0.65, 0.03],
+                                    facecolor = slider_color)
+            slider_position = Slider(axis_position,
+                                    'Pos', 0.1, num_to_print)
+            def update(val):
+                pos = slider_position.val
+                Axis.axis([pos, pos+range_to_show, 0, 1])
+                Plot.canvas.draw_idle()
+            slider_position.on_changed(update)
 
     elif plot_type == "mode_average":
 
