@@ -6,7 +6,10 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 from matplotlib.colors import ListedColormap
 from sklearn.metrics import confusion_matrix, r2_score
-import umap.umap_ as umap
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import matplotlib.patches as mpatches
 cwd = os.getcwd()
 sys.path.append(cwd)
 
@@ -17,11 +20,17 @@ from utils.constants import *
 
 """
 Run script using command "python3 eval/evaluate.py configs/configs_cage.yaml" in home directory
-Or can use "python3 eval/evaluate.py configs/t100_configs/configs_cage_t100.yaml"
+Expanded trial range: "python3 eval/evaluate.py configs/t100_configs/configs_cage_t100.yaml"
+Expanded trial range (B=10): "python3 eval/evaluate.py configs/b_configs/configs_cage_t100_b10.yaml"
+Expanded trial range (d=4): "python3 eval/evaluate.py configs/d_configs/configs_cage_t100_d4.yaml"
 """
 
 
 def dataset_statistics(dataset, verbose):
+    
+    if not verbose:
+        return
+
     train_timestamps = len(dataset.train_dataset)
     val_timestamps = len(dataset.val_dataset)
     total_timestamps = train_timestamps + val_timestamps
@@ -47,29 +56,32 @@ def dataset_statistics(dataset, verbose):
     tot_crawl = train_crawl + val_crawl
     tot_precision = train_precision + val_precision
     tot_power = train_power + val_power
-    if verbose:
-        print("Train timestamps: %s" % train_timestamps)
-        print("\tTrain crawl timestamps: %s (%s)" % (train_crawl, (train_crawl/train_timestamps)))
-        print("\tTrain precision timestamps: %s (%s)" % (train_precision, (train_precision/train_timestamps)))
-        print("\tTrain power timestamps: %s (%s)" % (train_power, (train_power/train_timestamps)))
-        print("Valid timestamps: %s" % val_timestamps)
-        print("\tValid crawl timestamps: %s (%s)" % (val_crawl, (val_crawl/val_timestamps)))
-        print("\tValid precision timestamps: %s (%s)" % (val_precision, (val_precision/val_timestamps)))
-        print("\tValid power timestamps: %s (%s)" % (val_power, (val_power/val_timestamps)))
-        print("Total timestamps: %s" % total_timestamps)
-        print("\tTotal crawl timestamps: %s (%s)" % (tot_crawl, (tot_crawl/total_timestamps)))
-        print("\tTotal precision timestamps: %s (%s)" % (tot_precision, (tot_precision/total_timestamps)))
-        print("\tTotal power timestamps: %s (%s)" % (tot_power, (tot_power/total_timestamps)))
-        print("N: %s" % dataset.N)
-        print("M: %s" % dataset.M)
+
+    print("Train timestamps: %s" % train_timestamps)
+    print("\tTrain crawl timestamps: %s (%s)" % (train_crawl, (train_crawl/train_timestamps)))
+    print("\tTrain precision timestamps: %s (%s)" % (train_precision, (train_precision/train_timestamps)))
+    print("\tTrain power timestamps: %s (%s)" % (train_power, (train_power/train_timestamps)))
+    print("Valid timestamps: %s" % val_timestamps)
+    print("\tValid crawl timestamps: %s (%s)" % (val_crawl, (val_crawl/val_timestamps)))
+    print("\tValid precision timestamps: %s (%s)" % (val_precision, (val_precision/val_timestamps)))
+    print("\tValid power timestamps: %s (%s)" % (val_power, (val_power/val_timestamps)))
+    print("Total timestamps: %s" % total_timestamps)
+    print("\tTotal crawl timestamps: %s (%s)" % (tot_crawl, (tot_crawl/total_timestamps)))
+    print("\tTotal precision timestamps: %s (%s)" % (tot_precision, (tot_precision/total_timestamps)))
+    print("\tTotal power timestamps: %s (%s)" % (tot_power, (tot_power/total_timestamps)))
+    print("N: %s" % dataset.N)
+    print("M: %s" % dataset.M)
 
 
-def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbose):
+def check_clustering(model_path, num_to_print, dataset, config, plot_type, model_id, verbose):
     """
     Checks clustering for trained model by comparing behavioral labels to learned clusters.
     Input: (str) model_path: path to model to evaluate
            (int) num_to_print: number of samples to print
     """
+
+    if not verbose:
+        return
     
     # Access train dataset
     train = dataset.train_dataset
@@ -114,7 +126,11 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbo
     cluster_probs = torch.stack(cluster_probs).tolist()
     torch.set_printoptions(sci_mode=False)
     cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
+    # import pdb; pdb.set_trace()
 
+    # Create color map and label options for multiple modes
+    cmap_colors = ["yellow","green","blue","red","purple","orange","pink"]
+    number_labels = ["1", "2", "3", "4", "5", "6", "7"]
 
     # Graph of EMG with behavioral label and learned cluster labels overlaid with color
     if plot_type == "majority":
@@ -124,6 +140,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbo
         fig, (ax1, ax2) = plt.subplots(2, figsize=(10,3))
         ax1.plot(timestamps, train_emg_1, color="black")
         cmap = ListedColormap(["yellow","green","blue"], name='from_list', N=None)
+        cmap_preds = ListedColormap(cmap_colors[:config.d], name='from_list', N=None)
         ax1.imshow(np.expand_dims(ids_array, 0),
                 cmap=cmap,
                 alpha=1.0,
@@ -131,10 +148,11 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbo
         ax1.title.set_text("Behavioral Labels")
         ax2.plot(timestamps, train_emg_1, color="black")
         ax2.imshow(np.expand_dims(cluster_ids_array, 0),
-                cmap=cmap,
+                cmap=cmap_preds,
                 alpha=1.0,
                 extent=[0, num_timestamps, -200, 200])
         ax2.title.set_text("Learned Cluster Labels")
+        plt.savefig("figures/%s.png" % model_id)
 
     elif plot_type == "distributions":
 
@@ -170,6 +188,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbo
                 Axis.axis([pos, pos+range_to_show, 0, 1])
                 Plot.canvas.draw_idle()
             slider_position.on_changed(update)
+        plt.savefig("figures/%sd.png" % model_id)
 
     elif plot_type == "mode_average":
 
@@ -193,31 +212,29 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, verbo
         # Plot averaged cluster predictions for each mode
         for k,v in modes_dict.items():
             x = timestamps[:trial_range]
-            y = [
-                [v[0] for v in v[:trial_range]],
-                [v[1] for v in v[:trial_range]],
-                [v[2] for v in v[:trial_range]],
-            ]
+            y = torch.transpose(v, 0, 1)
 
-            # Plot cluster distributions with sliding functionality
+            # Plot cluster distributions
             plt.title("Learned Cluster Distributions for Mode %s" % k)
-            plt.stackplot(x, y, labels=['1','2','3'], colors=["yellow", "green", "blue"])
-            if verbose:
-                plt.show()
+            plt.stackplot(x, y, labels=number_labels[:config.d], colors=cmap_colors[:config.d])
+            plt.savefig("figures/%s_%s_avg.png" % (model_id, k))
+            # plt.show()
     
     elif plot_type == "confusion_matrix":
         # Print confusion matrix
         print("Printing confusion matrix, C[i,j] is number of observations in group 'i' but predicted to be 'j'")
         print(confusion_matrix(ids, cluster_ids))
 
-    if verbose:
-        plt.show()
+    # plt.show()
 
 
 def full_R2(dataset, config, verbose):
     """
     Calculates full R^2 value over the three separately trained linear decoders on Set2 labels.
     """
+
+    if not verbose:
+        return
 
     # Load in trained models for each behavioral label
     model_crawl = DecoderModel(dataset.N, dataset.M, 1)
@@ -284,8 +301,7 @@ def full_R2(dataset, config, verbose):
         # Format output string
         out_str += "%s\n%s\n\n" % (split, r2)
     
-    if verbose:
-        print(out_str)
+    print(out_str)
 
     return r2_list
 
@@ -294,6 +310,9 @@ def sep_R2(dataset, model_path, config, verbose):
     """
     Calculates separate R^2 values for each of the individual behavioral labels in Set2 for our model.
     """
+
+    if not verbose:
+        return
 
     # Load in trained model
     model = CombinedModel(input_dim=dataset.N,
@@ -344,25 +363,83 @@ def sep_R2(dataset, model_path, config, verbose):
             r2_values.append(curr_r2)
             out_str += ("%s: %s\n" % (key, curr_r2))
         out_str += "\n"
-        if verbose:
-            print(out_str)
+        print(out_str)
 
         r2_list.append(r2_values)
 
     return r2_list
 
 
-def run_umap(dataset, verbose):
-    # print(dataset.shape)
-    reducer = umap.UMAP()
-    # embedding = reducer.fit_transform(scaled_penguin_data)
-    if verbose:
-        print("umap")
+def run_kmeans(dataset, verbose):
+    """
+    Following tutorial on kmeans: https://medium.com/swlh/k-means-clustering-on-high-dimensional-data-d2151e1a4240
+    """
+
+    if not verbose:
+        return
+
+    # Read in data
+    m1 = torch.stack([v[0] for v in dataset.train_dataset] + [v[0] for v in dataset.val_dataset])
+    emg = torch.stack([v[1] for v in dataset.train_dataset] + [v[1] for v in dataset.val_dataset])
+    labels = [v[2] for v in dataset.train_dataset] + [v[2] for v in dataset.val_dataset]
+
+    # TODO: Scale data
+    # m1_scaled = StandardScaler().fit_transform(m1)
+
+    # Perform kmeans on M1 and EMG
+    data_name = ["M1", "EMG"]
+    datasets = [m1, emg]
+    mode = "preds"
+    for i in range(len(datasets)):
+        data = datasets[i]
+
+        # Perform PCA
+        pca = PCA(n_components=2)
+        pca_result = pca.fit_transform(data)
+        pca1 = pca_result[:,0]
+        pca2 = pca_result[:,1]
+        explained_variance_ratio = np.sum(pca.explained_variance_ratio_)
+
+        # Apply kmeans
+        kmeans = KMeans(n_clusters=3, n_init="auto")
+        kmeans.fit(pca_result)
+        preds = kmeans.labels_
+        centroids = kmeans.cluster_centers_
+
+        # Calculate mode colors
+        labels_color_dict = {"crawl": "green", "precision": "blue", "power": "red"}
+        preds_color_dict = {0: "green", 1: "blue", 2: "red"}
+        colors_labels = [labels_color_dict[v] for v in labels]
+        colors_preds = [preds_color_dict[v] for v in preds]
+
+        # Plot results
+        if mode == "labels":
+            plt.figure(figsize=(12,7))
+            plt.scatter(pca1, pca2, s=8, c=colors_labels)
+            plt.title("PCA Results (%s)" % data_name[i])
+            plt.xlabel("PCA1")
+            plt.ylabel("PCA2")
+            green_patch = mpatches.Patch(color='green', label='crawl')
+            blue_patch = mpatches.Patch(color='blue', label='precision')
+            red_patch = mpatches.Patch(color='red', label='power')
+            plt.legend(handles=[green_patch, blue_patch, red_patch])
+            # plt.show()
+            # plt.savefig("figures/pca_%s" % data_name[i])
+        elif mode == "preds":
+            plt.figure(figsize=(12,7))
+            plt.scatter(pca1, pca2, s=8, c=colors_preds)
+            plt.title("PCA Results (%s)" % data_name[i])
+            plt.xlabel("PCA1")
+            plt.ylabel("PCA2")
+            green_patch = mpatches.Patch(color='green', label='0')
+            blue_patch = mpatches.Patch(color='blue', label='1')
+            red_patch = mpatches.Patch(color='red', label='2')
+            plt.legend(handles=[green_patch, blue_patch, red_patch])
+            # plt.show()
+            # plt.savefig("figures/kmeans_%s" % data_name[i])
         
 
 if __name__ == "__main__":
-    
-    print("\nRunning 'evaluate.py'...\n")
 
     # Read in configs and dataset
     config = load_config()
@@ -373,11 +450,11 @@ if __name__ == "__main__":
     # Print dataset statistics
     dataset_statistics(dataset=dataset, verbose=False)
     
-    # Perform UMAP on input dataset
-    # run_umap(dataset=dataset, verbose=False)
+    # Perform kmeans on input dataset
+    run_kmeans(dataset=dataset, verbose=True)
 
     # Evaluate model clustering 
-    model_id = 93
+    model_id = 129
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     num_to_print = 7800
     # plot_type = "distributions"
@@ -389,6 +466,7 @@ if __name__ == "__main__":
                      num_to_print=num_to_print,
                      config=config,
                      plot_type=plot_type,
+                     model_id=model_id,
                      verbose=False)
 
     # Calculate full R^2 over separate models
