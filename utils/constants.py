@@ -25,6 +25,7 @@ class Config():
         self.seed = args["seed"]
         self.temperature = args["temperature"]
         self.weight_decay = args["weight_decay"]
+        self.hidden_dim = args["hidden_dim"]
 
 
 def load_config():

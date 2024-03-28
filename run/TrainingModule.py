@@ -88,6 +88,7 @@ class Callback(pl.Callback):
             train_loss_epoch = F.cross_entropy(labels_hat, labels)
         elif self.dataset.dataset_type == "emg":
             train_loss_epoch = F.mse_loss(labels_hat, labels)
+        print(train_loss_epoch.item())
 
         # Calculate R^2 metric
         train_r2 = r2_score(labels, labels_hat)

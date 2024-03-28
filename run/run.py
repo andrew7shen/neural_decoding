@@ -36,6 +36,7 @@ if __name__ == "__main__":
         model = DecoderModel(dataset.N, dataset.M, config.d)
     elif config.model == "combined":
         model = CombinedModel(input_dim=dataset.N,
+                              hidden_dim=config.hidden_dim,
                               output_dim=dataset.M,
                               num_modes=config.d, 
                               temperature=config.temperature,

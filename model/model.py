@@ -12,16 +12,25 @@ class ClusterModel(nn.Module):
     num_modes: d
     """
 
-    def __init__(self, input_dim, num_modes, temperature):
+    def __init__(self, input_dim, hidden_dim, num_modes, temperature):
         super().__init__()
         self.linears = nn.ModuleList([nn.Linear(input_dim, 1) for i in range(num_modes)])
+        self.ffnn = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.Tanh(),
+            nn.Linear(hidden_dim, 1),
+            nn.Tanh()
+        )
+        self.ffnns = nn.ModuleList([self.ffnn for i in range(num_modes)])
         self.softmax = nn.Softmax(dim=2)
         self.temperature = temperature
 
     def forward(self, x):
         x_d = []
-        for linear in self.linears:
-            x_d.append(linear(x))
+        # for linear in self.linears:
+        #     x_d.append(linear(x))
+        for ffnn in self.ffnns:
+            x_d.append(ffnn(x))
         x = torch.stack(x_d, 2)
         x = x/self.temperature
         x = self.softmax(x) 
@@ -53,9 +62,9 @@ class DecoderModel(nn.Module):
 
 class CombinedModel(nn.Module):
 
-    def __init__(self, input_dim, output_dim, num_modes, temperature, ev):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_modes, temperature, ev):
         super(CombinedModel, self).__init__()
-        self.cm = ClusterModel(input_dim, num_modes, temperature)
+        self.cm = ClusterModel(input_dim, hidden_dim, num_modes, temperature)
         self.dm = DecoderModel(input_dim, output_dim, num_modes)
         self.ev = ev
 
