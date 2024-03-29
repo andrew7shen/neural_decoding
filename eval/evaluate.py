@@ -370,7 +370,7 @@ def sep_R2(dataset, model_path, config, verbose):
     return r2_list
 
 
-def run_kmeans(dataset, verbose):
+def run_kmeans(dataset, config, verbose):
     """
     Following tutorial on kmeans: https://medium.com/swlh/k-means-clustering-on-high-dimensional-data-d2151e1a4240
     """
@@ -389,7 +389,9 @@ def run_kmeans(dataset, verbose):
     # Perform kmeans on M1 and EMG
     data_name = ["M1", "EMG"]
     datasets = [m1, emg]
-    mode = "preds"
+    # mode = "labels"
+    # mode = "preds"
+    mode = "clusters"
     for i in range(len(datasets)):
         data = datasets[i]
 
@@ -402,7 +404,8 @@ def run_kmeans(dataset, verbose):
 
         # Apply kmeans
         kmeans = KMeans(n_clusters=3, n_init="auto")
-        kmeans.fit(pca_result)
+        # kmeans.fit(pca_result)
+        kmeans.fit(data)
         preds = kmeans.labels_
         centroids = kmeans.cluster_centers_
 
@@ -425,7 +428,7 @@ def run_kmeans(dataset, verbose):
             plt.legend(handles=[green_patch, blue_patch, red_patch])
             # plt.show()
             # plt.savefig("figures/pca_%s" % data_name[i])
-        elif mode == "preds":
+        elif mode == "preds": # TODO: wrong
             plt.figure(figsize=(12,7))
             plt.scatter(pca1, pca2, s=8, c=colors_preds)
             plt.title("PCA Results (%s)" % data_name[i])
@@ -437,6 +440,40 @@ def run_kmeans(dataset, verbose):
             plt.legend(handles=[green_patch, blue_patch, red_patch])
             # plt.show()
             # plt.savefig("figures/kmeans_%s" % data_name[i])
+        elif mode == "clusters":
+            # Same code from "clustering_check" function
+            train = dataset.train_dataset
+            train_emg_1 = torch.stack([val[1][0] for val in train]).tolist()
+            train_behavioral_labels = [val[2] for val in train]
+            id_dict = {}
+            curr_id = 1
+            for label in train_behavioral_labels:
+                if label not in id_dict:
+                    id_dict[label] = curr_id
+                    curr_id +=1
+            timestamps = range(0, len(train_behavioral_labels))
+            ids = [id_dict[val] for val in train_behavioral_labels]
+            ids_array = np.array(ids)
+            num_timestamps = len(ids_array)
+            cmap_colors = ["yellow","green","blue","red","purple","orange","pink"]
+            number_labels = ["1", "2", "3", "4", "5", "6", "7"]
+            fig, (ax1, ax2) = plt.subplots(2, figsize=(10,3))
+            ax1.plot(timestamps, train_emg_1, color="black")
+            cmap = ListedColormap(["yellow","green","blue"], name='from_list', N=None)
+            cmap_preds = ListedColormap(cmap_colors[:config.d], name='from_list', N=None)
+            ax1.imshow(np.expand_dims(ids_array, 0),
+                    cmap=cmap,
+                    alpha=1.0,
+                    extent=[0, num_timestamps, -200, 200])
+            ax1.title.set_text("Behavioral Labels")
+            ax2.plot(timestamps, train_emg_1, color="black")
+            ax2.imshow(np.expand_dims(preds, 0),
+                    cmap=cmap_preds,
+                    alpha=1.0,
+                    extent=[0, num_timestamps, -200, 200])
+            ax2.title.set_text("Learned Cluster Labels")
+            # plt.show()
+            plt.savefig("figures/kmeans_%s.png" % data_name[i])
         
 
 if __name__ == "__main__":
@@ -451,7 +488,7 @@ if __name__ == "__main__":
     dataset_statistics(dataset=dataset, verbose=False)
     
     # Perform kmeans on input dataset
-    run_kmeans(dataset=dataset, verbose=True)
+    run_kmeans(dataset=dataset, config=config, verbose=True)
 
     # Evaluate model clustering 
     model_id = 129
