@@ -19,7 +19,7 @@ class ClusterModel(nn.Module):
             nn.Linear(input_dim, hidden_dim),
             nn.Tanh(),
             nn.Linear(hidden_dim, 1),
-            nn.Tanh()
+            # nn.Tanh()
         )
         self.ffnns = nn.ModuleList([self.ffnn for i in range(num_modes)])
         self.softmax = nn.Softmax(dim=2)
