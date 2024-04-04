@@ -17,7 +17,8 @@ class ClusterModel(nn.Module):
         self.linears = nn.ModuleList([nn.Linear(input_dim, 1) for i in range(num_modes)])
         self.ffnn = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
-            nn.Tanh(),
+            # nn.Tanh(),
+            nn.Sigmoid(),
             nn.Linear(hidden_dim, 1),
             # nn.Tanh()
         )

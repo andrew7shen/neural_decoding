@@ -101,6 +101,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
     # Load trained model
     eval_mode = True
     model = CombinedModel(input_dim=dataset.N,
+                          hidden_dim=config.hidden_dim,
                               output_dim=dataset.M,
                               num_modes=config.d, 
                               temperature=config.temperature,
@@ -488,15 +489,15 @@ if __name__ == "__main__":
     dataset_statistics(dataset=dataset, verbose=False)
     
     # Perform kmeans on input dataset
-    run_kmeans(dataset=dataset, config=config, verbose=True)
+    run_kmeans(dataset=dataset, config=config, verbose=False)
 
     # Evaluate model clustering 
-    model_id = 129
+    model_id = 133
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     num_to_print = 7800
     # plot_type = "distributions"
-    # plot_type = "majority"
-    plot_type = "mode_average"
+    plot_type = "majority"
+    # plot_type = "mode_average"
     # plot_type = "confusion_matrix"
     check_clustering(dataset=dataset,
                      model_path=model_path,
@@ -504,7 +505,7 @@ if __name__ == "__main__":
                      config=config,
                      plot_type=plot_type,
                      model_id=model_id,
-                     verbose=False)
+                     verbose=True)
 
     # Calculate full R^2 over separate models
     full_r2_list = full_R2(dataset=dataset, config=config, verbose=False)
