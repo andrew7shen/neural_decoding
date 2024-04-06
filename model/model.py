@@ -15,14 +15,10 @@ class ClusterModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_modes, temperature):
         super().__init__()
         self.linears = nn.ModuleList([nn.Linear(input_dim, 1) for i in range(num_modes)])
-        self.ffnn = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            # nn.Tanh(),
-            nn.Sigmoid(),
-            nn.Linear(hidden_dim, 1),
-            # nn.Tanh()
-        )
-        self.ffnns = nn.ModuleList([self.ffnn for i in range(num_modes)])
+        self.ffnns = nn.ModuleList([nn.Sequential(nn.Linear(input_dim, hidden_dim),
+                                                  nn.Tanh(),
+                                                  nn.Linear(hidden_dim, 1))
+                                                  for i in range(num_modes)])
         self.softmax = nn.Softmax(dim=2)
         self.temperature = temperature
 
