@@ -492,12 +492,12 @@ if __name__ == "__main__":
     run_kmeans(dataset=dataset, config=config, verbose=False)
 
     # Evaluate model clustering 
-    model_id = 133
+    model_id = 144
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     num_to_print = 7800
     # plot_type = "distributions"
-    plot_type = "majority"
-    # plot_type = "mode_average"
+    # plot_type = "majority"
+    plot_type = "mode_average"
     # plot_type = "confusion_matrix"
     check_clustering(dataset=dataset,
                      model_path=model_path,
