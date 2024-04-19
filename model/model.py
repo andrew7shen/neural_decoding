@@ -15,19 +15,39 @@ class ClusterModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_modes, temperature):
         super().__init__()
         self.linears = nn.ModuleList([nn.Linear(input_dim, 1) for i in range(num_modes)])
+        self.single_ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, input_dim))
         self.ffnns = nn.ModuleList([nn.Sequential(nn.Linear(input_dim, hidden_dim),
                                                   nn.Tanh(),
                                                   nn.Linear(hidden_dim, 1))
                                                   for i in range(num_modes)])
+        
+        # METHOD #2: Initialize all ffnns to same initial model weights
+        # ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, 1))
+        # state_dict = ffnn.state_dict()
+        # for net in self.ffnns:
+        #     net.load_state_dict(state_dict)
+
         self.softmax = nn.Softmax(dim=2)
         self.temperature = temperature
 
     def forward(self, x):
         x_d = []
+        # import pdb; pdb.set_trace()
+        
+        # METHOD #1: Original linear method
+        for linear in self.linears:
+            x_d.append(linear(x))
+
+        # METHOD #2: Explore non-linearities
+        # for ffnn in self.ffnns:
+        #     x_d.append(ffnn(x))
+
+        # METHOD #3: Explore non-linearity into linears
+        # x = self.single_ffnn(x)
         # for linear in self.linears:
         #     x_d.append(linear(x))
-        for ffnn in self.ffnns:
-            x_d.append(ffnn(x))
+
+
         x = torch.stack(x_d, 2)
         x = x/self.temperature
         x = self.softmax(x) 
@@ -64,11 +84,22 @@ class CombinedModel(nn.Module):
         self.cm = ClusterModel(input_dim, hidden_dim, num_modes, temperature)
         self.dm = DecoderModel(input_dim, output_dim, num_modes)
         self.ev = ev
+        self.counter = 0
 
     def forward(self, x):
         x1 = self.cm(x)
         x2 = self.dm(x)
         output = torch.sum(x1 * x2, dim=-1)
+        self.counter +=1
+
+        # print(x1)
+        # import pdb; pdb.set_trace()
+
+        # torch.set_printoptions(sci_mode=False)
+        # if self.counter % 900 == 0:
+        #     print(x1)
+        #     import pdb; pdb.set_trace()
+        #     pass
 
         # Return softmax outputs if mode is "eval"
         if self.ev == True:
