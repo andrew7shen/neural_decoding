@@ -40,7 +40,8 @@ if __name__ == "__main__":
                               output_dim=dataset.M,
                               num_modes=config.d, 
                               temperature=config.temperature,
-                              ev=config.ev)
+                              ev=config.ev,
+                              model_type=config.model_type)
     model = TrainingModule(model=model,
                            lr=config.lr,
                            weight_decay=config.weight_decay,

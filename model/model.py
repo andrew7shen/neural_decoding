@@ -12,7 +12,7 @@ class ClusterModel(nn.Module):
     num_modes: d
     """
 
-    def __init__(self, input_dim, hidden_dim, num_modes, temperature):
+    def __init__(self, input_dim, hidden_dim, num_modes, temperature, model_type):
         super().__init__()
         self.linears = nn.ModuleList([nn.Linear(input_dim, 1) for i in range(num_modes)])
         self.single_ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, input_dim))
@@ -22,10 +22,12 @@ class ClusterModel(nn.Module):
                                                   for i in range(num_modes)])
         
         # METHOD #2: Initialize all ffnns to same initial model weights
-        # ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, 1))
-        # state_dict = ffnn.state_dict()
-        # for net in self.ffnns:
-        #     net.load_state_dict(state_dict)
+        self.model_type = model_type
+        if model_type == "method2":
+            ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, 1))
+            state_dict = ffnn.state_dict()
+            for net in self.ffnns:
+                net.load_state_dict(state_dict)
 
         self.softmax = nn.Softmax(dim=2)
         self.temperature = temperature
@@ -35,17 +37,19 @@ class ClusterModel(nn.Module):
         # import pdb; pdb.set_trace()
         
         # METHOD #1: Original linear method
-        for linear in self.linears:
-            x_d.append(linear(x))
-
-        # METHOD #2: Explore non-linearities
-        # for ffnn in self.ffnns:
-        #     x_d.append(ffnn(x))
-
-        # METHOD #3: Explore non-linearity into linears
-        # x = self.single_ffnn(x)
         # for linear in self.linears:
         #     x_d.append(linear(x))
+
+        # METHOD #2: Explore non-linearities
+        if self.model_type == "method2":
+            for ffnn in self.ffnns:
+                x_d.append(ffnn(x))
+
+        # METHOD #3: Explore non-linearity into linears
+        if self.model_type == "method3":
+            x = self.single_ffnn(x)
+            for linear in self.linears:
+                x_d.append(linear(x))
 
 
         x = torch.stack(x_d, 2)
@@ -79,9 +83,9 @@ class DecoderModel(nn.Module):
 
 class CombinedModel(nn.Module):
 
-    def __init__(self, input_dim, hidden_dim, output_dim, num_modes, temperature, ev):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_modes, temperature, ev, model_type):
         super(CombinedModel, self).__init__()
-        self.cm = ClusterModel(input_dim, hidden_dim, num_modes, temperature)
+        self.cm = ClusterModel(input_dim, hidden_dim, num_modes, temperature, model_type)
         self.dm = DecoderModel(input_dim, output_dim, num_modes)
         self.ev = ev
         self.counter = 0
