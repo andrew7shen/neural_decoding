@@ -27,6 +27,7 @@ class Config():
         self.weight_decay = args["weight_decay"]
         self.hidden_dim = args["hidden_dim"]
         self.model_type = args["model_type"]
+        self.kmeans_cluster = args["kmeans_cluster"]
 
 
 def load_config():

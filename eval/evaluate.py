@@ -105,7 +105,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                               output_dim=dataset.M,
                               num_modes=config.d, 
                               temperature=config.temperature,
-                              ev=eval_mode)
+                              ev=eval_mode,
+                              model_type=config.model_type)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model=model,
@@ -153,7 +154,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                 alpha=1.0,
                 extent=[0, num_timestamps, -200, 200])
         ax2.title.set_text("Learned Cluster Labels")
-        plt.savefig("figures/%s.png" % model_id)
+        plt.savefig("figures/intervals/%s.png" % model_id) # TODO: Change back after generate interval plots
 
     elif plot_type == "distributions":
 
@@ -218,7 +219,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
             # Plot cluster distributions
             plt.title("Learned Cluster Distributions for Mode %s" % k)
             plt.stackplot(x, y, labels=number_labels[:config.d], colors=cmap_colors[:config.d])
-            plt.savefig("figures/%s_%s_avg.png" % (model_id, k))
+            plt.savefig("figures/intervals/%s_%s_avg.png" % (model_id, k)) # TODO: Change back after generate interval plots
             # plt.show()
     
     elif plot_type == "confusion_matrix":
@@ -477,6 +478,20 @@ def run_kmeans(dataset, config, verbose):
             plt.savefig("figures/kmeans_%s.png" % data_name[i])
         
 
+def run_kmeans_M1(dataset, config):
+    # Read in data
+    m1 = torch.stack([v[0] for v in dataset.train_dataset] + [v[0] for v in dataset.val_dataset])
+    emg = torch.stack([v[1] for v in dataset.train_dataset] + [v[1] for v in dataset.val_dataset])
+    labels = [v[2] for v in dataset.train_dataset] + [v[2] for v in dataset.val_dataset]
+
+    # Apply kmeans
+    kmeans = KMeans(n_clusters=3, n_init="auto")
+    kmeans.fit(m1)
+    preds = kmeans.labels_
+    centroids = kmeans.cluster_centers_
+    import pdb; pdb.set_trace()
+    pass
+
 if __name__ == "__main__":
 
     # Read in configs and dataset
@@ -492,26 +507,31 @@ if __name__ == "__main__":
     run_kmeans(dataset=dataset, config=config, verbose=False)
 
     # Evaluate model clustering 
-    model_id = 144
-    model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
-    num_to_print = 7800
-    # plot_type = "distributions"
-    # plot_type = "majority"
-    plot_type = "mode_average"
-    # plot_type = "confusion_matrix"
-    check_clustering(dataset=dataset,
-                     model_path=model_path,
-                     num_to_print=num_to_print,
-                     config=config,
-                     plot_type=plot_type,
-                     model_id=model_id,
-                     verbose=True)
+    model_ids = [0,1,2,3,4,5,11,15,20,25,30,35,40,50,60,70,80,90,100]
+    for model_id in model_ids:
+        model_path = "checkpoints_intervals/%s.ckpt" % model_id
+        # model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
+        num_to_print = 7800
+        # plot_type = "distributions"
+        # plot_type = "majority"
+        plot_type = "mode_average"
+        # plot_type = "confusion_matrix"
+        check_clustering(dataset=dataset,
+                        model_path=model_path,
+                        num_to_print=num_to_print,
+                        config=config,
+                        plot_type=plot_type,
+                        model_id=model_id,
+                        verbose=True)
 
     # Calculate full R^2 over separate models
     full_r2_list = full_R2(dataset=dataset, config=config, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
     sep_r2_list = sep_R2(dataset=dataset, model_path=model_path, config=config, verbose=False)
+
+    # Run kmeans on points to get learned clusters
+    # m1, preds = run_kmeans_M1(dataset, config)
 
 
 

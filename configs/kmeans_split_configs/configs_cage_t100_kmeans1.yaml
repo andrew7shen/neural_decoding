@@ -1,0 +1,21 @@
+T: None
+N: None
+M: None
+d: 1  # num_modes
+b: 8
+type: "emg"
+epochs: 500
+lr: 0.0001
+record: True
+ev: False
+m1_path: "data/set2_data/kmeans_split"
+emg_path: "data/set2_data/kmeans_split"
+behavioral_path: "data/set2_data/kmeans_split"
+save_path: "checkpoints"
+model: "decoder"
+seed: 42
+temperature: 1
+weight_decay: 0.01
+hidden_dim: 30
+model_type: "method1"
+kmeans_cluster: 1

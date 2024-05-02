@@ -37,8 +37,9 @@ class ClusterModel(nn.Module):
         # import pdb; pdb.set_trace()
         
         # METHOD #1: Original linear method
-        # for linear in self.linears:
-        #     x_d.append(linear(x))
+        if self.model_type == "method1":
+            for linear in self.linears:
+                x_d.append(linear(x))
 
         # METHOD #2: Explore non-linearities
         if self.model_type == "method2":

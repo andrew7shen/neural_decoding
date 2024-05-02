@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 
 class Cage_Dataset(pl.LightningDataModule):
     
-    def __init__(self, m1_path, emg_path, behavioral_path, num_modes, batch_size, dataset_type, seed):
+    def __init__(self, m1_path, emg_path, behavioral_path, num_modes, batch_size, dataset_type, seed, kmeans_cluster):
         super().__init__()
         self.batch_size = batch_size
         self.num_modes = num_modes
@@ -20,6 +20,7 @@ class Cage_Dataset(pl.LightningDataModule):
         self.N = None
         self.M = None
         self.seed = seed
+        self.kmeans_cluster = kmeans_cluster
 
         # Set manual seed
         torch.manual_seed(seed)
@@ -57,29 +58,45 @@ class Cage_Dataset(pl.LightningDataModule):
         #         self.train_dataset = self.train_dataset + [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
         #         self.val_dataset = self.val_dataset + [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
 
-        # Read in data
-        m1 = torch.Tensor(np.load(m1_path))
-        emg = torch.Tensor(np.load(emg_path))
-        behavioral = np.load(behavioral_path)
-        labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
-        X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
+        # If using kmeans split data for sanity check
+        if m1_path == "data/set2_data/kmeans_split":
+            path = m1_path
+            m1_train = torch.Tensor(np.load("%s/m1_train_%s.npy" % (path, self.kmeans_cluster)))
+            emg_train = torch.Tensor(np.load("%s/emg_train_%s.npy" % (path, self.kmeans_cluster)))
+            labels_train = np.load("%s/labels_train_%s.npy" % (path, self.kmeans_cluster))
+            m1_val = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
+            emg_val = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
+            labels_val = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
 
-        # Reformat back into timestamps
-        X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
-        X_val = torch.reshape(X_val, (X_val.size()[0]*X_val.size()[1], X_val.size()[2]))
-        y_train_emg = torch.stack([v[0] for v in y_train])
-        y_train_emg = torch.reshape(y_train_emg, (y_train_emg.size()[0]*y_train_emg.size()[1], y_train_emg.size()[2]))
-        y_train_behavioral = np.stack([v[1] for v in y_train])
-        y_train_behavioral = np.reshape(y_train_behavioral, (y_train_behavioral.shape[0]*y_train_behavioral.shape[1]))
-        y_val_emg = torch.stack([v[0] for v in y_val])
-        y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
-        y_val_behavioral = np.stack([v[1] for v in y_val])
-        y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
+            self.train_dataset = [(m1_train[i], emg_train[i], labels_train[i]) for i in range(len(m1_train))]
+            self.val_dataset = [(m1_val[i], emg_val[i], labels_val[i]) for i in range(len(m1_val))]
+            self.N = m1_train.shape[1]
+            self.M = emg_train.shape[1]
 
-        self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
-        self.N = m1.size()[2]
-        self.M = emg.size()[2]
+        else:
+            # Read in data
+            m1 = torch.Tensor(np.load(m1_path))
+            emg = torch.Tensor(np.load(emg_path))
+            behavioral = np.load(behavioral_path)
+            labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
+            X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
+
+            # Reformat back into timestamps
+            X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
+            X_val = torch.reshape(X_val, (X_val.size()[0]*X_val.size()[1], X_val.size()[2]))
+            y_train_emg = torch.stack([v[0] for v in y_train])
+            y_train_emg = torch.reshape(y_train_emg, (y_train_emg.size()[0]*y_train_emg.size()[1], y_train_emg.size()[2]))
+            y_train_behavioral = np.stack([v[1] for v in y_train])
+            y_train_behavioral = np.reshape(y_train_behavioral, (y_train_behavioral.shape[0]*y_train_behavioral.shape[1]))
+            y_val_emg = torch.stack([v[0] for v in y_val])
+            y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
+            y_val_behavioral = np.stack([v[1] for v in y_val])
+            y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
+
+            self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+            self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+            self.N = m1.size()[2]
+            self.M = emg.size()[2]
             
 
     def __len__(self):
