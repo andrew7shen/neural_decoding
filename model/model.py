@@ -23,11 +23,11 @@ class ClusterModel(nn.Module):
         
         # METHOD #2: Initialize all ffnns to same initial model weights
         self.model_type = model_type
-        if model_type == "method2":
-            ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, 1))
-            state_dict = ffnn.state_dict()
-            for net in self.ffnns:
-                net.load_state_dict(state_dict)
+        # if model_type == "method2":
+        #     ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, 1))
+        #     state_dict = ffnn.state_dict()
+        #     for net in self.ffnns:
+        #         net.load_state_dict(state_dict)
 
         self.softmax = nn.Softmax(dim=2)
         self.temperature = temperature
@@ -55,7 +55,10 @@ class ClusterModel(nn.Module):
 
         x = torch.stack(x_d, 2)
         # x = x + 1e-4
-        x = torch.clamp(x, min=-2.0)
+        
+        # TODO: commented for now
+        # x = torch.clamp(x, min=-2.0)
+
         # torch.set_printoptions(sci_mode=False)
         # print(x)
         # import pdb; pdb.set_trace()
