@@ -54,8 +54,15 @@ class ClusterModel(nn.Module):
 
 
         x = torch.stack(x_d, 2)
+        # x = x + 1e-4
+        x = torch.clamp(x, min=-2.0)
+        # torch.set_printoptions(sci_mode=False)
+        # print(x)
+        # import pdb; pdb.set_trace()
         x = x/self.temperature
         x = self.softmax(x) 
+        # print(x)
+        # import pdb; pdb.set_trace()
         return x
     
     
