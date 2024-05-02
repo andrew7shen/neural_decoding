@@ -237,73 +237,129 @@ def full_R2(dataset, config, verbose):
 
     if not verbose:
         return
+    
+    # If using kmeans split data
+    if len(dataset) == 3:
+        dataset_list = dataset
+        dataset = dataset_list[0]
 
     # Load in trained models for each behavioral label
-    model_crawl = DecoderModel(dataset.N, dataset.M, 1)
+    # model0 can be for crawl or cluster #0
+    model0 = DecoderModel(dataset.N, dataset.M, 1)
     checkpoint = torch.load("checkpoints/checkpoint96_epoch=499.ckpt")
+    # checkpoint = torch.load("checkpoints/checkpoint156_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
-    model_crawl = TrainingModule(model=model_crawl,
+    model0 = TrainingModule(model=model0,
                            lr=config.lr,
                            weight_decay=config.weight_decay,
                            record=config.record,
                            type=config.type)
-    model_crawl.load_state_dict(state_dict)
+    model0.load_state_dict(state_dict)
     
-    model_precision = DecoderModel(dataset.N, dataset.M, 1)
+    # model1 can be for precision or cluster #1
+    model1 = DecoderModel(dataset.N, dataset.M, 1)
     checkpoint = torch.load("checkpoints/checkpoint97_epoch=499.ckpt")
+    # checkpoint = torch.load("checkpoints/checkpoint157_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
-    model_precision = TrainingModule(model=model_precision,
+    model1 = TrainingModule(model=model1,
                            lr=config.lr,
                            weight_decay=config.weight_decay,
                            record=config.record,
                            type=config.type)
-    model_precision.load_state_dict(state_dict)
+    model1.load_state_dict(state_dict)
 
-    model_power = DecoderModel(dataset.N, dataset.M, 1)
+    # model2 can be for power or cluster #2
+    model2 = DecoderModel(dataset.N, dataset.M, 1)
     checkpoint = torch.load("checkpoints/checkpoint98_epoch=499.ckpt")
+    # checkpoint = torch.load("checkpoints/checkpoint158_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
-    model_power = TrainingModule(model=model_power,
+    model2 = TrainingModule(model=model2,
                            lr=config.lr,
                            weight_decay=config.weight_decay,
                            record=config.record,
                            type=config.type)
-    model_power.load_state_dict(state_dict)
+    model2.load_state_dict(state_dict)
 
     # Generate predicted value for each input training sample
     r2_list = []
     splits = ["train", "val"]
     out_str = "Full R2 values:\n\n"
-    for split in splits:
-        emgs = []
-        preds = []
-        if split == "train":
-            curr_dataset = dataset.train_dataset
-        elif split == "val":
-            curr_dataset = dataset.val_dataset
-        for val in curr_dataset:
-            curr_m1 = val[0].unsqueeze(0)
-            curr_emg = val[1]
-            curr_behavioral = val[2]
-            emgs.append(curr_emg)
 
-            # Get predicted value from pretrained model depending on behavioral label
-            if curr_behavioral == "crawl":
-                preds.append(model_crawl.forward(curr_m1).squeeze())
-            elif curr_behavioral == "precision":
-                preds.append(model_precision.forward(curr_m1).squeeze())
-            elif curr_behavioral == "power":
-                preds.append(model_power.forward(curr_m1).squeeze())
-        
+    # If using kmeans split data
+    if len(dataset) == 3:
+        models = [model0, model1, model2]
+        train_emgs = []
+        train_preds = []
+        val_emgs = []
+        val_preds = []
+        # Generate preds for each dataset/model pair
+        for i in range(len(models)):
+            curr_dataset = dataset_list[i]
+            curr_model = models[i]
+            train_dataset = curr_dataset.train_dataset
+            val_dataset = curr_dataset.val_dataset
+            # Generate train preds
+            for val in train_dataset:
+                curr_m1 = val[0].unsqueeze(0)
+                curr_emg = val[1]
+                curr_behavioral = val[2]
+                train_emgs.append(curr_emg)
+                train_preds.append(curr_model.forward(curr_m1).squeeze())
+            # Generate val preds
+            for val in val_dataset:
+                curr_m1 = val[0].unsqueeze(0)
+                curr_emg = val[1]
+                curr_behavioral = val[2]
+                val_emgs.append(curr_emg)
+                val_preds.append(curr_model.forward(curr_m1).squeeze())
+            
         # Calculate final R^2 value
-        emgs = torch.stack(emgs)
-        preds = torch.stack(preds).detach()
-        r2 = r2_score(emgs, preds)
-        r2_list.append(r2)
+        train_emgs = torch.stack(train_emgs)
+        train_preds = torch.stack(train_preds).detach()
+        train_r2 = r2_score(train_emgs, train_preds)
+        r2_list.append(train_r2)
+        val_emgs = torch.stack(val_emgs)
+        val_preds = torch.stack(val_preds).detach()
+        val_r2 = r2_score(val_emgs, val_preds)
+        r2_list.append(val_r2)
 
         # Format output string
-        out_str += "%s\n%s\n\n" % (split, r2)
+        out_str += "train\n%s\n\nval\n%s\n\n" % (train_r2, val_r2)
     
-    print(out_str)
+        print(out_str)
+
+    else:
+        for split in splits:
+            emgs = []
+            preds = []
+            if split == "train":
+                curr_dataset = dataset.train_dataset
+            elif split == "val":
+                curr_dataset = dataset.val_dataset
+            for val in curr_dataset:
+                curr_m1 = val[0].unsqueeze(0)
+                curr_emg = val[1]
+                curr_behavioral = val[2]
+                emgs.append(curr_emg)
+
+                # Get predicted value from pretrained model depending on behavioral label
+                if curr_behavioral == "crawl":
+                    preds.append(model0.forward(curr_m1).squeeze())
+                elif curr_behavioral == "precision":
+                    preds.append(model1.forward(curr_m1).squeeze())
+                elif curr_behavioral == "power":
+                    preds.append(model2.forward(curr_m1).squeeze())
+            
+            # Calculate final R^2 value
+            emgs = torch.stack(emgs)
+            preds = torch.stack(preds).detach()
+            r2 = r2_score(emgs, preds)
+            r2_list.append(r2)
+
+            # Format output string
+            out_str += "%s\n%s\n\n" % (split, r2)
+    
+        print(out_str)
 
     return r2_list
 
@@ -498,7 +554,7 @@ if __name__ == "__main__":
     config = load_config()
     dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed)
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=config.kmeans_cluster)
 
     # Print dataset statistics
     dataset_statistics(dataset=dataset, verbose=False)
@@ -507,10 +563,11 @@ if __name__ == "__main__":
     run_kmeans(dataset=dataset, config=config, verbose=False)
 
     # Evaluate model clustering 
-    model_ids = [0,1,2,3,4,5,11,15,20,25,30,35,40,50,60,70,80,90,100]
+    # model_ids = [0,1,2,3,4,5,11,15,20,25,30,35,40,50,60,70,80,90,100]
+    model_ids = [153]
     for model_id in model_ids:
-        model_path = "checkpoints_intervals/%s.ckpt" % model_id
-        # model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
+        # model_path = "checkpoints_intervals/%s.ckpt" % model_id
+        model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
         # plot_type = "distributions"
         # plot_type = "majority"
@@ -522,10 +579,23 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=True)
+                        verbose=False)
 
     # Calculate full R^2 over separate models
-    full_r2_list = full_R2(dataset=dataset, config=config, verbose=False)
+    # If using kmeans split data
+    if config.m1_path == "data/set2_data/kmeans_split":
+        dataset0 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                           behavioral_path=config.behavioral_path, num_modes=config.d, 
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=0)
+        dataset1 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                           behavioral_path=config.behavioral_path, num_modes=config.d, 
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=1)
+        dataset2 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                           behavioral_path=config.behavioral_path, num_modes=config.d, 
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=2)
+        full_r2_list = full_R2(dataset=[dataset0, dataset1, dataset2], config=config, verbose=True)
+    else:
+        full_r2_list = full_R2(dataset=dataset, config=config, verbose=True)
 
     # Calculate separate R^2 for each behavioral label in our model
     sep_r2_list = sep_R2(dataset=dataset, model_path=model_path, config=config, verbose=False)

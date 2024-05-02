@@ -4,9 +4,12 @@ import os
 import sys
 import torch
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 cwd = os.getcwd()
 sys.path.append(cwd)
 from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 from data import Cage_Dataset
 from utils.constants import *
 
@@ -18,7 +21,7 @@ config = load_config()
     
 dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed)
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=config.kmeans_cluster)
 
 m1_train = torch.stack([v[0] for v in dataset.train_dataset])
 m1_val = torch.stack([v[0] for v in dataset.val_dataset])
@@ -65,5 +68,26 @@ name_dict = {"m1_train": m1_train_clusters, "emg_train": emg_train_clusters, "la
 for name in name_dict.keys():
     dict = name_dict[name]
     for key in dict.keys():
-        np.save("%s%s_%s" % (out_path, name, key), dict[key])
+        # commented out saving of files because already saved
+        # np.save("%s%s_%s" % (out_path, name, key), dict[key])
+        pass
 
+# Plot PCA of kmeans on training data
+pca = PCA(n_components=2)
+pca_result = pca.fit_transform(m1_train)
+pca1 = pca_result[:,0]
+pca2 = pca_result[:,1]
+preds_color_dict = {0: "green", 1: "blue", 2: "red"}
+colors_preds = [preds_color_dict[v] for v in preds]
+plt.figure(figsize=(12,7))
+plt.scatter(pca1, pca2, s=8, c=colors_preds)
+plt.title("PCA Results from Kmeans on Training Data")
+plt.xlabel("PCA1")
+plt.ylabel("PCA2")
+green_patch = mpatches.Patch(color='green', label='0')
+blue_patch = mpatches.Patch(color='blue', label='1')
+red_patch = mpatches.Patch(color='red', label='2')
+plt.legend(handles=[green_patch, blue_patch, red_patch])
+# commented out saving of files because already saved
+# plt.show()
+# plt.savefig("figures/pca_M1_train.png")
