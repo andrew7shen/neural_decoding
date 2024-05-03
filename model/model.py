@@ -57,7 +57,7 @@ class ClusterModel(nn.Module):
         # x = x + 1e-4
         
         # TODO: commented for now
-        # x = torch.clamp(x, min=-2.0)
+        # x = torch.clamp(x, min=-3.0)
 
         # torch.set_printoptions(sci_mode=False)
         # print(x)
