@@ -47,6 +47,15 @@ if __name__ == "__main__":
                            weight_decay=config.weight_decay,
                            record=config.record,
                            type=config.type)
+    # Set initial decoder weights
+    if config.set_decoder_weights:
+        weights0 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/weights_0.npy")))
+        weights1 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/weights_1.npy")))
+        weights2 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/weights_2.npy")))
+        with torch.no_grad():
+            model.model.dm.linears[0].weight = weights0
+            model.model.dm.linears[1].weight = weights1
+            model.model.dm.linears[2].weight = weights2
 
     # Define model checkpoints
     save_callback = ModelCheckpoint(dirpath = config.save_path, filename='checkpoint_{epoch}_%s' % config.d)

@@ -10,6 +10,7 @@ cwd = os.getcwd()
 sys.path.append(cwd)
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from sklearn.linear_model import LinearRegression
 from data import Cage_Dataset
 from utils.constants import *
 
@@ -91,3 +92,19 @@ plt.legend(handles=[green_patch, blue_patch, red_patch])
 # commented out saving of files because already saved
 # plt.show()
 # plt.savefig("figures/pca_M1_train.png")
+
+# Perform linear regression on each cluster dataset
+weights_list = []
+for cluster_id in m1_train_clusters.keys():
+    curr_m1_train = m1_train_clusters[cluster_id]
+    curr_emg_train = emg_train_clusters[cluster_id]
+    curr_reg = LinearRegression().fit(curr_m1_train, curr_emg_train)
+    curr_weights = curr_reg.coef_
+    weights_list.append(np.array(curr_weights))
+    
+# Save model weights for each cluster
+out_path = "/Users/andrewshen/Desktop/neural_decoding/data/set2_data/decoder_weights/"
+for i in range(len(weights_list)):
+    weights = weights_list[i]
+    # commented out saving of files because already saved
+    # np.save("%sweights_%s" % (out_path, i), weights)

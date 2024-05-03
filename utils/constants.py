@@ -28,6 +28,7 @@ class Config():
         self.hidden_dim = args["hidden_dim"]
         self.model_type = args["model_type"]
         self.kmeans_cluster = args["kmeans_cluster"]
+        self.set_decoder_weights = args["set_decoder_weights"]
 
 
 def load_config():
