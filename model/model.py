@@ -34,7 +34,6 @@ class ClusterModel(nn.Module):
 
     def forward(self, x):
         x_d = []
-        # import pdb; pdb.set_trace()
         
         # METHOD #1: Original linear method
         if self.model_type == "method1":

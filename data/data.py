@@ -59,7 +59,7 @@ class Cage_Dataset(pl.LightningDataModule):
         #         self.val_dataset = self.val_dataset + [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
 
         # If using kmeans split data for sanity check
-        if m1_path == "data/set2_data/kmeans_split":
+        if "data/set2_data/kmeans_split" in m1_path:
             path = m1_path
             m1_train = torch.Tensor(np.load("%s/m1_train_%s.npy" % (path, self.kmeans_cluster)))
             emg_train = torch.Tensor(np.load("%s/emg_train_%s.npy" % (path, self.kmeans_cluster)))
