@@ -32,7 +32,7 @@ labels_train = [v[2] for v in dataset.train_dataset]
 labels_val = [v[2] for v in dataset.val_dataset]
 
 # Apply kmeans to M1 training data
-k = 6
+k = 3
 kmeans = KMeans(n_clusters=k, n_init=10, random_state=42)
 kmeans.fit(m1_train)
 preds = kmeans.labels_
@@ -69,7 +69,7 @@ for dict in [m1_train_clusters, emg_train_clusters, labels_train_clusters,
         dict[key] = np.array(dict[key])
 
 # Save split files as numpy arrays
-out_path = "/Users/andrewshen/Desktop/neural_decoding/data/set2_data/kmeans_split/k6/"
+out_path = "/Users/andrewshen/Desktop/neural_decoding/data/set2_data/kmeans_split/k3_b10/"
 name_dict = {"m1_train": m1_train_clusters, "emg_train": emg_train_clusters, "labels_train": labels_train_clusters,
              "m1_val": m1_val_clusters, "emg_val": emg_val_clusters, "labels_val": labels_val_clusters}
 for name in name_dict.keys():
@@ -80,37 +80,37 @@ for name in name_dict.keys():
         pass
 
 # Plot PCA of kmeans on training data
-# pca = PCA(n_components=2)
-# pca_result = pca.fit_transform(m1_train)
-# pca1 = pca_result[:,0]
-# pca2 = pca_result[:,1]
-# preds_color_dict = {0: "green", 1: "blue", 2: "red"}
-# colors_preds = [preds_color_dict[v] for v in preds]
-# plt.figure(figsize=(12,7))
-# plt.scatter(pca1, pca2, s=8, c=colors_preds)
-# plt.title("PCA Results from Kmeans on Training Data")
-# plt.xlabel("PCA1")
-# plt.ylabel("PCA2")
-# green_patch = mpatches.Patch(color='green', label='0')
-# blue_patch = mpatches.Patch(color='blue', label='1')
-# red_patch = mpatches.Patch(color='red', label='2')
-# plt.legend(handles=[green_patch, blue_patch, red_patch])
+pca = PCA(n_components=2)
+pca_result = pca.fit_transform(m1_train)
+pca1 = pca_result[:,0]
+pca2 = pca_result[:,1]
+preds_color_dict = {0: "green", 1: "blue", 2: "red"}
+colors_preds = [preds_color_dict[v] for v in preds]
+plt.figure(figsize=(12,7))
+plt.scatter(pca1, pca2, s=8, c=colors_preds)
+plt.title("PCA Results from Kmeans on Training Data")
+plt.xlabel("PCA1")
+plt.ylabel("PCA2")
+green_patch = mpatches.Patch(color='green', label='0')
+blue_patch = mpatches.Patch(color='blue', label='1')
+red_patch = mpatches.Patch(color='red', label='2')
+plt.legend(handles=[green_patch, blue_patch, red_patch])
 # commented out saving of files because already saved
 # plt.show()
 # plt.savefig("figures/pca_M1_train.png")
 
 # Perform linear regression on each cluster dataset
-# weights_list = []
-# for cluster_id in m1_train_clusters.keys():
-#     curr_m1_train = m1_train_clusters[cluster_id]
-#     curr_emg_train = emg_train_clusters[cluster_id]
-#     curr_reg = LinearRegression().fit(curr_m1_train, curr_emg_train)
-#     curr_weights = curr_reg.coef_
-#     weights_list.append(np.array(curr_weights))
+weights_list = []
+for cluster_id in m1_train_clusters.keys():
+    curr_m1_train = m1_train_clusters[cluster_id]
+    curr_emg_train = emg_train_clusters[cluster_id]
+    curr_reg = LinearRegression().fit(curr_m1_train, curr_emg_train)
+    curr_weights = curr_reg.coef_
+    weights_list.append(np.array(curr_weights))
     
 # Save model weights for each cluster
-# out_path = "/Users/andrewshen/Desktop/neural_decoding/data/set2_data/decoder_weights/"
-# for i in range(len(weights_list)):
-#     weights = weights_list[i]
+out_path = "/Users/andrewshen/Desktop/neural_decoding/data/set2_data/decoder_weights/b10/"
+for i in range(len(weights_list)):
+    weights = weights_list[i]
     # commented out saving of files because already saved
-    # np.save("%sweights_%s" % (out_path, i), weights)
+    np.save("%sweights_%s" % (out_path, i), weights)

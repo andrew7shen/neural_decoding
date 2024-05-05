@@ -33,7 +33,11 @@ class TrainingModule(LightningModule):
         labels = batch["emg"]
 
         # Generate predictions
-        labels_hat = self.model(features).squeeze()
+        labels_hat = self.model(features)
+        if labels_hat.shape[0] == 1:
+            labels_hat = labels_hat.squeeze(2) # We want to squeeze out last dim but not first dim if batch_size=1 
+        else:
+            labels_hat = labels_hat.squeeze() 
         if self.dataset_type == "behavioral":
             train_loss = F.cross_entropy(labels_hat, labels)
         elif self.dataset_type == "emg":
@@ -52,7 +56,11 @@ class TrainingModule(LightningModule):
         labels = batch["emg"]
 
         # Generate predictions
-        labels_hat = self.model(features).squeeze()
+        labels_hat = self.model(features)
+        if labels_hat.shape[0] == 1:
+            labels_hat = labels_hat.squeeze(2) # We want to squeeze out last dim but not first dim if batch_size=1 
+        else:
+            labels_hat = labels_hat.squeeze() 
         if self.dataset_type == "behavioral":
             val_loss = F.cross_entropy(labels_hat, labels)
         elif self.dataset_type == "emg":

@@ -49,9 +49,14 @@ if __name__ == "__main__":
                            type=config.type)
     # Set initial decoder weights
     if config.set_decoder_weights:
-        weights0 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/weights_0.npy")))
-        weights1 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/weights_1.npy")))
-        weights2 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/weights_2.npy")))
+        if "b10" in config.m1_path:
+            weights0 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b10/weights_0.npy")))
+            weights1 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b10/weights_1.npy")))
+            weights2 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b10/weights_2.npy")))
+        else:
+            weights0 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b1/weights_0.npy")))
+            weights1 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b1/weights_1.npy")))
+            weights2 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b1/weights_2.npy")))
         with torch.no_grad():
             model.model.dm.linears[0].weight = weights0
             model.model.dm.linears[1].weight = weights1

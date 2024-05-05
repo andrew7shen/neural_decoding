@@ -11,10 +11,5 @@ source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
-python3 run/run.py configs/kmeans_split_configs/configs_cage_t100_k6_kmeans0.yaml
-python3 run/run.py configs/kmeans_split_configs/configs_cage_t100_k6_kmeans1.yaml
-python3 run/run.py configs/kmeans_split_configs/configs_cage_t100_k6_kmeans2.yaml
-python3 run/run.py configs/kmeans_split_configs/configs_cage_t100_k6_kmeans3.yaml
-python3 run/run.py configs/kmeans_split_configs/configs_cage_t100_k6_kmeans4.yaml
-python3 run/run.py configs/kmeans_split_configs/configs_cage_t100_k6_kmeans5.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100.yaml
+python3 run/run.py configs/b_configs/configs_cage_t100_b10.yaml
+python3 run/run.py configs/b_configs/configs_cage_t100_b10_2.yaml
