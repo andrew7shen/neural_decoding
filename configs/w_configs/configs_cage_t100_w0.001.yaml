@@ -15,5 +15,8 @@ save_path: "checkpoints"
 model: "combined"
 seed: 42
 temperature: 1
-weight_decay: 0.1
-
+weight_decay: 0.001
+hidden_dim: 30
+model_type: "method1"
+kmeans_cluster: 0
+set_decoder_weights: True

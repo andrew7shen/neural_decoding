@@ -1,7 +1,7 @@
 T: None
 N: None
 M: None
-d: 6  # num_modes
+d: 3  # num_modes
 b: 8
 type: "emg"
 epochs: 500
@@ -15,7 +15,7 @@ save_path: "checkpoints"
 model: "combined"
 seed: 42
 temperature: 1
-weight_decay: 0.01
+weight_decay: 0.05
 hidden_dim: 30
 model_type: "method1"
 kmeans_cluster: 0
