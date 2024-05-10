@@ -239,15 +239,16 @@ def full_R2(dataset, config, verbose):
         return
     
     # If using kmeans split data
-    if len(dataset) == 3:
+    if len(dataset) > 1:
         dataset_list = dataset
         dataset = dataset_list[0]
 
     # Load in trained models for each behavioral label
     # model0 can be for crawl or cluster #0
     model0 = DecoderModel(dataset.N, dataset.M, 1)
-    checkpoint = torch.load("checkpoints/checkpoint96_epoch=499.ckpt")
+    # checkpoint = torch.load("checkpoints/checkpoint96_epoch=499.ckpt")
     # checkpoint = torch.load("checkpoints/checkpoint156_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint166_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
     model0 = TrainingModule(model=model0,
                            lr=config.lr,
@@ -258,8 +259,9 @@ def full_R2(dataset, config, verbose):
     
     # model1 can be for precision or cluster #1
     model1 = DecoderModel(dataset.N, dataset.M, 1)
-    checkpoint = torch.load("checkpoints/checkpoint97_epoch=499.ckpt")
+    # checkpoint = torch.load("checkpoints/checkpoint97_epoch=499.ckpt")
     # checkpoint = torch.load("checkpoints/checkpoint157_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint167_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
     model1 = TrainingModule(model=model1,
                            lr=config.lr,
@@ -270,8 +272,9 @@ def full_R2(dataset, config, verbose):
 
     # model2 can be for power or cluster #2
     model2 = DecoderModel(dataset.N, dataset.M, 1)
-    checkpoint = torch.load("checkpoints/checkpoint98_epoch=499.ckpt")
+    # checkpoint = torch.load("checkpoints/checkpoint98_epoch=499.ckpt")
     # checkpoint = torch.load("checkpoints/checkpoint158_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint168_epoch=499.ckpt")
     state_dict = checkpoint["state_dict"]
     model2 = TrainingModule(model=model2,
                            lr=config.lr,
@@ -280,14 +283,52 @@ def full_R2(dataset, config, verbose):
                            type=config.type)
     model2.load_state_dict(state_dict)
 
+    # TODO: Adding more models for k=6
+    model3 = DecoderModel(dataset.N, dataset.M, 1)
+    checkpoint = torch.load("checkpoints/checkpoint169_epoch=499.ckpt")
+    state_dict = checkpoint["state_dict"]
+    model3 = TrainingModule(model=model3,
+                           lr=config.lr,
+                           weight_decay=config.weight_decay,
+                           record=config.record,
+                           type=config.type)
+    model3.load_state_dict(state_dict)
+
+    model4 = DecoderModel(dataset.N, dataset.M, 1)
+    # checkpoint = torch.load("checkpoints/checkpoint98_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint170_epoch=499.ckpt")
+    state_dict = checkpoint["state_dict"]
+    model4 = TrainingModule(model=model4,
+                           lr=config.lr,
+                           weight_decay=config.weight_decay,
+                           record=config.record,
+                           type=config.type)
+    model4.load_state_dict(state_dict)
+
+    model5 = DecoderModel(dataset.N, dataset.M, 1)
+    # checkpoint = torch.load("checkpoints/checkpoint98_epoch=499.ckpt")
+    checkpoint = torch.load("checkpoints/checkpoint174_epoch=499.ckpt")
+    state_dict = checkpoint["state_dict"]
+    model5 = TrainingModule(model=model5,
+                           lr=config.lr,
+                           weight_decay=config.weight_decay,
+                           record=config.record,
+                           type=config.type)
+    model5.load_state_dict(state_dict)
+
+    
+
+
     # Generate predicted value for each input training sample
     r2_list = []
     splits = ["train", "val"]
     out_str = "Full R2 values:\n\n"
 
     # If using kmeans split data
-    if len(dataset) == 3:
-        models = [model0, model1, model2]
+    if len(dataset_list) > 1:
+        # models = [model0, model1, model2]
+        models = [model0, model1, model2, model3, model4, model5]
+        import pdb; pdb.set_trace()
         train_emgs = []
         train_preds = []
         val_emgs = []
@@ -583,7 +624,7 @@ if __name__ == "__main__":
 
     # Calculate full R^2 over separate models
     # If using kmeans split data
-    if config.m1_path == "data/set2_data/kmeans_split":
+    if "data/set2_data/kmeans_split" in config.m1_path:
         dataset0 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=0)
@@ -593,9 +634,18 @@ if __name__ == "__main__":
         dataset2 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=2)
-        full_r2_list = full_R2(dataset=[dataset0, dataset1, dataset2], config=config, verbose=True)
+        dataset3 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                           behavioral_path=config.behavioral_path, num_modes=config.d, 
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=3)
+        dataset4 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                           behavioral_path=config.behavioral_path, num_modes=config.d, 
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=4)
+        dataset5 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                           behavioral_path=config.behavioral_path, num_modes=config.d, 
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=5)
+        full_r2_list = full_R2(dataset=[dataset0, dataset1, dataset2, dataset3, dataset4, dataset5], config=config, verbose=True)
     else:
-        full_r2_list = full_R2(dataset=dataset, config=config, verbose=True)
+        full_r2_list = full_R2(dataset=dataset, config=config, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
     sep_r2_list = sep_R2(dataset=dataset, model_path=model_path, config=config, verbose=False)

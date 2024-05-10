@@ -69,14 +69,14 @@ for dict in [m1_train_clusters, emg_train_clusters, labels_train_clusters,
         dict[key] = np.array(dict[key])
 
 # Save split files as numpy arrays
-out_path = "/Users/andrewshen/Desktop/neural_decoding/data/set2_data/kmeans_split/k3_b10/"
+out_path = "/Users/andrewshen/Desktop/neural_decoding/data/set2_data/kmeans_split/k3/"
 name_dict = {"m1_train": m1_train_clusters, "emg_train": emg_train_clusters, "labels_train": labels_train_clusters,
              "m1_val": m1_val_clusters, "emg_val": emg_val_clusters, "labels_val": labels_val_clusters}
 for name in name_dict.keys():
     dict = name_dict[name]
     for key in dict.keys():
         # commented out saving of files because already saved
-        # np.save("%s%s_%s" % (out_path, name, key), dict[key])
+        np.save("%s%s_%s" % (out_path, name, key), dict[key])
         pass
 
 # Plot PCA of kmeans on training data
@@ -113,4 +113,4 @@ out_path = "/Users/andrewshen/Desktop/neural_decoding/data/set2_data/decoder_wei
 for i in range(len(weights_list)):
     weights = weights_list[i]
     # commented out saving of files because already saved
-    np.save("%sweights_%s" % (out_path, i), weights)
+    # np.save("%sweights_%s" % (out_path, i), weights)
