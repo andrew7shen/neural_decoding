@@ -410,7 +410,7 @@ def full_R2(dataset, config, verbose):
 
 def full_R2_reg(datasets, verbose):
     """
-    Calculates full R^2 value over separately fit linear regressions on Set2 labels.
+    Fits linear regressions for each dataset and calculates full R^2 value
     """
 
     if not verbose:
@@ -464,6 +464,7 @@ def full_R2_reg(datasets, verbose):
     return [train_r2, val_r2]
 
 
+# Outdated and wrong
 def sep_R2(dataset, model_path, config, verbose):
     """
     Calculates separate R^2 values for each of the individual behavioral labels in Set2 for our model.
@@ -517,6 +518,74 @@ def sep_R2(dataset, model_path, config, verbose):
         for key in emg_dict.keys():
             emg_dict[key] = torch.stack(emg_dict[key])
             preds_dict[key] = torch.stack(preds_dict[key]).detach()
+            curr_r2 = r2_score(emg_dict[key], preds_dict[key])
+            r2_values.append(curr_r2)
+            out_str += ("%s: %s\n" % (key, curr_r2))
+        out_str += "\n"
+        print(out_str)
+
+        r2_list.append(r2_values)
+
+    return r2_list
+
+
+def sep_R2_reg(dataset, verbose):
+    """
+    Fits linear regression to entire dataset, and calculates separate R^2 values for each of the individual behavioral labels in Set2
+    """
+
+    if not verbose:
+        return
+    
+    # Calculate linear regression model
+    train_dataset = dataset.train_dataset
+    val_dataset = dataset.val_dataset
+    m1_train = np.array([val[0] for val in train_dataset])
+    emg_train = np.array([val[1] for val in train_dataset])
+    m1_val = np.array([val[0] for val in val_dataset])
+    emg_val = np.array([val[1] for val in val_dataset])
+    model = LinearRegression().fit(m1_train, emg_train)
+
+    # Generate train and val preds
+    train_preds = model.predict(m1_train)
+    val_preds = model.predict(m1_val)
+
+    # Calculate train/val R2 for current cluster
+    train_r2 = r2_score(emg_train, train_preds)
+    val_r2 = r2_score(emg_val, val_preds)
+    print("\nFull Dataset: train (%s), val (%s)" % (len(train_dataset), len(val_dataset)))
+    print("Train R2: %s" % train_r2)
+    print("Val R2: %s\n" % val_r2)
+
+    # Generate predicted value for each input training sample
+    r2_list = []
+    splits = ["train", "val"]
+    for split in splits:
+        emg_dict = {}
+        preds_dict = {}
+        if split == "train":
+            curr_dataset = dataset.train_dataset
+        elif split == "val":
+            curr_dataset = dataset.val_dataset
+        for val in curr_dataset:
+            curr_m1 = val[0].unsqueeze(0)
+            curr_emg = val[1]
+            curr_behavioral = val[2]
+
+            # Store the emg labels and predicted values in dicts
+            if curr_behavioral not in emg_dict.keys():
+                emg_dict[curr_behavioral] = [curr_emg]
+                preds_dict[curr_behavioral] = [torch.Tensor(model.predict(curr_m1))]
+            else:
+                emg_dict[curr_behavioral].append(curr_emg)
+                preds_dict[curr_behavioral].append(torch.Tensor(model.predict(curr_m1)))
+
+        # Calculate separate R^2 values
+        r2_values = []
+        out_str = ("Separate R2 values:\n\n%s\n" % split)
+        for key in emg_dict.keys():
+            emg_dict[key] = torch.stack(emg_dict[key])
+            preds_dict[key] = torch.stack(preds_dict[key]).squeeze()
             curr_r2 = r2_score(emg_dict[key], preds_dict[key])
             r2_values.append(curr_r2)
             out_str += ("%s: %s\n" % (key, curr_r2))
@@ -710,7 +779,7 @@ if __name__ == "__main__":
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2(dataset=dataset, model_path=model_path, config=config, verbose=False)
+    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)
