@@ -9,6 +9,7 @@ from sklearn.metrics import confusion_matrix, r2_score
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
 import matplotlib.patches as mpatches
 cwd = os.getcwd()
 sys.path.append(cwd)
@@ -154,7 +155,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                 alpha=1.0,
                 extent=[0, num_timestamps, -200, 200])
         ax2.title.set_text("Learned Cluster Labels")
-        plt.savefig("figures/intervals/%s.png" % model_id) # TODO: Change back after generate interval plots
+        plt.savefig("figures/%s.png" % model_id)
+        # plt.savefig("figures/intervals/%s.png" % model_id) # TODO: Change back after generate interval plots
 
     elif plot_type == "distributions":
 
@@ -219,7 +221,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
             # Plot cluster distributions
             plt.title("Learned Cluster Distributions for Mode %s" % k)
             plt.stackplot(x, y, labels=number_labels[:config.d], colors=cmap_colors[:config.d])
-            plt.savefig("figures/intervals/%s_%s_avg.png" % (model_id, k)) # TODO: Change back after generate interval plots
+            plt.savefig("figures/%s_%s_avg.png" % (model_id, k))
+            # plt.savefig("figures/intervals/%s_%s_avg.png" % (model_id, k)) # TODO: Change back after generate interval plots
             # plt.show()
     
     elif plot_type == "confusion_matrix":
@@ -230,6 +233,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
     # plt.show()
 
 
+# Outdated and wrong
 def full_R2(dataset, config, verbose):
     """
     Calculates full R^2 value over the three separately trained linear decoders on Set2 labels.
@@ -328,7 +332,6 @@ def full_R2(dataset, config, verbose):
     if len(dataset_list) > 1:
         # models = [model0, model1, model2]
         models = [model0, model1, model2, model3, model4, model5]
-        import pdb; pdb.set_trace()
         train_emgs = []
         train_preds = []
         val_emgs = []
@@ -403,6 +406,62 @@ def full_R2(dataset, config, verbose):
         print(out_str)
 
     return r2_list
+
+
+def full_R2_reg(datasets, verbose):
+    """
+    Calculates full R^2 value over separately fit linear regressions on Set2 labels.
+    """
+
+    if not verbose:
+        return
+    
+    train_emgs = []
+    train_preds = []
+    val_emgs = []
+    val_preds = []
+
+    # Generate preds for each dataset/model pair
+    for i in range(len(datasets)):
+        curr_dataset = datasets[i]
+        train_dataset = curr_dataset.train_dataset
+        val_dataset = curr_dataset.val_dataset
+        # Note: group can mean different modes or different clusters
+        print("\nGroup %s: train (%s), val (%s)" % (i, len(train_dataset), len(val_dataset)))
+
+        # Calculate linear regression model for each cluster
+        curr_m1_train = np.array([val[0] for val in train_dataset])
+        curr_emg_train = np.array([val[1] for val in train_dataset])
+        curr_m1_val = np.array([val[0] for val in val_dataset])
+        curr_emg_val = np.array([val[1] for val in val_dataset])
+        curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
+
+        # Generate train and val preds and append to full list
+        train_emgs.append(torch.Tensor(curr_emg_train))
+        train_preds.append(torch.Tensor(curr_model.predict(curr_m1_train)))
+        val_emgs.append(torch.Tensor(curr_emg_val))
+        val_preds.append(torch.Tensor(curr_model.predict(curr_m1_val)))
+
+        # Calculate train/val R2 for current cluster
+        curr_train_r2 = r2_score(torch.Tensor(curr_emg_train), torch.Tensor(curr_model.predict(curr_m1_train)))
+        curr_val_r2 = r2_score(torch.Tensor(curr_emg_val), torch.Tensor(curr_model.predict(curr_m1_val)))
+        print("Train R2: %s" % curr_train_r2)
+        print("Val R2: %s" % curr_val_r2)
+
+    # Calculate final R^2 value
+    train_emgs = torch.cat(train_emgs)
+    train_preds = torch.cat(train_preds)
+    train_r2 = r2_score(train_emgs, train_preds)
+    val_emgs = torch.cat(val_emgs)
+    val_preds = torch.cat(val_preds)
+    val_r2 = r2_score(val_emgs, val_preds)
+
+    # Format output string
+    print("\nFull Dataset")
+    print("Train R2: %s" % train_r2)
+    print("Val R2: %s\n" % val_r2)
+
+    return [train_r2, val_r2]
 
 
 def sep_R2(dataset, model_path, config, verbose):
@@ -605,14 +664,14 @@ if __name__ == "__main__":
 
     # Evaluate model clustering 
     # model_ids = [0,1,2,3,4,5,11,15,20,25,30,35,40,50,60,70,80,90,100]
-    model_ids = [153]
+    model_ids = [165]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
         # plot_type = "distributions"
-        # plot_type = "majority"
-        plot_type = "mode_average"
+        plot_type = "majority"
+        # plot_type = "mode_average"
         # plot_type = "confusion_matrix"
         check_clustering(dataset=dataset,
                         model_path=model_path,
@@ -623,29 +682,32 @@ if __name__ == "__main__":
                         verbose=False)
 
     # Calculate full R^2 over separate models
-    # If using kmeans split data
+    # If using kmeans split data, format separate datasets
+    datasets = []
     if "data/set2_data/kmeans_split" in config.m1_path:
-        dataset0 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+        # If using k=6 or k=3
+        if "k6" in config.m1_path:
+            k = 6
+        elif "k3" in config.m1_path:
+            k = 3
+        # Load datasets for each cluster
+        for k in range(k):
+            curr_dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=0)
-        dataset1 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
-                           behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=1)
-        dataset2 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
-                           behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=2)
-        dataset3 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
-                           behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=3)
-        dataset4 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
-                           behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=4)
-        dataset5 = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
-                           behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=5)
-        full_r2_list = full_R2(dataset=[dataset0, dataset1, dataset2, dataset3, dataset4, dataset5], config=config, verbose=True)
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=k)
+            datasets.append(curr_dataset)
+    # If using mode data, format separate datasets
     else:
-        full_r2_list = full_R2(dataset=dataset, config=config, verbose=False)
+        for mode in ["crawl", "precision", "power"]:
+            curr_m1_path = "data/set2_data/m1_set2_t100_%s.npy" % mode
+            curr_emg_path = "data/set2_data/emg_set2_t100_%s.npy" % mode
+            curr_behavioral_path = "data/set2_data/behavioral_set2_t100_%s.npy" % mode
+            curr_dataset = Cage_Dataset(m1_path=curr_m1_path, emg_path=curr_emg_path, 
+                           behavioral_path=curr_behavioral_path, num_modes=config.d, 
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=config.kmeans_cluster)
+            datasets.append(curr_dataset)
+    # Calculate full R2 value
+    full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
     sep_r2_list = sep_R2(dataset=dataset, model_path=model_path, config=config, verbose=False)
