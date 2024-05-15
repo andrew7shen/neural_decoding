@@ -20,10 +20,12 @@ cd neural_decoding/
 # python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.05_2.yaml
 # python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.01_2.yaml
 
-python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.04.yaml
-python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.03.yaml
-python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.02.yaml
-python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.04_2.yaml
-python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.03_2.yaml
-python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.02_2.yaml
+# python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.04.yaml
+# python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.03.yaml
+# python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.02.yaml
+# python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.04_2.yaml
+# python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.03_2.yaml
+# python3 run/run.py configs/b_configs/configs_cage_t100_b10_w0.02_2.yaml
 
+python3 run/run.py configs/d_configs/configs_cage_t100_d3.yaml
+python3 run/run.py configs/d_configs/configs_cage_t100_d6.yaml
