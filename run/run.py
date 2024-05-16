@@ -42,6 +42,12 @@ if __name__ == "__main__":
                               temperature=config.temperature,
                               ev=config.ev,
                               model_type=config.model_type)
+        # Trying old code
+        # model = CombinedModel(input_dim=dataset.N,
+        #                       output_dim=dataset.M,
+        #                       num_modes=config.d, 
+        #                       temperature=config.temperature,
+        #                       ev=config.ev)
     model = TrainingModule(model=model,
                            lr=config.lr,
                            weight_decay=config.weight_decay,

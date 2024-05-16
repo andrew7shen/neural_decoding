@@ -733,7 +733,7 @@ if __name__ == "__main__":
 
     # Evaluate model clustering 
     # model_ids = [0,1,2,3,4,5,11,15,20,25,30,35,40,50,60,70,80,90,100]
-    model_ids = [165]
+    model_ids = [190]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id

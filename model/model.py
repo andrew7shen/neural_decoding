@@ -14,15 +14,25 @@ class ClusterModel(nn.Module):
 
     def __init__(self, input_dim, hidden_dim, num_modes, temperature, model_type):
         super().__init__()
-        self.linears = nn.ModuleList([nn.Linear(input_dim, 1) for i in range(num_modes)])
-        self.single_ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, input_dim))
-        self.ffnns = nn.ModuleList([nn.Sequential(nn.Linear(input_dim, hidden_dim),
+
+        self.model_type = model_type
+
+        # METHOD #1: Original linear method
+        if self.model_type == "method1":
+            self.linears = nn.ModuleList([nn.Linear(input_dim, 1) for i in range(num_modes)])
+        
+        # METHOD #2: Explore non-linearities
+        if self.model_type == "method2":
+            self.ffnns = nn.ModuleList([nn.Sequential(nn.Linear(input_dim, hidden_dim),
                                                   nn.Tanh(),
                                                   nn.Linear(hidden_dim, 1))
                                                   for i in range(num_modes)])
+            
+        # METHOD #3: Explore non-linearity into linears
+        if self.model_type == "method3":
+            self.single_ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, input_dim))
         
         # METHOD #2: Initialize all ffnns to same initial model weights
-        self.model_type = model_type
         # if model_type == "method2":
         #     ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, 1))
         #     state_dict = ffnn.state_dict()
@@ -55,7 +65,7 @@ class ClusterModel(nn.Module):
         x = torch.stack(x_d, 2)
         # x = x + 1e-4
         
-        # TODO: commented for now
+        # commented for now
         # x = torch.clamp(x, min=-3.0)
 
         # torch.set_printoptions(sci_mode=False)
