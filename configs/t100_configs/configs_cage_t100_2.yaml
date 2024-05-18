@@ -17,6 +17,6 @@ seed: 42
 temperature: 1
 weight_decay: 0.01
 hidden_dim: 30
-model_type: "method1"
+model_type: "method2"
 kmeans_cluster: 0
 set_decoder_weights: True
