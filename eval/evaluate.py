@@ -9,7 +9,7 @@ from sklearn.metrics import confusion_matrix, r2_score
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
 import matplotlib.patches as mpatches
 cwd = os.getcwd()
 sys.path.append(cwd)
@@ -434,7 +434,9 @@ def full_R2_reg(datasets, verbose):
         curr_emg_train = np.array([val[1] for val in train_dataset])
         curr_m1_val = np.array([val[0] for val in val_dataset])
         curr_emg_val = np.array([val[1] for val in val_dataset])
-        curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
+        # curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
+        # Fit with Ridge regression
+        curr_model = Ridge(alpha=100.0).fit(curr_m1_train, curr_emg_train)
 
         # Generate train and val preds and append to full list
         train_emgs.append(torch.Tensor(curr_emg_train))
@@ -544,7 +546,9 @@ def sep_R2_reg(dataset, verbose):
     emg_train = np.array([val[1] for val in train_dataset])
     m1_val = np.array([val[0] for val in val_dataset])
     emg_val = np.array([val[1] for val in val_dataset])
-    model = LinearRegression().fit(m1_train, emg_train)
+    # model = LinearRegression().fit(m1_train, emg_train)
+    # Fit with Ridge regression
+    model = Ridge(alpha=500.0).fit(m1_train, emg_train)
 
     # Generate train and val preds
     train_preds = model.predict(m1_train)
