@@ -548,7 +548,7 @@ def sep_R2_reg(dataset, verbose):
     emg_val = np.array([val[1] for val in val_dataset])
     # model = LinearRegression().fit(m1_train, emg_train)
     # Fit with Ridge regression
-    model = Ridge(alpha=500.0).fit(m1_train, emg_train)
+    model = Ridge(alpha=100.0).fit(m1_train, emg_train)
 
     # Generate train and val preds
     train_preds = model.predict(m1_train)
@@ -783,7 +783,7 @@ if __name__ == "__main__":
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
+    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=True)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)
