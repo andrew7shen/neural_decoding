@@ -10,6 +10,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.neural_network import MLPRegressor
 import matplotlib.patches as mpatches
 cwd = os.getcwd()
 sys.path.append(cwd)
@@ -548,7 +549,10 @@ def sep_R2_reg(dataset, verbose):
     emg_val = np.array([val[1] for val in val_dataset])
     # model = LinearRegression().fit(m1_train, emg_train)
     # Fit with Ridge regression
-    model = Ridge(alpha=100.0).fit(m1_train, emg_train)
+    # model = Ridge(alpha=500.0).fit(m1_train, emg_train)
+    # Fit with neural network
+    model = MLPRegressor(random_state=1, max_iter=300).fit(m1_train, emg_train)
+
 
     # Generate train and val preds
     train_preds = model.predict(m1_train)
@@ -737,14 +741,14 @@ if __name__ == "__main__":
 
     # Evaluate model clustering 
     # model_ids = [0,1,2,3,4,5,11,15,20,25,30,35,40,50,60,70,80,90,100]
-    model_ids = [190]
+    model_ids = [108]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
         # plot_type = "distributions"
-        plot_type = "majority"
-        # plot_type = "mode_average"
+        # plot_type = "majority"
+        plot_type = "mode_average"
         # plot_type = "confusion_matrix"
         check_clustering(dataset=dataset,
                         model_path=model_path,
