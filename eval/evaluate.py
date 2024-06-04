@@ -222,7 +222,10 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
             # Plot cluster distributions
             plt.title("Learned Cluster Distributions for Mode %s" % k)
             plt.stackplot(x, y, labels=number_labels[:config.d], colors=cmap_colors[:config.d])
+            # plt.show()
             plt.savefig("figures/%s_%s_avg.png" % (model_id, k))
+            # plt.savefig("slide12_revised_b10_%s.pdf" % k)
+            # plt.savefig("slide12_revised_b1_%s.pdf" % k)
             # plt.savefig("figures/intervals/%s_%s_avg.png" % (model_id, k)) # TODO: Change back after generate interval plots
             # plt.show()
     
@@ -741,7 +744,7 @@ if __name__ == "__main__":
 
     # Evaluate model clustering 
     # model_ids = [0,1,2,3,4,5,11,15,20,25,30,35,40,50,60,70,80,90,100]
-    model_ids = [108]
+    model_ids = [120]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
@@ -756,7 +759,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=False)
+                        verbose=True)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
@@ -787,7 +790,7 @@ if __name__ == "__main__":
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=True)
+    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)
