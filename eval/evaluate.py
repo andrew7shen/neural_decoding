@@ -440,7 +440,7 @@ def full_R2_reg(datasets, verbose):
         curr_emg_val = np.array([val[1] for val in val_dataset])
         # curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
         # Fit with Ridge regression
-        curr_model = Ridge(alpha=100.0).fit(curr_m1_train, curr_emg_train)
+        curr_model = Ridge(alpha=300.0).fit(curr_m1_train, curr_emg_train)
 
         # Generate train and val preds and append to full list
         train_emgs.append(torch.Tensor(curr_emg_train))
@@ -552,9 +552,9 @@ def sep_R2_reg(dataset, verbose):
     emg_val = np.array([val[1] for val in val_dataset])
     # model = LinearRegression().fit(m1_train, emg_train)
     # Fit with Ridge regression
-    # model = Ridge(alpha=500.0).fit(m1_train, emg_train)
+    model = Ridge(alpha=100.0).fit(m1_train, emg_train)
     # Fit with neural network
-    model = MLPRegressor(random_state=1, max_iter=300).fit(m1_train, emg_train)
+    # model = MLPRegressor(random_state=1, max_iter=300).fit(m1_train, emg_train)
 
 
     # Generate train and val preds
@@ -743,8 +743,7 @@ if __name__ == "__main__":
     run_kmeans(dataset=dataset, config=config, verbose=False)
 
     # Evaluate model clustering 
-    # model_ids = [0,1,2,3,4,5,11,15,20,25,30,35,40,50,60,70,80,90,100]
-    model_ids = [120]
+    model_ids = [210]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
@@ -759,7 +758,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=True)
+                        verbose=False)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
@@ -786,8 +785,9 @@ if __name__ == "__main__":
                            behavioral_path=curr_behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=config.kmeans_cluster)
             datasets.append(curr_dataset)
+            import pdb; pdb.set_trace()
     # Calculate full R2 value
-    full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
+    full_r2_list = full_R2_reg(datasets=datasets, verbose=True)
 
     # Calculate separate R^2 for each behavioral label in our model
     sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)

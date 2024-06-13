@@ -54,19 +54,45 @@ if __name__ == "__main__":
                            record=config.record,
                            type=config.type)
     # Set initial decoder weights
+    # TODO: Make cleaner
     if config.set_decoder_weights:
         if "b10" in config.m1_path:
-            weights0 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b10/weights_0.npy")))
-            weights1 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b10/weights_1.npy")))
-            weights2 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b10/weights_2.npy")))
+            if config.d == 6:
+                weights0 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6_b10/weights_0.npy")))
+                weights1 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6_b10/weights_1.npy")))
+                weights2 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6_b10/weights_2.npy")))
+                weights3 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6_b10/weights_3.npy")))
+                weights4 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6_b10/weights_4.npy")))
+                weights5 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6_b10/weights_5.npy")))
+            else:
+                weights0 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b10/weights_0.npy")))
+                weights1 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b10/weights_1.npy")))
+                weights2 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b10/weights_2.npy")))
+                
         else:
-            weights0 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b1/weights_0.npy")))
-            weights1 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b1/weights_1.npy")))
-            weights2 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b1/weights_2.npy")))
+            if config.d == 6:
+                weights0 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6/weights_0.npy")))
+                weights1 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6/weights_1.npy")))
+                weights2 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6/weights_2.npy")))
+                weights3 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6/weights_3.npy")))
+                weights4 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6/weights_4.npy")))
+                weights5 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6/weights_5.npy")))
+            else:
+                weights0 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b1/weights_0.npy")))
+                weights1 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b1/weights_1.npy")))
+                weights2 = nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/b1/weights_2.npy")))
         with torch.no_grad():
-            model.model.dm.linears[0].weight = weights0
-            model.model.dm.linears[1].weight = weights1
-            model.model.dm.linears[2].weight = weights2
+            if config.d == 6:
+                model.model.dm.linears[0].weight = weights0
+                model.model.dm.linears[1].weight = weights1
+                model.model.dm.linears[2].weight = weights2
+                model.model.dm.linears[3].weight = weights3
+                model.model.dm.linears[4].weight = weights4
+                model.model.dm.linears[5].weight = weights5
+            else:
+                model.model.dm.linears[0].weight = weights0
+                model.model.dm.linears[1].weight = weights1
+                model.model.dm.linears[2].weight = weights2
 
     # Define model checkpoints
     save_callback = ModelCheckpoint(dirpath = config.save_path, filename='checkpoint_{epoch}_%s' % config.d)
