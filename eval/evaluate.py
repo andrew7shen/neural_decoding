@@ -733,6 +733,8 @@ def run_kmeans_M1(dataset, config):
 # TODO: Implement
 def sep_decoders_R2(model_path, dataset, config, model_id, verbose):
 
+    save_fig = False
+
     if not verbose:
         return
 
@@ -780,11 +782,47 @@ def sep_decoders_R2(model_path, dataset, config, model_id, verbose):
     pca_result = pca.fit_transform(train_emg)
     pca1 = pca_result[:,0]
     pca2 = pca_result[:,1]
-
-    # TODO: Apply PC loading matrix to dm outputs
     loadings = pca.components_.T
-    # TODO: Plot figures
+    # loadings_pca1 = torch.Tensor(loadings[:,0])
+    # loadings_pca2 = torch.Tensor(loadings[:,1])
+    train_emg_mean = torch.mean(train_emg, dim=0)
+
+    # Apply PC loading matrix to dm outputs
+    decoder_outputs_dict = {} # key: mode id, value: mode output mapped to 2d space
+    for i in range(config.d):
+        curr_mode = i
+        decoder_outputs_dict[curr_mode] = torch.matmul(decoder_outputs[:,:,curr_mode]-train_emg_mean, torch.Tensor(loadings))
+
+    # TODO: Figure out how to plot clustering info
     import pdb; pdb.set_trace()
+    
+    # Plot train EMG figure
+    plt.figure(figsize=(15, 4))
+    plt.plot(pca1, label="PCA1", color="red")
+    plt.plot(pca2, label="PCA2", color="blue")
+    plt.title("Train EMG")
+    plt.xlabel("Timstamp")
+    plt.ylabel("EMG value")
+    plt.legend()
+    if save_fig:
+        plt.savefig("figures/decoder_outputs/%s_emg.png" % model_id)
+    else:
+        plt.show()
+
+    # Plot mode outputs figure
+    for i in range(config.d):
+        curr_mode = i
+        plt.figure(figsize=(15, 4))
+        plt.plot(decoder_outputs_dict[curr_mode][:,0].detach(), label="PCA1", color="red")
+        plt.plot(decoder_outputs_dict[curr_mode][:,1].detach(), label="PCA2", color="blue")
+        plt.title("Mode #%s Output" % curr_mode)
+        plt.xlabel("Timstamp")
+        plt.ylabel("EMG value")
+        plt.legend()
+        if save_fig:
+            plt.savefig("figures/decoder_outputs/%s_mode%s.png" % (model_id, curr_mode))
+        else:
+            plt.show()
 
 if __name__ == "__main__":
 
