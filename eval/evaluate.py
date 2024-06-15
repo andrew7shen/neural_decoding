@@ -123,7 +123,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
     sample_modes = []
     for sample in train:
         x = sample[0].unsqueeze(0)
-        curr_probs = model.forward(x)
+        curr_output = model.forward(x)
+        curr_probs = curr_output[0]
         curr_mode = sample[2]
         cluster_probs.append(curr_probs.squeeze())
         sample_modes.append(curr_mode)
@@ -440,7 +441,7 @@ def full_R2_reg(datasets, verbose):
         curr_emg_val = np.array([val[1] for val in val_dataset])
         # curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
         # Fit with Ridge regression
-        curr_model = Ridge(alpha=300.0).fit(curr_m1_train, curr_emg_train)
+        curr_model = Ridge(alpha=1500.0).fit(curr_m1_train, curr_emg_train)
 
         # Generate train and val preds and append to full list
         train_emgs.append(torch.Tensor(curr_emg_train))
@@ -728,6 +729,63 @@ def run_kmeans_M1(dataset, config):
     import pdb; pdb.set_trace()
     pass
 
+
+# TODO: Implement
+def sep_decoders_R2(model_path, dataset, config, model_id, verbose):
+
+    if not verbose:
+        return
+
+    # Load trained model
+    eval_mode = True
+    model = CombinedModel(input_dim=dataset.N,
+                          hidden_dim=config.hidden_dim,
+                              output_dim=dataset.M,
+                              num_modes=config.d, 
+                              temperature=config.temperature,
+                              ev=eval_mode,
+                              model_type=config.model_type)
+    checkpoint = torch.load(model_path)
+    state_dict = checkpoint["state_dict"]
+    model = TrainingModule(model=model,
+                           lr=config.lr,
+                           weight_decay=config.weight_decay,
+                           record=config.record,
+                           type=config.type)
+    model.load_state_dict(state_dict)
+
+    # Generate cm and dm weights
+    train = dataset.train_dataset
+    train_emg = torch.stack([val[1] for val in train])
+    # train_behavioral_labels = [val[2] for val in train]
+    cluster_probs = []
+    decoder_outputs = []
+    sample_modes = []
+    for sample in train:
+        x = sample[0].unsqueeze(0)
+        curr_output = model.forward(x)
+        curr_cluster_probs = curr_output[0]
+        curr_decoder_outputs = curr_output[1]
+        curr_mode = sample[2]
+        cluster_probs.append(curr_cluster_probs.squeeze())
+        decoder_outputs.append(curr_decoder_outputs.squeeze())
+        sample_modes.append(curr_mode)
+    cluster_probs = torch.stack(cluster_probs)
+    decoder_outputs = torch.stack(decoder_outputs)
+    torch.set_printoptions(sci_mode=False)
+    # cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
+
+    # Calculate PCs of the 16-dim EMG
+    pca = PCA(n_components=2)
+    pca_result = pca.fit_transform(train_emg)
+    pca1 = pca_result[:,0]
+    pca2 = pca_result[:,1]
+
+    # TODO: Apply PC loading matrix to dm outputs
+    loadings = pca.components_.T
+    # TODO: Plot figures
+    import pdb; pdb.set_trace()
+
 if __name__ == "__main__":
 
     # Read in configs and dataset
@@ -743,15 +801,16 @@ if __name__ == "__main__":
     run_kmeans(dataset=dataset, config=config, verbose=False)
 
     # Evaluate model clustering 
-    model_ids = [210]
+    model_ids = [120]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
         # plot_type = "distributions"
-        # plot_type = "majority"
-        plot_type = "mode_average"
+        plot_type = "majority"
+        # plot_type = "mode_average"
         # plot_type = "confusion_matrix"
+        # Check clustering
         check_clustering(dataset=dataset,
                         model_path=model_path,
                         num_to_print=num_to_print,
@@ -759,6 +818,12 @@ if __name__ == "__main__":
                         plot_type=plot_type,
                         model_id=model_id,
                         verbose=False)
+        # Check decoding
+        sep_decoders_R2(dataset=dataset,
+                        model_path=model_path,
+                        config=config,
+                        model_id=model_id,
+                        verbose=True)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
@@ -778,16 +843,23 @@ if __name__ == "__main__":
     # If using mode data, format separate datasets
     else:
         for mode in ["crawl", "precision", "power"]:
-            curr_m1_path = "data/set2_data/m1_set2_t100_%s.npy" % mode
-            curr_emg_path = "data/set2_data/emg_set2_t100_%s.npy" % mode
-            curr_behavioral_path = "data/set2_data/behavioral_set2_t100_%s.npy" % mode
+            # If using B=10 dataset
+            if "b10" in config.m1_path:
+                curr_m1_path = "data/set2_data/sep_modes_b10/m1_set2_t100_b10_%s.npy" % mode
+                curr_emg_path = "data/set2_data/sep_modes_b10/emg_set2_t100_b10_%s.npy" % mode
+                curr_behavioral_path = "data/set2_data/sep_modes_b10/behavioral_set2_t100_b10_%s.npy" % mode
+            # If using B=1 dataset
+            else:
+                curr_m1_path = "data/set2_data/m1_set2_t100_%s.npy" % mode
+                curr_emg_path = "data/set2_data/emg_set2_t100_%s.npy" % mode
+                curr_behavioral_path = "data/set2_data/behavioral_set2_t100_%s.npy" % mode
             curr_dataset = Cage_Dataset(m1_path=curr_m1_path, emg_path=curr_emg_path, 
                            behavioral_path=curr_behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=config.kmeans_cluster)
             datasets.append(curr_dataset)
-            import pdb; pdb.set_trace()
+
     # Calculate full R2 value
-    full_r2_list = full_R2_reg(datasets=datasets, verbose=True)
+    full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
     sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)

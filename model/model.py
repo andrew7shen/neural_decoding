@@ -125,9 +125,9 @@ class CombinedModel(nn.Module):
         #     import pdb; pdb.set_trace()
         #     pass
 
-        # Return softmax outputs if mode is "eval"
+        # Return clustering and decoding outputs if mode is "eval"
         if self.ev == True:
-            return x1
+            return [x1, x2]
         return output
     
 
