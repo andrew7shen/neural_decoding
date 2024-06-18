@@ -730,7 +730,6 @@ def run_kmeans_M1(dataset, config):
     pass
 
 
-# TODO: Implement
 def sep_decoders_R2(model_path, dataset, config, model_id, verbose):
 
     save_fig = False
@@ -793,16 +792,15 @@ def sep_decoders_R2(model_path, dataset, config, model_id, verbose):
         curr_mode = i
         decoder_outputs_dict[curr_mode] = torch.matmul(decoder_outputs[:,:,curr_mode]-train_emg_mean, torch.Tensor(loadings))
 
-    # TODO: Figure out how to plot clustering info
-    import pdb; pdb.set_trace()
-    
     # Plot train EMG figure
-    plt.figure(figsize=(15, 4))
+    plt.figure(figsize=(15, 2))
     plt.plot(pca1, label="PCA1", color="red")
     plt.plot(pca2, label="PCA2", color="blue")
     plt.title("Train EMG")
     plt.xlabel("Timstamp")
     plt.ylabel("EMG value")
+    ax = plt.gca()
+    ax.set_ylim([-200, 600])
     plt.legend()
     if save_fig:
         plt.savefig("figures/decoder_outputs/%s_emg.png" % model_id)
@@ -812,15 +810,30 @@ def sep_decoders_R2(model_path, dataset, config, model_id, verbose):
     # Plot mode outputs figure
     for i in range(config.d):
         curr_mode = i
-        plt.figure(figsize=(15, 4))
+        plt.figure(figsize=(15, 2))
         plt.plot(decoder_outputs_dict[curr_mode][:,0].detach(), label="PCA1", color="red")
         plt.plot(decoder_outputs_dict[curr_mode][:,1].detach(), label="PCA2", color="blue")
-        plt.title("Mode #%s Output" % curr_mode)
-        plt.xlabel("Timstamp")
+        plt.title("Mode #%s Decoder Output" % curr_mode)
         plt.ylabel("EMG value")
+        ax = plt.gca()
+        ax.set_ylim([-200, 600])
         plt.legend()
         if save_fig:
-            plt.savefig("figures/decoder_outputs/%s_mode%s.png" % (model_id, curr_mode))
+            plt.savefig("figures/decoder_outputs/%s_decoder_mode%s.png" % (model_id, curr_mode))
+        else:
+            plt.show()
+
+    # Plot clustering probabilities figure
+    for i in range(config.d):
+        curr_mode = i
+        plt.figure(figsize=(15, 2)) 
+        plt.plot(cluster_probs[:,curr_mode].detach(), color="black")
+        plt.title("Mode #%s Cluster Probabilities" % curr_mode)
+        plt.ylabel("Probability")
+        ax = plt.gca()
+        ax.set_ylim([0, 1.0])
+        if save_fig:
+            plt.savefig("figures/decoder_outputs/%s_clustering_mode%s.png" % (model_id, curr_mode))
         else:
             plt.show()
 
