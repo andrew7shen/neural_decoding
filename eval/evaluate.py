@@ -730,9 +730,9 @@ def run_kmeans_M1(dataset, config):
     pass
 
 
-def sep_decoders_R2(model_path, dataset, config, model_id, verbose):
+def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
 
-    save_fig = False
+    save_fig = True
 
     if not verbose:
         return
@@ -761,16 +761,16 @@ def sep_decoders_R2(model_path, dataset, config, model_id, verbose):
     # train_behavioral_labels = [val[2] for val in train]
     cluster_probs = []
     decoder_outputs = []
-    sample_modes = []
+    sample_behaviors = []
     for sample in train:
         x = sample[0].unsqueeze(0)
         curr_output = model.forward(x)
         curr_cluster_probs = curr_output[0]
         curr_decoder_outputs = curr_output[1]
-        curr_mode = sample[2]
+        curr_behavior = sample[2]
         cluster_probs.append(curr_cluster_probs.squeeze())
         decoder_outputs.append(curr_decoder_outputs.squeeze())
-        sample_modes.append(curr_mode)
+        sample_behaviors.append(curr_behavior)
     cluster_probs = torch.stack(cluster_probs)
     decoder_outputs = torch.stack(decoder_outputs)
     torch.set_printoptions(sci_mode=False)
@@ -789,53 +789,117 @@ def sep_decoders_R2(model_path, dataset, config, model_id, verbose):
     # Apply PC loading matrix to dm outputs
     decoder_outputs_dict = {} # key: mode id, value: mode output mapped to 2d space
     for i in range(config.d):
-        curr_mode = i
-        decoder_outputs_dict[curr_mode] = torch.matmul(decoder_outputs[:,:,curr_mode]-train_emg_mean, torch.Tensor(loadings))
+        curr_behavior = i
+        decoder_outputs_dict[curr_behavior] = torch.matmul(decoder_outputs[:,:,curr_behavior]-train_emg_mean, torch.Tensor(loadings))
 
     # Plot train EMG figure
-    plt.figure(figsize=(15, 2))
-    plt.plot(pca1, label="PCA1", color="red")
-    plt.plot(pca2, label="PCA2", color="blue")
-    plt.title("Train EMG")
-    plt.xlabel("Timstamp")
-    plt.ylabel("EMG value")
-    ax = plt.gca()
-    ax.set_ylim([-200, 600])
-    plt.legend()
-    if save_fig:
-        plt.savefig("figures/decoder_outputs/%s_emg.png" % model_id)
-    else:
-        plt.show()
+    if plot_type == "baseline":
 
-    # Plot mode outputs figure
-    for i in range(config.d):
-        curr_mode = i
         plt.figure(figsize=(15, 2))
-        plt.plot(decoder_outputs_dict[curr_mode][:,0].detach(), label="PCA1", color="red")
-        plt.plot(decoder_outputs_dict[curr_mode][:,1].detach(), label="PCA2", color="blue")
-        plt.title("Mode #%s Decoder Output" % curr_mode)
+        plt.plot(pca1, label="PCA1", color="red")
+        plt.plot(pca2, label="PCA2", color="blue")
+        plt.title("Train EMG")
+        plt.xlabel("Timstamp")
         plt.ylabel("EMG value")
         ax = plt.gca()
         ax.set_ylim([-200, 600])
         plt.legend()
         if save_fig:
-            plt.savefig("figures/decoder_outputs/%s_decoder_mode%s.png" % (model_id, curr_mode))
+            plt.savefig("figures/decoder_outputs/%s_emg.png" % model_id)
         else:
             plt.show()
 
-    # Plot clustering probabilities figure
-    for i in range(config.d):
-        curr_mode = i
-        plt.figure(figsize=(15, 2)) 
-        plt.plot(cluster_probs[:,curr_mode].detach(), color="black")
-        plt.title("Mode #%s Cluster Probabilities" % curr_mode)
-        plt.ylabel("Probability")
-        ax = plt.gca()
-        ax.set_ylim([0, 1.0])
+        # Plot mode outputs figure
+        for i in range(config.d):
+            curr_behavior = i
+            plt.figure(figsize=(15, 2))
+            plt.plot(decoder_outputs_dict[curr_behavior][:,0].detach(), label="PCA1", color="red")
+            plt.plot(decoder_outputs_dict[curr_behavior][:,1].detach(), label="PCA2", color="blue")
+            plt.title("Mode #%s Decoder Output" % curr_behavior)
+            plt.ylabel("EMG value")
+            ax = plt.gca()
+            ax.set_ylim([-200, 600])
+            plt.legend()
+            if save_fig:
+                plt.savefig("figures/decoder_outputs/%s_decoder_mode%s.png" % (model_id, curr_behavior))
+            else:
+                plt.show()
+
+        # Plot clustering probabilities figure
+        for i in range(config.d):
+            curr_behavior = i
+            plt.figure(figsize=(15, 2)) 
+            plt.plot(cluster_probs[:,curr_behavior].detach(), color="black")
+            plt.title("Mode #%s Cluster Probabilities" % curr_behavior)
+            plt.ylabel("Probability")
+            ax = plt.gca()
+            ax.set_ylim([0, 1.0])
+            if save_fig:
+                plt.savefig("figures/decoder_outputs/%s_clustering_mode%s.png" % (model_id, curr_behavior))
+            else:
+                plt.show()
+    
+    elif plot_type == "behavior_average":
+
+        # Split up predictions into each behavior
+        probs_behaviors_dict = {}
+        outputs_behaviors_dict = {}
+        for i in range(len(sample_behaviors)):
+            curr_behavior = sample_behaviors[i]
+            curr_probs = cluster_probs[i]
+            curr_outputs = [decoder_outputs_dict[key][i].detach() for key in decoder_outputs_dict.keys()]
+            if curr_behavior not in probs_behaviors_dict.keys():
+                probs_behaviors_dict[curr_behavior] = [curr_probs.detach()]
+                outputs_behaviors_dict[curr_behavior] = [torch.stack(curr_outputs)]
+            else:
+                probs_behaviors_dict[curr_behavior].append(curr_probs.detach())
+                outputs_behaviors_dict[curr_behavior].append(torch.stack(curr_outputs))
+
+        # Calculate average over all trials across each behavior
+        trial_range = 100
+        for k,v in probs_behaviors_dict.items():
+            num_items = len(v)
+            probs_behaviors_dict[k] = torch.reshape(torch.stack(v), (num_items//trial_range, trial_range, dataset.num_modes))
+            probs_behaviors_dict[k] = torch.mean(probs_behaviors_dict[k], dim=0)
+        for k,v in outputs_behaviors_dict.items():
+            num_items = len(v)
+            outputs_behaviors_dict[k] = torch.reshape(torch.stack(v), (num_items//trial_range, trial_range, dataset.num_modes, 2))
+            outputs_behaviors_dict[k] = torch.mean(outputs_behaviors_dict[k], dim=0)
+        
+        # Create color map and label options for multiple modes
+        cmap_colors = ["yellow","green","blue","red","purple","orange","pink"]
+        number_labels = ["1", "2", "3", "4", "5", "6", "7"]
+
+        # Plot averaged decoding outputs for each behavior
+        fig, ax = plt.subplots(3,3, figsize=(9,7))
+        ax2 = ax[0,0].twinx()
+        ax2 = [[ax_inner.twinx() for ax_inner in ax_outer] for ax_outer in ax]
+        fig.tight_layout()
+        plt.subplots_adjust(hspace=0.35, wspace=0.35)
+        ax_pos = 0
+        for k,v in outputs_behaviors_dict.items():
+            x = range(0, trial_range)
+            # Clustering probabilities
+            y = torch.transpose(probs_behaviors_dict[k], 0, 1)
+            # PCA1 and PCA2 for outputs
+            y1 = torch.transpose(v[:,:,0], 0, 1)
+            y2 = torch.transpose(v[:,:,1], 0, 1)
+            # Plot output distributions
+            for i in range(len(y1)):
+                ax[ax_pos, i].set_title("Behavior %s, Mode %s" % (k, i), fontsize=10)
+                ax[ax_pos, i].plot(x, y1[i], label="PCA1", color="red")
+                ax[ax_pos, i].plot(x, y2[i], label="PCA2", color="blue")
+                ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
+                ax2[ax_pos][i].plot(x, y[i], label="prob", color="black")
+                ax2[ax_pos][i].set_ylim([0,1])
+            ax_pos += 1
+        
         if save_fig:
-            plt.savefig("figures/decoder_outputs/%s_clustering_mode%s.png" % (model_id, curr_mode))
+            plt.savefig("figures/decoder_outputs/%s_behavioral_average.png" % (model_id))
         else:
             plt.show()
+
+        
 
 if __name__ == "__main__":
 
@@ -852,14 +916,14 @@ if __name__ == "__main__":
     run_kmeans(dataset=dataset, config=config, verbose=False)
 
     # Evaluate model clustering 
-    model_ids = [120]
+    model_ids = [247]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
         # plot_type = "distributions"
-        plot_type = "majority"
-        # plot_type = "mode_average"
+        # plot_type = "majority"
+        plot_type = "mode_average"
         # plot_type = "confusion_matrix"
         # Check clustering
         check_clustering(dataset=dataset,
@@ -869,12 +933,19 @@ if __name__ == "__main__":
                         plot_type=plot_type,
                         model_id=model_id,
                         verbose=False)
-        # Check decoding
-        sep_decoders_R2(dataset=dataset,
-                        model_path=model_path,
-                        config=config,
-                        model_id=model_id,
-                        verbose=True)
+
+    # Evaluate model decoding
+    model_id = 120
+    model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
+    # plot_type = "baseline"
+    plot_type = "behavior_average"
+    # Check decoding
+    sep_decoders_R2(dataset=dataset,
+                    model_path=model_path,
+                    config=config,
+                    plot_type=plot_type,
+                    model_id=model_id,
+                    verbose=True)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
