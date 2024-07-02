@@ -11,14 +11,17 @@ sys.path.append(cwd)
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
 from data import Cage_Dataset
 from utils.constants import *
+import random
 
 """
 Run script using command: "python3 data/kmeans_split.py configs/t100_configs/configs_cage_t100.yaml"
 """
 
 config = load_config()
+curr_dir = os.getcwd()
     
 dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
@@ -31,19 +34,46 @@ emg_val = torch.stack([v[1] for v in dataset.val_dataset])
 labels_train = [v[2] for v in dataset.train_dataset]
 labels_val = [v[2] for v in dataset.val_dataset]
 
-# Apply kmeans to M1 training data
+# Create initial clusters
+# cluster_type = "kmeans"
+cluster_type = "random"
 k = 6
-kmeans = KMeans(n_clusters=k, n_init=10, random_state=42)
-kmeans.fit(m1_train)
-preds = kmeans.labels_
-val_preds = kmeans.predict(m1_val)
+# Apply kmeans to M1 training data
+if cluster_type == "kmeans":
+    kmeans = KMeans(n_clusters=k, n_init=10, random_state=42)
+    kmeans.fit(m1_train)
+    preds = kmeans.labels_
+    val_preds = kmeans.predict(m1_val)
+elif cluster_type == "random":
+    random.seed(0)
+
+    # Create initial list of clusters from 0 to k
+    preds = []
+    val_preds = []
+    for dataset, clusters in [[m1_train, preds], [m1_val, val_preds]]:
+        curr_cluster = 0
+        for i in range(len(dataset)):
+            if curr_cluster == k:
+                curr_cluster = 0
+            clusters.append(curr_cluster)
+            curr_cluster += 1
+    
+    # Assign random clusters
+    random.shuffle(preds)
+    random.shuffle(val_preds)
 
 # Create save directory path
-save_files = False
+save_files = True
 if "b10" in config.m1_path:
-    save_dir = "k%s_b10" % k
+    if cluster_type == "kmeans":
+        save_dir = "k%s_b10" % k
+    elif cluster_type == "random": 
+        save_dir = "k%s_b10_random" % k
 elif "b10" not in config.m1_path:
-    save_dir = "k%s" % k
+    if cluster_type == "kmeans":
+        save_dir = "k%s" % k
+    elif cluster_type == "random": 
+        save_dir = "k%s_random" % k
 
 # Create three separate train/val datasets for m1/emg/labels for each cluster
 # Should end up with 6 files per cluster for train and val m1/emg/labels
@@ -76,7 +106,9 @@ for dict in [m1_train_clusters, emg_train_clusters, labels_train_clusters,
         dict[key] = np.array(dict[key])
 
 # Save split files as numpy arrays
-out_path = "/Users/andrewshen/Desktop/neural_decoding/data/set2_data/kmeans_split/%s/" % save_dir
+out_path = "%s/data/set2_data/kmeans_split/%s/" % (curr_dir, save_dir)
+if not os.path.exists(out_path):
+    os.mkdir(out_path)
 name_dict = {"m1_train": m1_train_clusters, "emg_train": emg_train_clusters, "labels_train": labels_train_clusters,
              "m1_val": m1_val_clusters, "emg_val": emg_val_clusters, "labels_val": labels_val_clusters}
 for name in name_dict.keys():
@@ -115,7 +147,9 @@ for cluster_id in m1_train_clusters.keys():
     weights_list.append(np.array(curr_weights))
     
 # Save model weights for each cluster
-out_path = "/Users/andrewshen/Desktop/neural_decoding/data/set2_data/decoder_weights/%s/" % save_dir
+out_path = "%s/data/set2_data/decoder_weights/%s/" % (curr_dir, save_dir)
+if not os.path.exists(out_path):
+    os.mkdir(out_path)
 for i in range(len(weights_list)):
     weights = weights_list[i]
     if save_files:

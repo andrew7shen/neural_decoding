@@ -844,17 +844,21 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
         # Split up predictions into each behavior
         probs_behaviors_dict = {}
         outputs_behaviors_dict = {}
+        emgs_behaviors_dict = {}
         for i in range(len(sample_behaviors)):
             curr_behavior = sample_behaviors[i]
             curr_probs = cluster_probs[i]
             curr_outputs = [decoder_outputs_dict[key][i].detach() for key in decoder_outputs_dict.keys()]
+            curr_emgs = [pca1[i], pca2[i]]
             if curr_behavior not in probs_behaviors_dict.keys():
                 probs_behaviors_dict[curr_behavior] = [curr_probs.detach()]
                 outputs_behaviors_dict[curr_behavior] = [torch.stack(curr_outputs)]
+                emgs_behaviors_dict[curr_behavior] = [torch.Tensor(curr_emgs)]
             else:
                 probs_behaviors_dict[curr_behavior].append(curr_probs.detach())
                 outputs_behaviors_dict[curr_behavior].append(torch.stack(curr_outputs))
-
+                emgs_behaviors_dict[curr_behavior].append(torch.Tensor(curr_emgs))
+        
         # Calculate average over all trials across each behavior
         trial_range = 100
         for k,v in probs_behaviors_dict.items():
@@ -865,13 +869,17 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
             num_items = len(v)
             outputs_behaviors_dict[k] = torch.reshape(torch.stack(v), (num_items//trial_range, trial_range, dataset.num_modes, 2))
             outputs_behaviors_dict[k] = torch.mean(outputs_behaviors_dict[k], dim=0)
+        for k,v in emgs_behaviors_dict.items():
+            num_items = len(v)
+            emgs_behaviors_dict[k] = torch.reshape(torch.stack(v), (num_items//trial_range, trial_range, 2))
+            emgs_behaviors_dict[k] = torch.mean(emgs_behaviors_dict[k], dim=0)
         
         # Create color map and label options for multiple modes
         cmap_colors = ["yellow","green","blue","red","purple","orange","pink"]
         number_labels = ["1", "2", "3", "4", "5", "6", "7"]
 
         # Plot averaged decoding outputs for each behavior
-        fig, ax = plt.subplots(3,3, figsize=(9,7))
+        fig, ax = plt.subplots(3,4, figsize=(14,7))
         ax2 = ax[0,0].twinx()
         ax2 = [[ax_inner.twinx() for ax_inner in ax_outer] for ax_outer in ax]
         fig.tight_layout()
@@ -884,18 +892,43 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
             # PCA1 and PCA2 for outputs
             y1 = torch.transpose(v[:,:,0], 0, 1)
             y2 = torch.transpose(v[:,:,1], 0, 1)
+            # Ground truth EMG
+            y_1 = emgs_behaviors_dict[k][:,0]
+            y_2 = emgs_behaviors_dict[k][:,1]
+            # Final output values
+            y1_final = y*y1
+            y2_final = y*y2
             # Plot output distributions
-            for i in range(len(y1)):
-                ax[ax_pos, i].set_title("Behavior %s, Mode %s" % (k, i), fontsize=10)
-                ax[ax_pos, i].plot(x, y1[i], label="PCA1", color="red")
-                ax[ax_pos, i].plot(x, y2[i], label="PCA2", color="blue")
-                ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
-                ax2[ax_pos][i].plot(x, y[i], label="prob", color="black")
-                ax2[ax_pos][i].set_ylim([0,1])
+            equal_scale = True
+            for i in range(len(y1)+1):
+
+                # Plot ground truth EMG values
+                if i == 0: 
+                    ax[ax_pos, i].set_title("Behavior %s, EMG" % (k), fontsize=10)
+                    ax[ax_pos, i].plot(x, y_1, label="PCA1", color="red")
+                    ax[ax_pos, i].plot(x, y_2, label="PCA2", color="blue")
+                    if equal_scale:
+                        ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
+                    
+                # Plot mode values
+                else:
+                    ax[ax_pos, i].set_title("Behavior %s, Mode %s" % (k, i-1), fontsize=10)
+                    ax[ax_pos, i].plot(x, y1[i-1], label="PCA1", color="red")
+                    ax[ax_pos, i].plot(x, y2[i-1], label="PCA2", color="blue")
+                    ax[ax_pos, i].plot(x, y1_final[i-1], label="PCA1_final", color="red", linestyle='dashed')
+                    ax[ax_pos, i].plot(x, y2_final[i-1], label="PCA2_final", color="blue", linestyle='dashed')
+                    ax2[ax_pos][i].plot(x, y[i-1], label="prob", color="black")
+                    ax2[ax_pos][i].set_ylim([0,1])
+                    if equal_scale:
+                        ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
+
             ax_pos += 1
         
         if save_fig:
-            plt.savefig("figures/decoder_outputs/%s_behavioral_average.png" % (model_id))
+            if equal_scale:
+                plt.savefig("figures/decoder_outputs/%s_behavioral_average_scaled.png" % (model_id))
+            else:
+                plt.savefig("figures/decoder_outputs/%s_behavioral_average.png" % (model_id))
         else:
             plt.show()
 
