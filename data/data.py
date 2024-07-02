@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import numpy as np
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import minmax_scale
 
 class Cage_Dataset(pl.LightningDataModule):
     
@@ -74,9 +75,13 @@ class Cage_Dataset(pl.LightningDataModule):
             self.M = emg_train.shape[1]
 
         else:
+            # Determine whether to perform output scaling experiment
+            scale_outputs = True
             # Read in data
             m1 = torch.Tensor(np.load(m1_path))
             emg = torch.Tensor(np.load(emg_path))
+            if scale_outputs:
+                emg = torch.Tensor(np.apply_along_axis(minmax_scale, 2, emg))
             behavioral = np.load(behavioral_path)
             labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
             X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)

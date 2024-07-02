@@ -98,6 +98,13 @@ class DecoderModel(nn.Module):
             x_d.append(linear(x))
         x = torch.stack(x_d, 2)
         # x = self.leaky_relu(x)
+
+        # Determine whether to perform output scaling experiment
+        scale_outputs = True
+        if scale_outputs:
+            x = torch.tanh(x)
+            x = nn.LeakyReLU(0.1)(x)
+
         return x
 
 
