@@ -100,7 +100,7 @@ class DecoderModel(nn.Module):
         # x = self.leaky_relu(x)
 
         # Determine whether to perform output scaling experiment
-        scale_outputs = True
+        scale_outputs = False
         if scale_outputs:
             x = torch.tanh(x)
             x = nn.LeakyReLU(0.1)(x)

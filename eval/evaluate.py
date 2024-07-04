@@ -879,6 +879,7 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
         number_labels = ["1", "2", "3", "4", "5", "6", "7"]
 
         # Plot averaged decoding outputs for each behavior
+        equal_scale = True
         fig, ax = plt.subplots(3,4, figsize=(14,7))
         ax2 = ax[0,0].twinx()
         ax2 = [[ax_inner.twinx() for ax_inner in ax_outer] for ax_outer in ax]
@@ -899,7 +900,6 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
             y1_final = y*y1
             y2_final = y*y2
             # Plot output distributions
-            equal_scale = True
             for i in range(len(y1)+1):
 
                 # Plot ground truth EMG values
@@ -908,19 +908,21 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                     ax[ax_pos, i].plot(x, y_1, label="PCA1", color="red")
                     ax[ax_pos, i].plot(x, y_2, label="PCA2", color="blue")
                     if equal_scale:
-                        ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
+                        # ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
+                        ax[ax_pos][i].set_ylim([-60,70]) # Scale y-axis for equal comparison
                     
                 # Plot mode values
                 else:
                     ax[ax_pos, i].set_title("Behavior %s, Mode %s" % (k, i-1), fontsize=10)
-                    ax[ax_pos, i].plot(x, y1[i-1], label="PCA1", color="red")
-                    ax[ax_pos, i].plot(x, y2[i-1], label="PCA2", color="blue")
+                    # ax[ax_pos, i].plot(x, y1[i-1], label="PCA1", color="red")
+                    # ax[ax_pos, i].plot(x, y2[i-1], label="PCA2", color="blue")
                     ax[ax_pos, i].plot(x, y1_final[i-1], label="PCA1_final", color="red", linestyle='dashed')
                     ax[ax_pos, i].plot(x, y2_final[i-1], label="PCA2_final", color="blue", linestyle='dashed')
                     ax2[ax_pos][i].plot(x, y[i-1], label="prob", color="black")
                     ax2[ax_pos][i].set_ylim([0,1])
                     if equal_scale:
-                        ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
+                        # ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
+                        ax[ax_pos][i].set_ylim([-60,70]) # Scale y-axis for equal comparison
 
             ax_pos += 1
         

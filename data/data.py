@@ -1,13 +1,16 @@
 # Script for the LightningDataModule objects
 
 # Import packages
+import os
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 import numpy as np
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import minmax_scale
+# from sklearn.preprocessing import minmax_scale
+from sklearn.preprocessing import MinMaxScaler
+import matplotlib.pyplot as plt
 
 class Cage_Dataset(pl.LightningDataModule):
     
@@ -77,11 +80,10 @@ class Cage_Dataset(pl.LightningDataModule):
         else:
             # Determine whether to perform output scaling experiment
             scale_outputs = True
+
             # Read in data
             m1 = torch.Tensor(np.load(m1_path))
             emg = torch.Tensor(np.load(emg_path))
-            if scale_outputs:
-                emg = torch.Tensor(np.apply_along_axis(minmax_scale, 2, emg))
             behavioral = np.load(behavioral_path)
             labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
             X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
@@ -97,6 +99,38 @@ class Cage_Dataset(pl.LightningDataModule):
             y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
             y_val_behavioral = np.stack([v[1] for v in y_val])
             y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
+
+            # Perform min-max scaling
+            if scale_outputs:
+                plot_variance = False
+                scaler = MinMaxScaler()
+                scaler.fit(y_train_emg)
+                if plot_variance:
+                    y_train_emg_unscaled = y_train_emg
+                y_train_emg = torch.Tensor(scaler.transform(y_train_emg))
+                y_val_emg = torch.Tensor(scaler.transform(y_val_emg))
+                # Create plots for variance in EMG data before and after scaling
+                if plot_variance:
+                    save_fig = True
+                    unscaled_var_vals = torch.var(y_train_emg_unscaled, dim=0)
+                    scaled_var_vals = torch.var(y_train_emg, dim=0)
+                    fig, ax = plt.subplots(1,2, figsize=(10,5))
+                    # fig.tight_layout()
+                    fig.suptitle("Unscaled vs Scaled Variance in EMG")
+                    ax[0].plot(unscaled_var_vals, label="unscaled")
+                    ax[0].legend()
+                    ax[0].set_xlabel("Muscles")
+                    ax[0].set_ylabel("Variance")
+                    ax[1].plot(scaled_var_vals, label="scaled")
+                    ax[1].legend()
+                    ax[1].set_xlabel("Muscles")
+                    ax[1].set_ylabel("Variance")
+                    fig.tight_layout()
+                    if save_fig:
+                        curr_dir = os.getcwd()
+                        plt.savefig("%s/figures/misc/scaled_var_diff.png" % curr_dir)
+                    else:
+                        plt.show()
 
             self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
             self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
