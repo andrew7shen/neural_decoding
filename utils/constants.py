@@ -29,6 +29,7 @@ class Config():
         self.model_type = args["model_type"]
         self.kmeans_cluster = args["kmeans_cluster"]
         self.set_decoder_weights = args["set_decoder_weights"]
+        self.label_type = args["label_type"]
 
 
 def load_config():

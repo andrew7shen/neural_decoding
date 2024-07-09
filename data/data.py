@@ -11,10 +11,12 @@ from sklearn.model_selection import train_test_split
 # from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
+import cage_data
+import pickle as pickle
 
 class Cage_Dataset(pl.LightningDataModule):
     
-    def __init__(self, m1_path, emg_path, behavioral_path, num_modes, batch_size, dataset_type, seed, kmeans_cluster):
+    def __init__(self, m1_path, emg_path, behavioral_path, num_modes, batch_size, dataset_type, seed, kmeans_cluster, label_type):
         super().__init__()
         self.batch_size = batch_size
         self.num_modes = num_modes
@@ -25,118 +27,178 @@ class Cage_Dataset(pl.LightningDataModule):
         self.M = None
         self.seed = seed
         self.kmeans_cluster = kmeans_cluster
+        self.label_type = label_type
 
         # Set manual seed
         torch.manual_seed(seed)
 
-        # TODO: temp code to train single linear model
-        # mode_name = ["crawl", "precision", "power"]
-        # for mode in mode_name:
-        #     curr_m1_path = "%s%s.npy" % (m1_path[:-9], mode)
-        #     curr_emg_path = "%s%s.npy" % (emg_path[:-9], mode)
-        #     curr_behavioral_path = "%s%s.npy" % (behavioral_path[:-9], mode)
-        #     m1 = torch.Tensor(np.load(curr_m1_path))
-        #     emg = torch.Tensor(np.load(curr_emg_path))
-        #     behavioral = np.load(curr_behavioral_path)
-        #     labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
-        #     X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
+        # Load data with Set1 labels
+        if self.label_type == "set1":
+            print('Loading set1 labels...')
+            self.format_set1_data()
 
-        #     # Reformat back into timestamps
-        #     X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
-        #     X_val = torch.reshape(X_val, (X_val.size()[0]*X_val.size()[1], X_val.size()[2]))
-        #     y_train_emg = torch.stack([v[0] for v in y_train])
-        #     y_train_emg = torch.reshape(y_train_emg, (y_train_emg.size()[0]*y_train_emg.size()[1], y_train_emg.size()[2]))
-        #     y_train_behavioral = np.stack([v[1] for v in y_train])
-        #     y_train_behavioral = np.reshape(y_train_behavioral, (y_train_behavioral.shape[0]*y_train_behavioral.shape[1]))
-        #     y_val_emg = torch.stack([v[0] for v in y_val])
-        #     y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
-        #     y_val_behavioral = np.stack([v[1] for v in y_val])
-        #     y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
+        # Load data with Set2 labels
+        elif self.label_type == "set2":
+            # TODO: Refactor to format input data all within data.py
 
-        #     if mode == "crawl":
-        #         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-        #         self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
-        #         self.N = m1.size()[2]
-        #         self.M = emg.size()[2]
-        #     else:
-        #         self.train_dataset = self.train_dataset + [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-        #         self.val_dataset = self.val_dataset + [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+            # TODO: temp code to train single linear model
+            # mode_name = ["crawl", "precision", "power"]
+            # for mode in mode_name:
+            #     curr_m1_path = "%s%s.npy" % (m1_path[:-9], mode)
+            #     curr_emg_path = "%s%s.npy" % (emg_path[:-9], mode)
+            #     curr_behavioral_path = "%s%s.npy" % (behavioral_path[:-9], mode)
+            #     m1 = torch.Tensor(np.load(curr_m1_path))
+            #     emg = torch.Tensor(np.load(curr_emg_path))
+            #     behavioral = np.load(curr_behavioral_path)
+            #     labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
+            #     X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
 
-        # If using kmeans split data for sanity check
-        if "data/set2_data/kmeans_split" in m1_path:
-            path = m1_path
-            m1_train = torch.Tensor(np.load("%s/m1_train_%s.npy" % (path, self.kmeans_cluster)))
-            emg_train = torch.Tensor(np.load("%s/emg_train_%s.npy" % (path, self.kmeans_cluster)))
-            labels_train = np.load("%s/labels_train_%s.npy" % (path, self.kmeans_cluster))
-            m1_val = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
-            emg_val = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
-            labels_val = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
+            #     # Reformat back into timestamps
+            #     X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
+            #     X_val = torch.reshape(X_val, (X_val.size()[0]*X_val.size()[1], X_val.size()[2]))
+            #     y_train_emg = torch.stack([v[0] for v in y_train])
+            #     y_train_emg = torch.reshape(y_train_emg, (y_train_emg.size()[0]*y_train_emg.size()[1], y_train_emg.size()[2]))
+            #     y_train_behavioral = np.stack([v[1] for v in y_train])
+            #     y_train_behavioral = np.reshape(y_train_behavioral, (y_train_behavioral.shape[0]*y_train_behavioral.shape[1]))
+            #     y_val_emg = torch.stack([v[0] for v in y_val])
+            #     y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
+            #     y_val_behavioral = np.stack([v[1] for v in y_val])
+            #     y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
 
-            self.train_dataset = [(m1_train[i], emg_train[i], labels_train[i]) for i in range(len(m1_train))]
-            self.val_dataset = [(m1_val[i], emg_val[i], labels_val[i]) for i in range(len(m1_val))]
-            self.N = m1_train.shape[1]
-            self.M = emg_train.shape[1]
+            #     if mode == "crawl":
+            #         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+            #         self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+            #         self.N = m1.size()[2]
+            #         self.M = emg.size()[2]
+            #     else:
+            #         self.train_dataset = self.train_dataset + [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+            #         self.val_dataset = self.val_dataset + [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
 
-        else:
-            # Determine whether to perform output scaling experiment
-            scale_outputs = True
+            # If using kmeans split data for sanity check
+            if "data/set2_data/kmeans_split" in m1_path:
+                path = m1_path
+                m1_train = torch.Tensor(np.load("%s/m1_train_%s.npy" % (path, self.kmeans_cluster)))
+                emg_train = torch.Tensor(np.load("%s/emg_train_%s.npy" % (path, self.kmeans_cluster)))
+                labels_train = np.load("%s/labels_train_%s.npy" % (path, self.kmeans_cluster))
+                m1_val = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
+                emg_val = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
+                labels_val = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
 
-            # Read in data
-            m1 = torch.Tensor(np.load(m1_path))
-            emg = torch.Tensor(np.load(emg_path))
-            behavioral = np.load(behavioral_path)
-            labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
-            X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
+                self.train_dataset = [(m1_train[i], emg_train[i], labels_train[i]) for i in range(len(m1_train))]
+                self.val_dataset = [(m1_val[i], emg_val[i], labels_val[i]) for i in range(len(m1_val))]
+                self.N = m1_train.shape[1]
+                self.M = emg_train.shape[1]
 
-            # Reformat back into timestamps
-            X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
-            X_val = torch.reshape(X_val, (X_val.size()[0]*X_val.size()[1], X_val.size()[2]))
-            y_train_emg = torch.stack([v[0] for v in y_train])
-            y_train_emg = torch.reshape(y_train_emg, (y_train_emg.size()[0]*y_train_emg.size()[1], y_train_emg.size()[2]))
-            y_train_behavioral = np.stack([v[1] for v in y_train])
-            y_train_behavioral = np.reshape(y_train_behavioral, (y_train_behavioral.shape[0]*y_train_behavioral.shape[1]))
-            y_val_emg = torch.stack([v[0] for v in y_val])
-            y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
-            y_val_behavioral = np.stack([v[1] for v in y_val])
-            y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
+            else:
+                # Determine whether to perform output scaling experiment
+                scale_outputs = True
 
-            # Perform min-max scaling
-            if scale_outputs:
-                plot_variance = False
-                scaler = MinMaxScaler()
-                scaler.fit(y_train_emg)
-                if plot_variance:
-                    y_train_emg_unscaled = y_train_emg
-                y_train_emg = torch.Tensor(scaler.transform(y_train_emg))
-                y_val_emg = torch.Tensor(scaler.transform(y_val_emg))
-                # Create plots for variance in EMG data before and after scaling
-                if plot_variance:
-                    save_fig = True
-                    unscaled_var_vals = torch.var(y_train_emg_unscaled, dim=0)
-                    scaled_var_vals = torch.var(y_train_emg, dim=0)
-                    fig, ax = plt.subplots(1,2, figsize=(10,5))
-                    # fig.tight_layout()
-                    fig.suptitle("Unscaled vs Scaled Variance in EMG")
-                    ax[0].plot(unscaled_var_vals, label="unscaled")
-                    ax[0].legend()
-                    ax[0].set_xlabel("Muscles")
-                    ax[0].set_ylabel("Variance")
-                    ax[1].plot(scaled_var_vals, label="scaled")
-                    ax[1].legend()
-                    ax[1].set_xlabel("Muscles")
-                    ax[1].set_ylabel("Variance")
-                    fig.tight_layout()
-                    if save_fig:
-                        curr_dir = os.getcwd()
-                        plt.savefig("%s/figures/misc/scaled_var_diff.png" % curr_dir)
-                    else:
-                        plt.show()
+                # Read in data
+                m1 = torch.Tensor(np.load(m1_path))
+                emg = torch.Tensor(np.load(emg_path))
+                behavioral = np.load(behavioral_path)
+                labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
+                X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
 
-            self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-            self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
-            self.N = m1.size()[2]
-            self.M = emg.size()[2]
+                # Reformat back into timestamps
+                X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
+                X_val = torch.reshape(X_val, (X_val.size()[0]*X_val.size()[1], X_val.size()[2]))
+                y_train_emg = torch.stack([v[0] for v in y_train])
+                y_train_emg = torch.reshape(y_train_emg, (y_train_emg.size()[0]*y_train_emg.size()[1], y_train_emg.size()[2]))
+                y_train_behavioral = np.stack([v[1] for v in y_train])
+                y_train_behavioral = np.reshape(y_train_behavioral, (y_train_behavioral.shape[0]*y_train_behavioral.shape[1]))
+                y_val_emg = torch.stack([v[0] for v in y_val])
+                y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
+                y_val_behavioral = np.stack([v[1] for v in y_val])
+                y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
+
+                # Perform min-max scaling
+                if scale_outputs:
+                    plot_variance = False
+                    scaler = MinMaxScaler()
+                    scaler.fit(y_train_emg)
+                    if plot_variance:
+                        y_train_emg_unscaled = y_train_emg
+                    y_train_emg = torch.Tensor(scaler.transform(y_train_emg))
+                    y_val_emg = torch.Tensor(scaler.transform(y_val_emg))
+                    # Create plots for variance in EMG data before and after scaling
+                    if plot_variance:
+                        save_fig = True
+                        unscaled_var_vals = torch.var(y_train_emg_unscaled, dim=0)
+                        scaled_var_vals = torch.var(y_train_emg, dim=0)
+                        fig, ax = plt.subplots(1,2, figsize=(10,5))
+                        # fig.tight_layout()
+                        fig.suptitle("Unscaled vs Scaled Variance in EMG")
+                        ax[0].plot(unscaled_var_vals, label="unscaled")
+                        ax[0].legend()
+                        ax[0].set_xlabel("Muscles")
+                        ax[0].set_ylabel("Variance")
+                        ax[1].plot(scaled_var_vals, label="scaled")
+                        ax[1].legend()
+                        ax[1].set_xlabel("Muscles")
+                        ax[1].set_ylabel("Variance")
+                        fig.tight_layout()
+                        if save_fig:
+                            curr_dir = os.getcwd()
+                            plt.savefig("%s/figures/misc/scaled_var_diff.png" % curr_dir)
+                        else:
+                            plt.show()
+
+                self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+                self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+                self.N = m1.size()[2]
+                self.M = emg.size()[2]
+    
+
+    def format_set1_data(self):
+
+        np.set_printoptions(suppress=True)
+
+        def find_start_end(N, timeframe):
+            segment_range = np.where((timeframe>=my_cage_data.behave_tags['start_time'][N]) & (timeframe<=my_cage_data.behave_tags['end_time'][N]))[0]
+            start_idx = segment_range[0]
+            end_idx = segment_range[-1]
+            return start_idx, end_idx
+
+        # Load in raw dataset files
+        curr_dir = os.getcwd()
+        data_path = "%s/data/pickle_files/" % curr_dir
+        file_name = 'Pop_20210709_Cage_004.pkl'
+        with open(data_path+file_name, 'rb') as fp:
+            my_cage_data = pickle.load(fp)
+        m1 = np.transpose(my_cage_data.binned['spikes'])
+        emg = np.transpose(my_cage_data.binned['filtered_EMG'])
+        timeframe = my_cage_data.binned['timeframe']
+
+        # Format into trials
+        m1_trials = []
+        emg_trials = []
+        behavior_trials = []
+        for N in range(len(my_cage_data.behave_tags['tag'])):
+            curr_behavior = my_cage_data.behave_tags['tag'][N]
+            if curr_behavior == "grooming":
+                continue
+            start_idx, end_idx = find_start_end(N, timeframe)
+            m1_trials.append(m1[start_idx:end_idx+1])
+            emg_trials.append(emg[start_idx:end_idx+1])
+            behavior_trials.append([curr_behavior]*(end_idx-start_idx+1))
             
+        # Create train/val splits
+        labels_trials = [[emg_trials[i], behavior_trials[i]] for i in range(len(emg_trials))]
+        X_train, X_val, y_train, y_val = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
+
+        # Format back into time stamps
+        X_train = torch.Tensor(np.concatenate(X_train))
+        X_val = torch.Tensor(np.concatenate(X_val))
+        y_train_emg = torch.Tensor(np.concatenate([y[0] for y in y_train]))
+        y_train_behavioral = np.concatenate([y[1] for y in y_train])
+        y_val_emg = torch.Tensor(np.concatenate([y[0] for y in y_val]))
+        y_val_behavioral = np.concatenate([y[1] for y in y_val])
+        self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.N = m1.shape[1]
+        self.M = emg.shape[1]
+
 
     def __len__(self):
         """
