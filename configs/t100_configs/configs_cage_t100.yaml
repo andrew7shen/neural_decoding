@@ -20,3 +20,4 @@ hidden_dim: 30
 model_type: "method1"
 kmeans_cluster: 0
 set_decoder_weights: False
+label_type: "set2"

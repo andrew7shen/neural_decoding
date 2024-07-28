@@ -103,7 +103,7 @@ class DecoderModel(nn.Module):
         scale_outputs = False
         if scale_outputs:
             x = torch.tanh(x)
-            x = nn.LeakyReLU(0.1)(x)
+            x = nn.LeakyReLU(0.01)(x)
 
         return x
 
