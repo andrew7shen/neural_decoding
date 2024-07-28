@@ -91,7 +91,7 @@ class Cage_Dataset(pl.LightningDataModule):
 
             else:
                 # Determine whether to perform output scaling experiment
-                scale_outputs = False
+                scale_outputs = True
 
                 # Read in data
                 m1 = torch.Tensor(np.load(m1_path))
