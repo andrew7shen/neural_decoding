@@ -42,7 +42,8 @@ if __name__ == "__main__":
                               num_modes=config.d, 
                               temperature=config.temperature,
                               ev=config.ev,
-                              model_type=config.model_type)
+                              cluster_model_type=config.cluster_model_type,
+                              decoder_model_type=config.decoder_model_type)
         # Trying old code
         # model = CombinedModel(input_dim=dataset.N,
         #                       output_dim=dataset.M,
