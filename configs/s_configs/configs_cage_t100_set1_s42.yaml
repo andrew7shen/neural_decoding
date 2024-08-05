@@ -6,11 +6,11 @@ b: 8
 type: "emg"
 epochs: 500
 lr: 0.0001
-record: True
+record: False
 ev: False
-m1_path: "data/set2_data/m1_set2_t100.npy"
-emg_path: "data/set2_data/emg_set2_t100.npy"
-behavioral_path: "data/set2_data/behavioral_set2_t100.npy"
+m1_path: ""
+emg_path: ""
+behavioral_path: ""
 save_path: "checkpoints"
 model: "combined"
 seed: 42
@@ -21,4 +21,4 @@ cluster_model_type: "method1"
 decoder_model_type: ""
 kmeans_cluster: 0
 set_decoder_weights: False
-label_type: "set2"
+label_type: "set1"

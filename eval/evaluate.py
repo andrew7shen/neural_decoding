@@ -25,6 +25,7 @@ Run script using command "python3 eval/evaluate.py configs/configs_cage.yaml" in
 Expanded trial range: "python3 eval/evaluate.py configs/t100_configs/configs_cage_t100.yaml"
 Expanded trial range (B=10): "python3 eval/evaluate.py configs/b_configs/configs_cage_t100_b10.yaml"
 Expanded trial range (d=4): "python3 eval/evaluate.py configs/d_configs/configs_cage_t100_d4.yaml"
+Set 1 data: "python3 eval/evaluate.py configs/t100_configs/configs_cage_t100_set1.yaml"
 """
 
 
@@ -32,7 +33,7 @@ def dataset_statistics(dataset, verbose):
     
     if not verbose:
         return
-
+    
     train_timestamps = len(dataset.train_dataset)
     val_timestamps = len(dataset.val_dataset)
     total_timestamps = train_timestamps + val_timestamps
@@ -48,29 +49,29 @@ def dataset_statistics(dataset, verbose):
             val_mode_timestamps_dict[mode] = 1
         else:
             val_mode_timestamps_dict[mode] += 1
+    
+    # Extract number of samples for each behavioral label
+    labels = train_mode_timestamps_dict.keys()
+    count_dict = {}
+    for label in labels:
+        train_curr = train_mode_timestamps_dict[label]
+        val_curr = val_mode_timestamps_dict[label]
+        tot_curr = train_curr + val_curr
+        count_dict[label] = [train_curr, val_curr, tot_curr]
 
-    train_crawl = train_mode_timestamps_dict["crawl"]
-    train_precision = train_mode_timestamps_dict["precision"]
-    train_power = train_mode_timestamps_dict["power"]
-    val_crawl = val_mode_timestamps_dict["crawl"]
-    val_precision = val_mode_timestamps_dict["precision"]
-    val_power = val_mode_timestamps_dict["power"]
-    tot_crawl = train_crawl + val_crawl
-    tot_precision = train_precision + val_precision
-    tot_power = train_power + val_power
-
+    # Print out calculated numbers of samples
     print("Train timestamps: %s" % train_timestamps)
-    print("\tTrain crawl timestamps: %s (%s)" % (train_crawl, (train_crawl/train_timestamps)))
-    print("\tTrain precision timestamps: %s (%s)" % (train_precision, (train_precision/train_timestamps)))
-    print("\tTrain power timestamps: %s (%s)" % (train_power, (train_power/train_timestamps)))
+    for label in labels:
+        curr_counts = count_dict[label]
+        print("\tTrain %s timestamps: %s (%s)" % (label, curr_counts[0], (curr_counts[0]/train_timestamps)))
     print("Valid timestamps: %s" % val_timestamps)
-    print("\tValid crawl timestamps: %s (%s)" % (val_crawl, (val_crawl/val_timestamps)))
-    print("\tValid precision timestamps: %s (%s)" % (val_precision, (val_precision/val_timestamps)))
-    print("\tValid power timestamps: %s (%s)" % (val_power, (val_power/val_timestamps)))
+    for label in labels:
+        curr_counts = count_dict[label]
+        print("\tValid %s timestamps: %s (%s)" % (label, curr_counts[1], (curr_counts[1]/val_timestamps)))
     print("Total timestamps: %s" % total_timestamps)
-    print("\tTotal crawl timestamps: %s (%s)" % (tot_crawl, (tot_crawl/total_timestamps)))
-    print("\tTotal precision timestamps: %s (%s)" % (tot_precision, (tot_precision/total_timestamps)))
-    print("\tTotal power timestamps: %s (%s)" % (tot_power, (tot_power/total_timestamps)))
+    for label in labels:
+        curr_counts = count_dict[label]
+        print("\tTotal %s timestamps: %s (%s)" % (label, curr_counts[2], (curr_counts[2]/total_timestamps)))
     print("N: %s" % dataset.N)
     print("M: %s" % dataset.M)
 
@@ -108,7 +109,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                               num_modes=config.d, 
                               temperature=config.temperature,
                               ev=eval_mode,
-                              model_type=config.model_type)
+                              cluster_model_type=config.cluster_model_type,
+                              decoder_model_type=config.decoder_model_type)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model=model,
@@ -157,6 +159,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                 alpha=1.0,
                 extent=[0, num_timestamps, -200, 200])
         ax2.title.set_text("Learned Cluster Labels")
+        plt.tight_layout()
         plt.savefig("figures/%s.png" % model_id)
         # plt.savefig("figures/intervals/%s.png" % model_id) # TODO: Change back after generate interval plots
 
@@ -439,9 +442,9 @@ def full_R2_reg(datasets, verbose):
         curr_emg_train = np.array([val[1] for val in train_dataset])
         curr_m1_val = np.array([val[0] for val in val_dataset])
         curr_emg_val = np.array([val[1] for val in val_dataset])
-        # curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
+        curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
         # Fit with Ridge regression
-        curr_model = Ridge(alpha=1500.0).fit(curr_m1_train, curr_emg_train)
+        curr_model = Ridge(alpha=200.0).fit(curr_m1_train, curr_emg_train)
 
         # Generate train and val preds and append to full list
         train_emgs.append(torch.Tensor(curr_emg_train))
@@ -553,10 +556,9 @@ def sep_R2_reg(dataset, verbose):
     emg_val = np.array([val[1] for val in val_dataset])
     # model = LinearRegression().fit(m1_train, emg_train)
     # Fit with Ridge regression
-    model = Ridge(alpha=100.0).fit(m1_train, emg_train)
+    model = Ridge(alpha=500.0).fit(m1_train, emg_train)
     # Fit with neural network
     # model = MLPRegressor(random_state=1, max_iter=300).fit(m1_train, emg_train)
-
 
     # Generate train and val preds
     train_preds = model.predict(m1_train)
@@ -942,23 +944,24 @@ if __name__ == "__main__":
     config = load_config()
     dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=config.kmeans_cluster)
-
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                           kmeans_cluster=config.kmeans_cluster, label_type=config.label_type)
+    
     # Print dataset statistics
     dataset_statistics(dataset=dataset, verbose=False)
-    
+
     # Perform kmeans on input dataset
     run_kmeans(dataset=dataset, config=config, verbose=False)
 
     # Evaluate model clustering 
-    model_ids = [247]
+    model_ids = [254]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
         # plot_type = "distributions"
-        # plot_type = "majority"
-        plot_type = "mode_average"
+        plot_type = "majority"
+        # plot_type = "mode_average"
         # plot_type = "confusion_matrix"
         # Check clustering
         check_clustering(dataset=dataset,
@@ -967,7 +970,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=False)
+                        verbose=True)
 
     # Evaluate model decoding
     model_id = 120
@@ -980,7 +983,7 @@ if __name__ == "__main__":
                     config=config,
                     plot_type=plot_type,
                     model_id=model_id,
-                    verbose=True)
+                    verbose=False)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
@@ -999,21 +1002,33 @@ if __name__ == "__main__":
             datasets.append(curr_dataset)
     # If using mode data, format separate datasets
     else:
-        for mode in ["crawl", "precision", "power"]:
-            # If using B=10 dataset
-            if "b10" in config.m1_path:
-                curr_m1_path = "data/set2_data/sep_modes_b10/m1_set2_t100_b10_%s.npy" % mode
-                curr_emg_path = "data/set2_data/sep_modes_b10/emg_set2_t100_b10_%s.npy" % mode
-                curr_behavioral_path = "data/set2_data/sep_modes_b10/behavioral_set2_t100_b10_%s.npy" % mode
-            # If using B=1 dataset
-            else:
-                curr_m1_path = "data/set2_data/m1_set2_t100_%s.npy" % mode
-                curr_emg_path = "data/set2_data/emg_set2_t100_%s.npy" % mode
-                curr_behavioral_path = "data/set2_data/behavioral_set2_t100_%s.npy" % mode
-            curr_dataset = Cage_Dataset(m1_path=curr_m1_path, emg_path=curr_emg_path, 
-                           behavioral_path=curr_behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=config.kmeans_cluster)
-            datasets.append(curr_dataset)
+        # If using set1 data
+        if dataset.label_type == "set1":
+            for mode in ["crawling", "pg", "sitting_still"]:
+                curr_label_type = "%s_%s" % (config.label_type, mode)
+                curr_dataset = Cage_Dataset(m1_path="", emg_path="", 
+                                behavioral_path="", num_modes=config.d, 
+                                batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                                kmeans_cluster=config.kmeans_cluster, label_type=curr_label_type)
+                datasets.append(curr_dataset)
+        # If using set2 data
+        else:
+            for mode in ["crawl", "precision", "power"]:
+                # If using B=10 dataset
+                if "b10" in config.m1_path:
+                    curr_m1_path = "data/set2_data/sep_modes_b10/m1_set2_t100_b10_%s.npy" % mode
+                    curr_emg_path = "data/set2_data/sep_modes_b10/emg_set2_t100_b10_%s.npy" % mode
+                    curr_behavioral_path = "data/set2_data/sep_modes_b10/behavioral_set2_t100_b10_%s.npy" % mode
+                # If using B=1 dataset
+                else:
+                    curr_m1_path = "data/set2_data/m1_set2_t100_%s.npy" % mode
+                    curr_emg_path = "data/set2_data/emg_set2_t100_%s.npy" % mode
+                    curr_behavioral_path = "data/set2_data/behavioral_set2_t100_%s.npy" % mode
+                curr_dataset = Cage_Dataset(m1_path=curr_m1_path, emg_path=curr_emg_path, 
+                            behavioral_path=curr_behavioral_path, num_modes=config.d, 
+                            batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type)
+                datasets.append(curr_dataset)
 
     # Calculate full R2 value
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)

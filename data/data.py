@@ -33,9 +33,14 @@ class Cage_Dataset(pl.LightningDataModule):
         torch.manual_seed(seed)
 
         # Load data with Set1 labels
-        if self.label_type == "set1":
-            print('Loading set1 labels...')
-            self.format_set1_data()
+        if "set1" in self.label_type:
+            # If loading data for just one label
+            if len(self.label_type) > 4:
+                curr_label = self.label_type[5:]
+                self.format_set1_data(curr_label)
+            # If loading data for all labels
+            else:
+                self.format_set1_data("all")
 
         # Load data with Set2 labels
         elif self.label_type == "set2":
@@ -150,7 +155,7 @@ class Cage_Dataset(pl.LightningDataModule):
                 self.M = emg.size()[2]
     
 
-    def format_set1_data(self):
+    def format_set1_data(self, labels_to_use):
 
         np.set_printoptions(suppress=True)
 
@@ -177,7 +182,7 @@ class Cage_Dataset(pl.LightningDataModule):
         for N in range(len(my_cage_data.behave_tags['tag'])):
             curr_behavior = my_cage_data.behave_tags['tag'][N]
             if curr_behavior == "grooming":
-                continue
+                    continue
             start_idx, end_idx = find_start_end(N, timeframe)
             m1_trials.append(m1[start_idx:end_idx+1])
             emg_trials.append(emg[start_idx:end_idx+1])
@@ -186,6 +191,34 @@ class Cage_Dataset(pl.LightningDataModule):
         # Create train/val splits
         labels_trials = [[emg_trials[i], behavior_trials[i]] for i in range(len(emg_trials))]
         X_train, X_val, y_train, y_val = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
+
+        # If only loading data with one label
+        if labels_to_use != "all":
+            # For each dataset split of train and val
+            for split in ["train", "val"]:
+                new_X = []
+                new_y = []
+                if split == "train":
+                    curr_X = X_train
+                    curr_y = y_train
+                elif split == "val":
+                    curr_X = X_val
+                    curr_y = y_val
+                # For each trial in dataset
+                for i in range(len(curr_y)):
+                    curr_trial_X = curr_X[i]
+                    curr_trial_y = curr_y[i]
+                    curr_label = curr_trial_y[1][0]
+                    if curr_label == labels_to_use:
+                        new_X.append(curr_trial_X)
+                        new_y.append(curr_trial_y)
+                # Save new dataset with only data from one label
+                if split == "train":
+                    X_train = new_X
+                    y_train = new_y
+                elif split == "val":
+                    X_val = new_X
+                    y_val = new_y
 
         # Format back into time stamps
         X_train = torch.Tensor(np.concatenate(X_train))
