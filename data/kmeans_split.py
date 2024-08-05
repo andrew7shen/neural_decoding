@@ -25,7 +25,8 @@ curr_dir = os.getcwd()
     
 dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=config.kmeans_cluster)
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                           kmeans_cluster=config.kmeans_cluster, label_type=config.label_type)
 
 m1_train = torch.stack([v[0] for v in dataset.train_dataset])
 m1_val = torch.stack([v[0] for v in dataset.val_dataset])
@@ -35,9 +36,10 @@ labels_train = [v[2] for v in dataset.train_dataset]
 labels_val = [v[2] for v in dataset.val_dataset]
 
 # Create initial clusters
-# cluster_type = "kmeans"
-cluster_type = "random"
-k = 6
+cluster_type = "kmeans"
+# cluster_type = "random"
+k = 3
+# k = 6
 # Apply kmeans to M1 training data
 if cluster_type == "kmeans":
     kmeans = KMeans(n_clusters=k, n_init=10, random_state=42)
@@ -106,7 +108,7 @@ for dict in [m1_train_clusters, emg_train_clusters, labels_train_clusters,
         dict[key] = np.array(dict[key])
 
 # Save split files as numpy arrays
-out_path = "%s/data/set2_data/kmeans_split/%s/" % (curr_dir, save_dir)
+out_path = "%s/data/%s_data/kmeans_split/%s/" % (curr_dir, dataset.label_type, save_dir)
 if not os.path.exists(out_path):
     os.mkdir(out_path)
 name_dict = {"m1_train": m1_train_clusters, "emg_train": emg_train_clusters, "labels_train": labels_train_clusters,
@@ -147,7 +149,7 @@ for cluster_id in m1_train_clusters.keys():
     weights_list.append(np.array(curr_weights))
     
 # Save model weights for each cluster
-out_path = "%s/data/set2_data/decoder_weights/%s/" % (curr_dir, save_dir)
+out_path = "%s/data/%s_data/decoder_weights/%s/" % (curr_dir, dataset.label_type, save_dir)
 if not os.path.exists(out_path):
     os.mkdir(out_path)
 for i in range(len(weights_list)):

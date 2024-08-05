@@ -474,8 +474,7 @@ def full_R2_reg(datasets, verbose):
     return [train_r2, val_r2]
 
 
-# Outdated and wrong
-def sep_R2(dataset, model_path, config, verbose):
+def model_sep_R2(dataset, model_path, config, verbose):
     """
     Calculates separate R^2 values for each of the individual behavioral labels in Set2 for our model.
     """
@@ -483,13 +482,16 @@ def sep_R2(dataset, model_path, config, verbose):
     if not verbose:
         return
 
-    # Load in trained model
+    # Load trained model
+    eval_mode = False
     model = CombinedModel(input_dim=dataset.N,
+                          hidden_dim=config.hidden_dim,
                               output_dim=dataset.M,
                               num_modes=config.d, 
                               temperature=config.temperature,
-                              ev=config.ev)
-    # model = DecoderModel(dataset.N, dataset.M, config.d)
+                              ev=eval_mode,
+                              cluster_model_type=config.cluster_model_type,
+                              decoder_model_type=config.decoder_model_type)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model=model,
@@ -970,14 +972,16 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=True)
+                        verbose=False)
 
     # Evaluate model decoding
-    model_id = 120
+    # model_id = 120
+    model_id = 254
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     # plot_type = "baseline"
     plot_type = "behavior_average"
     # Check decoding
+    
     sep_decoders_R2(dataset=dataset,
                     model_path=model_path,
                     config=config,
@@ -1029,6 +1033,10 @@ if __name__ == "__main__":
                             batch_size=config.b, dataset_type=config.type, seed=config.seed,
                             kmeans_cluster=config.kmeans_cluster, label_type=config.label_type)
                 datasets.append(curr_dataset)
+
+    # Calculate separate R^2 for each behavioral label in our model
+    model_sep_r2_list = model_sep_R2(dataset=dataset, model_path=model_path,
+                                     config=config, verbose=False)
 
     # Calculate full R2 value
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)

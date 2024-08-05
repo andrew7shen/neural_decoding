@@ -55,24 +55,24 @@ if __name__ == "__main__":
                            weight_decay=config.weight_decay,
                            record=config.record,
                            type=config.type)
-                           
+    
     # Set initial decoder weights
     weights = []
-    # cluster_type = "kmeans"
-    cluster_type = "random"
+    cluster_type = "kmeans"
+    # cluster_type = "random"
     if config.set_decoder_weights:
         if "b10" in config.m1_path:
             for i in range(config.d):
                 if cluster_type == "kmeans":
-                    weights.append(nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6_b10/weights_%s.npy" % i))))
+                    weights.append(nn.Parameter(torch.Tensor(np.load("data/%s_data/decoder_weights/k%s_b10/weights_%s.npy" % (dataset.label_type, config.d, i)))))
                 elif cluster_type == "random":
-                    weights.append(nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6_b10_random/weights_%s.npy" % i))))
+                    weights.append(nn.Parameter(torch.Tensor(np.load("data/%s_data/decoder_weights/k%s_b10_random/weights_%s.npy" % (dataset.label_type, config.d, i)))))
         else:
             for i in range(config.d):
                 if cluster_type == "kmeans":
-                    weights.append(nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6/weights_%s.npy" % i))))
+                    weights.append(nn.Parameter(torch.Tensor(np.load("data/%s_data/decoder_weights/k%s/weights_%s.npy" % (dataset.label_type, config.d, i)))))
                 elif cluster_type == "random":
-                    weights.append(nn.Parameter(torch.Tensor(np.load("data/set2_data/decoder_weights/k6_random/weights_%s.npy" % i))))
+                    weights.append(nn.Parameter(torch.Tensor(np.load("data/%s_data/decoder_weights/k%s_random/weights_%s.npy" % (dataset.label_type, config.d, i)))))
         with torch.no_grad():
             for i in range(config.d):
                 model.model.dm.linears[i].weight = weights[i]
