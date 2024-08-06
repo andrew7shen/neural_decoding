@@ -736,7 +736,7 @@ def run_kmeans_M1(dataset, config):
 
 def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
 
-    save_fig = True
+    save_fig = False
 
     if not verbose:
         return
@@ -749,7 +749,8 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                               num_modes=config.d, 
                               temperature=config.temperature,
                               ev=eval_mode,
-                              model_type=config.model_type)
+                              cluster_model_type=config.cluster_model_type,
+                              decoder_model_type=config.decoder_model_type)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model=model,
@@ -843,7 +844,7 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
             else:
                 plt.show()
     
-    elif plot_type == "behavior_average":
+    elif plot_type in ["behavior_average", "behavior_average_unweighted"]:
 
         # Split up predictions into each behavior
         probs_behaviors_dict = {}
@@ -883,7 +884,7 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
         number_labels = ["1", "2", "3", "4", "5", "6", "7"]
 
         # Plot averaged decoding outputs for each behavior
-        equal_scale = True
+        equal_scale = False
         fig, ax = plt.subplots(3,4, figsize=(14,7))
         ax2 = ax[0,0].twinx()
         ax2 = [[ax_inner.twinx() for ax_inner in ax_outer] for ax_outer in ax]
@@ -913,28 +914,34 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                     ax[ax_pos, i].plot(x, y_2, label="PCA2", color="blue")
                     if equal_scale:
                         # ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
-                        ax[ax_pos][i].set_ylim([-60,70]) # Scale y-axis for equal comparison
+                        # ax[ax_pos][i].set_ylim([-60,70]) # Scale y-axis for equal comparison
+                        # ax[ax_pos][i].set_ylim([-0.7,1.3]) # Scale y-axis for equal comparison
+                        ax[ax_pos][i].set_ylim([-1.25,2.25]) # Scale y-axis for equal comparison
                     
                 # Plot mode values
                 else:
                     ax[ax_pos, i].set_title("Behavior %s, Mode %s" % (k, i-1), fontsize=10)
-                    # ax[ax_pos, i].plot(x, y1[i-1], label="PCA1", color="red")
-                    # ax[ax_pos, i].plot(x, y2[i-1], label="PCA2", color="blue")
-                    ax[ax_pos, i].plot(x, y1_final[i-1], label="PCA1_final", color="red", linestyle='dashed')
-                    ax[ax_pos, i].plot(x, y2_final[i-1], label="PCA2_final", color="blue", linestyle='dashed')
+                    if plot_type == "behavior_average_unweighted":
+                        ax[ax_pos, i].plot(x, y1[i-1], label="PCA1", color="red")
+                        ax[ax_pos, i].plot(x, y2[i-1], label="PCA2", color="blue")
+                    elif plot_type == "behavior_average":
+                        ax[ax_pos, i].plot(x, y1_final[i-1], label="PCA1_final", color="red", linestyle='dashed')
+                        ax[ax_pos, i].plot(x, y2_final[i-1], label="PCA2_final", color="blue", linestyle='dashed')
                     ax2[ax_pos][i].plot(x, y[i-1], label="prob", color="black")
                     ax2[ax_pos][i].set_ylim([0,1])
                     if equal_scale:
                         # ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
-                        ax[ax_pos][i].set_ylim([-60,70]) # Scale y-axis for equal comparison
+                        # ax[ax_pos][i].set_ylim([-60,70]) # Scale y-axis for equal comparison
+                        # ax[ax_pos][i].set_ylim([-0.7,1.3]) # Scale y-axis for equal comparison
+                        ax[ax_pos][i].set_ylim([-1.25,2.25]) # Scale y-axis for equal comparison
 
             ax_pos += 1
         
         if save_fig:
             if equal_scale:
-                plt.savefig("figures/decoder_outputs/%s_behavioral_average_scaled.png" % (model_id))
+                plt.savefig("figures/decoder_outputs/%s_%s_scaled.png" % (model_id, plot_type))
             else:
-                plt.savefig("figures/decoder_outputs/%s_behavioral_average.png" % (model_id))
+                plt.savefig("figures/decoder_outputs/%s_%s.png" % (model_id, plot_type))
         else:
             plt.show()
 
@@ -976,10 +983,12 @@ if __name__ == "__main__":
 
     # Evaluate model decoding
     # model_id = 120
-    model_id = 254
+    # model_id = 254
+    model_id = 260
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     # plot_type = "baseline"
     plot_type = "behavior_average"
+    # plot_type = "behavior_average_unweighted"
     # Check decoding
     
     sep_decoders_R2(dataset=dataset,
@@ -987,7 +996,7 @@ if __name__ == "__main__":
                     config=config,
                     plot_type=plot_type,
                     model_id=model_id,
-                    verbose=False)
+                    verbose=True)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
