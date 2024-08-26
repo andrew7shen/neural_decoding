@@ -154,6 +154,9 @@ class Cage_Dataset(pl.LightningDataModule):
                 self.N = m1.size()[2]
                 self.M = emg.size()[2]
     
+        # Load data with full dataset without labels
+        elif self.label_type == "none":
+            self.format_none_data()
 
     def format_set1_data(self, labels_to_use):
 
@@ -219,6 +222,60 @@ class Cage_Dataset(pl.LightningDataModule):
                 elif split == "val":
                     X_val = new_X
                     y_val = new_y
+
+        # Format back into time stamps
+        X_train = torch.Tensor(np.concatenate(X_train))
+        X_val = torch.Tensor(np.concatenate(X_val))
+        y_train_emg = torch.Tensor(np.concatenate([y[0] for y in y_train]))
+        y_train_behavioral = np.concatenate([y[1] for y in y_train])
+        y_val_emg = torch.Tensor(np.concatenate([y[0] for y in y_val]))
+        y_val_behavioral = np.concatenate([y[1] for y in y_val])
+        self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.N = m1.shape[1]
+        self.M = emg.shape[1]
+
+    def format_none_data(self):
+
+        np.set_printoptions(suppress=True)
+
+        def find_start_end(N, timeframe):
+            segment_range = np.where((timeframe>=my_cage_data.behave_tags['start_time'][N]) & (timeframe<=my_cage_data.behave_tags['end_time'][N]))[0]
+            start_idx = segment_range[0]
+            end_idx = segment_range[-1]
+            return start_idx, end_idx
+
+        # Load in raw dataset files
+        curr_dir = os.getcwd()
+        data_path = "%s/data/pickle_files/" % curr_dir
+        file_name = 'Pop_20210709_Cage_004.pkl'
+        with open(data_path+file_name, 'rb') as fp:
+            my_cage_data = pickle.load(fp)
+        m1 = np.transpose(my_cage_data.binned['spikes'])
+        emg = np.transpose(my_cage_data.binned['filtered_EMG'])
+        timeframe = my_cage_data.binned['timeframe']
+
+        # Format labels for labeled and unlabeled timestamps
+        behavior = ["none"] * m1.shape[0]
+        for N in range(len(my_cage_data.behave_tags['tag'])):
+            curr_behavior = my_cage_data.behave_tags['tag'][N]
+            if curr_behavior == "grooming":
+                    continue
+            start_idx, end_idx = find_start_end(N, timeframe)
+            behavior[start_idx:end_idx+1] = [curr_behavior] * (end_idx+1-start_idx)
+
+        # Format into trials of length 100
+        m1_trials = []
+        emg_trials = []
+        behavior_trials = []
+        for i in range(0, m1.shape[0], 100):
+            m1_trials.append(m1[i:i+100])
+            emg_trials.append(emg[i:i+100])
+            behavior_trials.append(behavior[i:i+100])
+
+        # Create train/val splits
+        labels_trials = [[emg_trials[i], behavior_trials[i]] for i in range(len(emg_trials))]
+        X_train, X_val, y_train, y_val = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
 
         # Format back into time stamps
         X_train = torch.Tensor(np.concatenate(X_train))

@@ -88,7 +88,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
     
     # Access train dataset
     train = dataset.train_dataset
-    train_emg_1 = torch.stack([val[1][0] for val in train]).tolist()
+    train_emg = torch.stack([val[1] for val in train])
+    train_emg_1 = train_emg[:,0].tolist()
     train_behavioral_labels = [val[2] for val in train]
 
     # Convert ground truth behavioral labels into numbers
@@ -141,11 +142,26 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
 
     # Graph of EMG with behavioral label and learned cluster labels overlaid with color
     if plot_type == "majority":
+
+        # Plot EMG info on top of clustering info
+        plot_pcs = True
+        pca = PCA(n_components=2)
+        pca_result = pca.fit_transform(train_emg)
+        pca1 = pca_result[:,0]
+        pca2 = pca_result[:,1]
+
         ids_array = np.array(ids)
         cluster_ids_array = np.array(cluster_ids)
         num_timestamps = len(ids_array)
         fig, (ax1, ax2) = plt.subplots(2, figsize=(10,3))
-        ax1.plot(timestamps, train_emg_1, color="black")
+
+        # Plot EMG info 
+        if plot_pcs: 
+            ax1.plot(timestamps, pca1, color="black")
+            ax1.plot(timestamps, pca2, color="white")
+        else:
+            ax1.plot(timestamps, train_emg_1, color="black")
+        
         cmap = ListedColormap(["yellow","green","blue"], name='from_list', N=None)
         cmap_preds = ListedColormap(cmap_colors[:config.d], name='from_list', N=None)
         ax1.imshow(np.expand_dims(ids_array, 0),
@@ -153,7 +169,14 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                 alpha=1.0,
                 extent=[0, num_timestamps, -200, 200])
         ax1.title.set_text("Behavioral Labels")
-        ax2.plot(timestamps, train_emg_1, color="black")
+
+        # Plot EMG info 
+        if plot_pcs: 
+            ax2.plot(timestamps, pca1, color="black")
+            ax2.plot(timestamps, pca2, color="white")
+        else:
+            ax2.plot(timestamps, train_emg_1, color="black")
+
         ax2.imshow(np.expand_dims(cluster_ids_array, 0),
                 cmap=cmap_preds,
                 alpha=1.0,
@@ -736,7 +759,7 @@ def run_kmeans_M1(dataset, config):
 
 def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
 
-    save_fig = False
+    save_fig = True
 
     if not verbose:
         return
@@ -932,8 +955,8 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                     if equal_scale:
                         # ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
                         # ax[ax_pos][i].set_ylim([-60,70]) # Scale y-axis for equal comparison
-                        # ax[ax_pos][i].set_ylim([-0.7,1.3]) # Scale y-axis for equal comparison
-                        ax[ax_pos][i].set_ylim([-1.25,2.25]) # Scale y-axis for equal comparison
+                        ax[ax_pos][i].set_ylim([-3.5,2.2]) # Scale y-axis for equal comparison
+                        # ax[ax_pos][i].set_ylim([-1.25,1.5]) # Scale y-axis for equal comparison
 
             ax_pos += 1
         
@@ -963,7 +986,7 @@ if __name__ == "__main__":
     run_kmeans(dataset=dataset, config=config, verbose=False)
 
     # Evaluate model clustering 
-    model_ids = [254]
+    model_ids = [272]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
@@ -982,9 +1005,11 @@ if __name__ == "__main__":
                         verbose=False)
 
     # Evaluate model decoding
-    # model_id = 120
+    model_id = 120
     # model_id = 254
-    model_id = 260
+    # model_id = 259
+    # model_id = 259
+    # model_id = 273
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     # plot_type = "baseline"
     plot_type = "behavior_average"
