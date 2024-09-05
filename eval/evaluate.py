@@ -26,6 +26,7 @@ Expanded trial range: "python3 eval/evaluate.py configs/t100_configs/configs_cag
 Expanded trial range (B=10): "python3 eval/evaluate.py configs/b_configs/configs_cage_t100_b10.yaml"
 Expanded trial range (d=4): "python3 eval/evaluate.py configs/d_configs/configs_cage_t100_d4.yaml"
 Set 1 data: "python3 eval/evaluate.py configs/t100_configs/configs_cage_t100_set1.yaml"
+Kmeans clusters #0 for None data: "python3 eval/evaluate.py configs/kmeans_split_configs/configs_cage_t100_kmeans0_none.yaml"
 """
 
 
@@ -88,6 +89,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
     
     # Access train dataset
     train = dataset.train_dataset
+    train_m1 = torch.stack([val[0] for val in train])
+    train_m1_1 = train_m1[:,0].tolist()
     train_emg = torch.stack([val[1] for val in train])
     train_emg_1 = train_emg[:,0].tolist()
     train_behavioral_labels = [val[2] for val in train]
@@ -143,10 +146,22 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
     # Graph of EMG with behavioral label and learned cluster labels overlaid with color
     if plot_type == "majority":
 
+        # Determine whether plotting M1 or EMG
+        dataset_to_plot = "m1"
+        # dataset_to_plot = "emg"
+        if dataset_to_plot == "m1":
+            train_dataset = train_m1 * 10
+            train_dataset_1 = train_m1_1 * 10
+        elif dataset_to_plot == "emg":
+            train_dataset = train_emg
+            train_dataset_1 = train_emg_1
+
+
         # Plot EMG info on top of clustering info
         plot_pcs = True
+        plot_emg = False
         pca = PCA(n_components=2)
-        pca_result = pca.fit_transform(train_emg)
+        pca_result = pca.fit_transform(train_dataset)
         pca1 = pca_result[:,0]
         pca2 = pca_result[:,1]
 
@@ -160,7 +175,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
             ax1.plot(timestamps, pca1, color="black")
             ax1.plot(timestamps, pca2, color="white")
         else:
-            ax1.plot(timestamps, train_emg_1, color="black")
+            ax1.plot(timestamps, train_dataset_1, color="black")
         
         cmap = ListedColormap(["yellow","green","blue"], name='from_list', N=None)
         cmap_preds = ListedColormap(cmap_colors[:config.d], name='from_list', N=None)
@@ -175,7 +190,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
             ax2.plot(timestamps, pca1, color="black")
             ax2.plot(timestamps, pca2, color="white")
         else:
-            ax2.plot(timestamps, train_emg_1, color="black")
+            ax2.plot(timestamps, train_dataset_1, color="black")
 
         ax2.imshow(np.expand_dims(cluster_ids_array, 0),
                 cmap=cmap_preds,
@@ -467,7 +482,7 @@ def full_R2_reg(datasets, verbose):
         curr_emg_val = np.array([val[1] for val in val_dataset])
         curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
         # Fit with Ridge regression
-        curr_model = Ridge(alpha=200.0).fit(curr_m1_train, curr_emg_train)
+        curr_model = Ridge(alpha=500.0).fit(curr_m1_train, curr_emg_train)
 
         # Generate train and val preds and append to full list
         train_emgs.append(torch.Tensor(curr_emg_train))
@@ -1005,15 +1020,16 @@ if __name__ == "__main__":
                         verbose=False)
 
     # Evaluate model decoding
-    model_id = 120
+    # model_id = 120
+    model_id = 115
     # model_id = 254
     # model_id = 259
     # model_id = 259
     # model_id = 273
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     # plot_type = "baseline"
-    plot_type = "behavior_average"
-    # plot_type = "behavior_average_unweighted"
+    # plot_type = "behavior_average"
+    plot_type = "behavior_average_unweighted"
     # Check decoding
     
     sep_decoders_R2(dataset=dataset,
@@ -1026,7 +1042,7 @@ if __name__ == "__main__":
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
     datasets = []
-    if "data/set2_data/kmeans_split" in config.m1_path:
+    if "kmeans_split" in config.m1_path:
         # If using k=6 or k=3
         if "k6" in config.m1_path:
             k = 6
@@ -1036,7 +1052,8 @@ if __name__ == "__main__":
         for k in range(k):
             curr_dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed, kmeans_cluster=k)
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed, 
+                           kmeans_cluster=k, label_type=config.label_type)
             datasets.append(curr_dataset)
     # If using mode data, format separate datasets
     else:

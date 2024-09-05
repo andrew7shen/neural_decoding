@@ -156,7 +156,29 @@ class Cage_Dataset(pl.LightningDataModule):
     
         # Load data with full dataset without labels
         elif self.label_type == "none":
-            self.format_none_data()
+
+            # If using kmeans split data for sanity check
+            if "data/none_data/kmeans_split" in m1_path:
+                path = m1_path
+                m1_train = torch.Tensor(np.load("%s/m1_train_%s.npy" % (path, self.kmeans_cluster)))
+                emg_train = torch.Tensor(np.load("%s/emg_train_%s.npy" % (path, self.kmeans_cluster)))
+                labels_train = np.load("%s/labels_train_%s.npy" % (path, self.kmeans_cluster))
+                m1_val = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
+                emg_val = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
+                labels_val = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
+
+                self.train_dataset = [(m1_train[i], emg_train[i], labels_train[i]) for i in range(len(m1_train))]
+                self.val_dataset = [(m1_val[i], emg_val[i], labels_val[i]) for i in range(len(m1_val))]
+                self.N = m1_train.shape[1]
+                self.M = emg_train.shape[1]
+
+            else:
+                self.format_none_data()
+
+        # Remove samples with M1 data of all zeros
+        remove_zeros = True
+        if remove_zeros:
+            self.remove_zeros()
 
     def format_set1_data(self, labels_to_use):
 
@@ -284,11 +306,43 @@ class Cage_Dataset(pl.LightningDataModule):
         y_train_behavioral = np.concatenate([y[1] for y in y_train])
         y_val_emg = torch.Tensor(np.concatenate([y[0] for y in y_val]))
         y_val_behavioral = np.concatenate([y[1] for y in y_val])
+
+        # Perform min-max scaling
+        scale_outputs = True
+        if scale_outputs:
+            scaler = MinMaxScaler()
+            scaler.fit(y_train_emg)
+            y_train_emg = torch.Tensor(scaler.transform(y_train_emg))
+            y_val_emg = torch.Tensor(scaler.transform(y_val_emg))
+
         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
         self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
         self.N = m1.shape[1]
         self.M = emg.shape[1]
-
+        
+    def remove_zeros(self):
+        train_nozeros = []
+        val_nozeros = []
+        for dataset in [self.train_dataset, self.val_dataset]:
+            num_zeros = 0
+            zeros_tensor = torch.Tensor([0.0]*95)
+            for i in range(len(dataset)):
+                sample = dataset[i]
+                curr_m1 = sample[0]
+                if torch.equal(curr_m1, zeros_tensor):
+                    num_zeros += 1
+                else:
+                    # Keep only samples without all zeros
+                    if dataset == self.train_dataset:
+                        train_nozeros.append(sample)
+                    elif dataset == self.val_dataset:
+                        val_nozeros.append(sample)
+            # if dataset == self.train_dataset:
+            #     print(f"{num_zeros} zero samples out of {len(dataset)} in train set")
+            # elif dataset == self.val_dataset:
+            #     print(f"{num_zeros} zero samples out of {len(dataset)} in val set")
+        self.train_dataset = train_nozeros
+        self.val_dataset = val_nozeros
 
     def __len__(self):
         """
