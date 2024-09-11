@@ -22,3 +22,4 @@ decoder_model_type: ""
 kmeans_cluster: 0
 set_decoder_weights: False
 label_type: "set1"
+remove_zeros: True

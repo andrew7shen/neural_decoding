@@ -31,6 +31,8 @@ class Config():
         self.kmeans_cluster = args["kmeans_cluster"]
         self.set_decoder_weights = args["set_decoder_weights"]
         self.label_type = args["label_type"]
+        self.remove_zeros = args["remove_zeros"]
+        self.scale_outputs = args["scale_outputs"]
 
 
 def load_config():

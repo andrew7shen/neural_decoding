@@ -16,7 +16,10 @@ import pickle as pickle
 
 class Cage_Dataset(pl.LightningDataModule):
     
-    def __init__(self, m1_path, emg_path, behavioral_path, num_modes, batch_size, dataset_type, seed, kmeans_cluster, label_type):
+    def __init__(self, m1_path, emg_path, behavioral_path, 
+                 num_modes, batch_size, dataset_type, 
+                 seed, kmeans_cluster, label_type,
+                 remove_zeros, scale_outputs):
         super().__init__()
         self.batch_size = batch_size
         self.num_modes = num_modes
@@ -28,6 +31,8 @@ class Cage_Dataset(pl.LightningDataModule):
         self.seed = seed
         self.kmeans_cluster = kmeans_cluster
         self.label_type = label_type
+        self.remove_zeros = remove_zeros
+        self.scale_outputs = scale_outputs
 
         # Set manual seed
         torch.manual_seed(seed)
@@ -95,8 +100,6 @@ class Cage_Dataset(pl.LightningDataModule):
                 self.M = emg_train.shape[1]
 
             else:
-                # Determine whether to perform output scaling experiment
-                scale_outputs = True
 
                 # Read in data
                 m1 = torch.Tensor(np.load(m1_path))
@@ -118,7 +121,7 @@ class Cage_Dataset(pl.LightningDataModule):
                 y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
 
                 # Perform min-max scaling
-                if scale_outputs:
+                if self.scale_outputs:
                     plot_variance = False
                     scaler = MinMaxScaler()
                     scaler.fit(y_train_emg)
@@ -176,9 +179,8 @@ class Cage_Dataset(pl.LightningDataModule):
                 self.format_none_data()
 
         # Remove samples with M1 data of all zeros
-        remove_zeros = True
-        if remove_zeros:
-            self.remove_zeros()
+        if self.remove_zeros:
+            self.remove_zeros_from_dataset()
 
     def format_set1_data(self, labels_to_use):
 
@@ -308,8 +310,7 @@ class Cage_Dataset(pl.LightningDataModule):
         y_val_behavioral = np.concatenate([y[1] for y in y_val])
 
         # Perform min-max scaling
-        scale_outputs = True
-        if scale_outputs:
+        if self.scale_outputs:
             scaler = MinMaxScaler()
             scaler.fit(y_train_emg)
             y_train_emg = torch.Tensor(scaler.transform(y_train_emg))
@@ -320,7 +321,7 @@ class Cage_Dataset(pl.LightningDataModule):
         self.N = m1.shape[1]
         self.M = emg.shape[1]
         
-    def remove_zeros(self):
+    def remove_zeros_from_dataset(self):
         train_nozeros = []
         val_nozeros = []
         for dataset in [self.train_dataset, self.val_dataset]:

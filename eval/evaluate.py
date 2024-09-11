@@ -1001,7 +1001,7 @@ if __name__ == "__main__":
     run_kmeans(dataset=dataset, config=config, verbose=False)
 
     # Evaluate model clustering 
-    model_ids = [272]
+    model_ids = [277]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
@@ -1017,7 +1017,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=False)
+                        verbose=True)
 
     # Evaluate model decoding
     # model_id = 120
@@ -1037,7 +1037,7 @@ if __name__ == "__main__":
                     config=config,
                     plot_type=plot_type,
                     model_id=model_id,
-                    verbose=True)
+                    verbose=False)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
