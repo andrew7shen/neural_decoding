@@ -323,8 +323,6 @@ class Cage_Dataset(pl.LightningDataModule):
         self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
         self.N = m1.shape[1]
         self.M = emg.shape[1]
-        print(X_train.shape)
-        import pdb; pdb.set_trace()
 
     def format_none_data(self):
 
