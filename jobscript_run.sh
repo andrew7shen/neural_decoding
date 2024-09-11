@@ -12,6 +12,8 @@ module load python/3.9.16
 cd neural_decoding/
 
 python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming.yaml
+python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming_sitting_still.yaml
+
 
 # python3 run/run.py configs/robust_configs/configs_cage_t100_relu0.1.yaml
 # python3 run/run.py configs/robust_configs/configs_cage_t100_relu0.01.yaml

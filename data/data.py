@@ -41,8 +41,17 @@ class Cage_Dataset(pl.LightningDataModule):
         if "set1" in self.label_type:
             # If loading data to test generalizability
             if "generalizability" in self.label_type:
-                experiment_type = self.label_type[22:]
-                self.format_set1_data_generalizability(experiment_type)
+
+                # TODO: Make this better
+                # grooming
+                if len(self.label_type) == 30:
+                    experiment_types = ["grooming"]
+                # grooming and sitting_still
+                elif len(self.label_type) > 30:
+                    experiment_types = ["grooming", "sitting_still"]
+                # experiment_type = self.label_type[22:]
+
+                self.format_set1_data_generalizability(experiment_types)
             # If loading data for just one label
             elif len(self.label_type) > 4:
                 curr_label = self.label_type[5:]
@@ -263,7 +272,7 @@ class Cage_Dataset(pl.LightningDataModule):
         self.N = m1.shape[1]
         self.M = emg.shape[1]
 
-    def format_set1_data_generalizability(self, experiment_type):
+    def format_set1_data_generalizability(self, experiment_types):
 
         np.set_printoptions(suppress=True)
 
@@ -294,7 +303,7 @@ class Cage_Dataset(pl.LightningDataModule):
             curr_behavior = my_cage_data.behave_tags['tag'][N]
             start_idx, end_idx = find_start_end(N, timeframe)
             # Save grooming timestamps to validation set
-            if curr_behavior == "grooming":
+            if curr_behavior in experiment_types:
                 m1_val.append(m1[start_idx:end_idx+1])
                 emg_val.append(emg[start_idx:end_idx+1])
                 behavior_val.append([curr_behavior]*(end_idx-start_idx+1))
@@ -314,6 +323,8 @@ class Cage_Dataset(pl.LightningDataModule):
         self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
         self.N = m1.shape[1]
         self.M = emg.shape[1]
+        print(X_train.shape)
+        import pdb; pdb.set_trace()
 
     def format_none_data(self):
 
