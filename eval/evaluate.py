@@ -159,7 +159,6 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
 
         # Plot EMG info on top of clustering info
         plot_pcs = True
-        plot_emg = False
         pca = PCA(n_components=2)
         pca_result = pca.fit_transform(train_dataset)
         pca1 = pca_result[:,0]
@@ -482,7 +481,7 @@ def full_R2_reg(datasets, verbose):
         curr_emg_val = np.array([val[1] for val in val_dataset])
         curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
         # Fit with Ridge regression
-        curr_model = Ridge(alpha=500.0).fit(curr_m1_train, curr_emg_train)
+        curr_model = Ridge(alpha=200.0).fit(curr_m1_train, curr_emg_train)
 
         # Generate train and val preds and append to full list
         train_emgs.append(torch.Tensor(curr_emg_train))
@@ -992,7 +991,8 @@ if __name__ == "__main__":
     dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed,
-                           kmeans_cluster=config.kmeans_cluster, label_type=config.label_type)
+                           kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
+                           remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
     
     # Print dataset statistics
     dataset_statistics(dataset=dataset, verbose=False)
@@ -1017,15 +1017,16 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=True)
+                        verbose=False)
 
     # Evaluate model decoding
     # model_id = 120
-    model_id = 115
+    # model_id = 115
     # model_id = 254
     # model_id = 259
     # model_id = 259
     # model_id = 273
+    model_id = 277
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     # plot_type = "baseline"
     # plot_type = "behavior_average"
@@ -1053,7 +1054,8 @@ if __name__ == "__main__":
             curr_dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed, 
-                           kmeans_cluster=k, label_type=config.label_type)
+                           kmeans_cluster=k, label_type=config.label_type,
+                           remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
             datasets.append(curr_dataset)
     # If using mode data, format separate datasets
     else:
@@ -1064,7 +1066,8 @@ if __name__ == "__main__":
                 curr_dataset = Cage_Dataset(m1_path="", emg_path="", 
                                 behavioral_path="", num_modes=config.d, 
                                 batch_size=config.b, dataset_type=config.type, seed=config.seed,
-                                kmeans_cluster=config.kmeans_cluster, label_type=curr_label_type)
+                                kmeans_cluster=config.kmeans_cluster, label_type=curr_label_type,
+                                remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
                 datasets.append(curr_dataset)
         # If using set2 data
         else:
@@ -1082,7 +1085,8 @@ if __name__ == "__main__":
                 curr_dataset = Cage_Dataset(m1_path=curr_m1_path, emg_path=curr_emg_path, 
                             behavioral_path=curr_behavioral_path, num_modes=config.d, 
                             batch_size=config.b, dataset_type=config.type, seed=config.seed,
-                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type)
+                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
                 datasets.append(curr_dataset)
 
     # Calculate separate R^2 for each behavioral label in our model
@@ -1093,7 +1097,7 @@ if __name__ == "__main__":
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
+    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=True)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)

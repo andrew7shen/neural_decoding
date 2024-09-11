@@ -26,7 +26,8 @@ curr_dir = os.getcwd()
 dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed,
-                           kmeans_cluster=config.kmeans_cluster, label_type=config.label_type)
+                           kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
+                           remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
 
 m1_train = torch.stack([v[0] for v in dataset.train_dataset])
 m1_val = torch.stack([v[0] for v in dataset.val_dataset])
@@ -38,8 +39,8 @@ labels_val = [v[2] for v in dataset.val_dataset]
 # Create initial clusters
 cluster_type = "kmeans"
 # cluster_type = "random"
-k = 3
-# k = 6
+# k = 3
+k = 6
 # Apply kmeans to M1 training data
 if cluster_type == "kmeans":
     kmeans = KMeans(n_clusters=k, n_init=10, random_state=42)
