@@ -39,8 +39,12 @@ class Cage_Dataset(pl.LightningDataModule):
 
         # Load data with Set1 labels
         if "set1" in self.label_type:
+            # If loading data to test generalizability
+            if "generalizability" in self.label_type:
+                experiment_type = self.label_type[22:]
+                self.format_set1_data_generalizability(experiment_type)
             # If loading data for just one label
-            if len(self.label_type) > 4:
+            elif len(self.label_type) > 4:
                 curr_label = self.label_type[5:]
                 self.format_set1_data(curr_label)
             # If loading data for all labels
@@ -254,6 +258,58 @@ class Cage_Dataset(pl.LightningDataModule):
         y_train_behavioral = np.concatenate([y[1] for y in y_train])
         y_val_emg = torch.Tensor(np.concatenate([y[0] for y in y_val]))
         y_val_behavioral = np.concatenate([y[1] for y in y_val])
+        self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.N = m1.shape[1]
+        self.M = emg.shape[1]
+
+    def format_set1_data_generalizability(self, experiment_type):
+
+        np.set_printoptions(suppress=True)
+
+        def find_start_end(N, timeframe):
+            segment_range = np.where((timeframe>=my_cage_data.behave_tags['start_time'][N]) & (timeframe<=my_cage_data.behave_tags['end_time'][N]))[0]
+            start_idx = segment_range[0]
+            end_idx = segment_range[-1]
+            return start_idx, end_idx
+
+        # Load in raw dataset files
+        curr_dir = os.getcwd()
+        data_path = "%s/data/pickle_files/" % curr_dir
+        file_name = 'Pop_20210709_Cage_004.pkl'
+        with open(data_path+file_name, 'rb') as fp:
+            my_cage_data = pickle.load(fp)
+        m1 = np.transpose(my_cage_data.binned['spikes'])
+        emg = np.transpose(my_cage_data.binned['filtered_EMG'])
+        timeframe = my_cage_data.binned['timeframe']
+
+        # Format into trials
+        m1_train = []
+        emg_train = []
+        behavior_train = []
+        m1_val = []
+        emg_val = []
+        behavior_val = []
+        for N in range(len(my_cage_data.behave_tags['tag'])):
+            curr_behavior = my_cage_data.behave_tags['tag'][N]
+            start_idx, end_idx = find_start_end(N, timeframe)
+            # Save grooming timestamps to validation set
+            if curr_behavior == "grooming":
+                m1_val.append(m1[start_idx:end_idx+1])
+                emg_val.append(emg[start_idx:end_idx+1])
+                behavior_val.append([curr_behavior]*(end_idx-start_idx+1))
+            else:
+                m1_train.append(m1[start_idx:end_idx+1])
+                emg_train.append(emg[start_idx:end_idx+1])
+                behavior_train.append([curr_behavior]*(end_idx-start_idx+1))
+            
+        # Format back into time stamps
+        X_train = torch.Tensor(np.concatenate(m1_train))
+        y_train_emg = torch.Tensor(np.concatenate(emg_train))
+        y_train_behavioral = np.concatenate(behavior_train)
+        X_val = torch.Tensor(np.concatenate(m1_val))
+        y_val_emg = torch.Tensor(np.concatenate(emg_val))
+        y_val_behavioral = np.concatenate(behavior_val)
         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
         self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
         self.N = m1.shape[1]

@@ -21,6 +21,6 @@ cluster_model_type: "method1"
 decoder_model_type: ""
 kmeans_cluster: 0
 set_decoder_weights: False
-label_type: "set1"
+label_type: "set1_generalizability_grooming"
 remove_zeros: False
 scale_outputs: False
