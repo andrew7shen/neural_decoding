@@ -6,7 +6,7 @@ b: 8
 type: "emg"
 epochs: 500
 lr: 0.0001
-record: True
+record: False
 ev: False
 m1_path: ""
 emg_path: ""
@@ -22,3 +22,5 @@ decoder_model_type: ""
 kmeans_cluster: 0
 set_decoder_weights: False
 label_type: "set1"
+remove_zeros: True
+scale_outputs: False

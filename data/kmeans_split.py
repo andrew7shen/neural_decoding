@@ -37,10 +37,10 @@ labels_train = [v[2] for v in dataset.train_dataset]
 labels_val = [v[2] for v in dataset.val_dataset]
 
 # Create initial clusters
-cluster_type = "kmeans"
-# cluster_type = "random"
-# k = 3
-k = 6
+# cluster_type = "kmeans"
+cluster_type = "random"
+k = 3
+# k = 6
 # Apply kmeans to M1 training data
 if cluster_type == "kmeans":
     kmeans = KMeans(n_clusters=k, n_init=10, random_state=42)
@@ -53,9 +53,9 @@ elif cluster_type == "random":
     # Create initial list of clusters from 0 to k
     preds = []
     val_preds = []
-    for dataset, clusters in [[m1_train, preds], [m1_val, val_preds]]:
+    for data, clusters in [[m1_train, preds], [m1_val, val_preds]]:
         curr_cluster = 0
-        for i in range(len(dataset)):
+        for i in range(len(data)):
             if curr_cluster == k:
                 curr_cluster = 0
             clusters.append(curr_cluster)
@@ -109,7 +109,11 @@ for dict in [m1_train_clusters, emg_train_clusters, labels_train_clusters,
         dict[key] = np.array(dict[key])
 
 # Save split files as numpy arrays
-out_path = "%s/data/%s_data/kmeans_split/%s/" % (curr_dir, dataset.label_type, save_dir)
+if config.remove_zeros:
+    label_type = f"{dataset.label_type}_removezeros"
+else:
+    label_type = dataset.label_type
+out_path = "%s/data/%s_data/kmeans_split/%s/" % (curr_dir, label_type, save_dir)
 if not os.path.exists(out_path):
     os.mkdir(out_path)
 name_dict = {"m1_train": m1_train_clusters, "emg_train": emg_train_clusters, "labels_train": labels_train_clusters,
@@ -150,7 +154,7 @@ for cluster_id in m1_train_clusters.keys():
     weights_list.append(np.array(curr_weights))
     
 # Save model weights for each cluster
-out_path = "%s/data/%s_data/decoder_weights/%s/" % (curr_dir, dataset.label_type, save_dir)
+out_path = "%s/data/%s_data/decoder_weights/%s/" % (curr_dir, label_type, save_dir)
 if not os.path.exists(out_path):
     os.mkdir(out_path)
 for i in range(len(weights_list)):

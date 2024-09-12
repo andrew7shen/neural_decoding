@@ -13,7 +13,7 @@ emg_path: ""
 behavioral_path: ""
 save_path: "checkpoints"
 model: "combined"
-seed: 45
+seed: 42
 temperature: 1
 weight_decay: 0.01
 hidden_dim: 30
@@ -21,6 +21,6 @@ cluster_model_type: "method1"
 decoder_model_type: ""
 kmeans_cluster: 0
 set_decoder_weights: False
-label_type: "set1"
-remove_zeros: True
-scale_outputs: False
+label_type: "none"
+remove_zeros: False
+scale_outputs: True
