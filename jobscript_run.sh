@@ -14,6 +14,21 @@ cd neural_decoding/
 python3 run/run.py configs/t100_configs/configs_cage_t100_none.yaml
 python3 run/run.py configs/t100_configs/configs_cage_t100_none_scaled.yaml
 
+python3 run/run.py configs/s_configs/configs_cage_t100_set1_s42.yaml
+python3 run/run.py configs/s_configs/configs_cage_t100_set1_s43.yaml
+python3 run/run.py configs/s_configs/configs_cage_t100_set1_s44.yaml
+python3 run/run.py configs/s_configs/configs_cage_t100_set1_s45.yaml
+python3 run/run.py configs/s_configs/configs_cage_t100_set1_s46.yaml
+
+python3 run/run.py configs/t100_configs/configs_cage_t100_set1_kmeansweights.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set1_randomweights.yaml
+
+
+
+
+
+
+
 # python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming.yaml
 # python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming_sitting_still.yaml
 
@@ -21,12 +36,6 @@ python3 run/run.py configs/t100_configs/configs_cage_t100_none_scaled.yaml
 # python3 run/run.py configs/robust_configs/configs_cage_t100_relu0.01.yaml
 # python3 run/run.py configs/robust_configs/configs_cage_t100_onlyrelu0.01.yaml
 # python3 run/run.py configs/robust_configs/configs_cage_t100_onlytanh.yaml
-
-python3 run/run.py configs/s_configs/configs_cage_t100_set1_s42.yaml
-python3 run/run.py configs/s_configs/configs_cage_t100_set1_s43.yaml
-python3 run/run.py configs/s_configs/configs_cage_t100_set1_s44.yaml
-python3 run/run.py configs/s_configs/configs_cage_t100_set1_s45.yaml
-python3 run/run.py configs/s_configs/configs_cage_t100_set1_s46.yaml
 
 # python3 run/run.py configs/d_configs/configs_cage_t100_set1_d3.yaml
 # python3 run/run.py configs/d_configs/configs_cage_t100_set1_d4.yaml
@@ -37,9 +46,6 @@ python3 run/run.py configs/s_configs/configs_cage_t100_set1_s46.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set1.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_none.yaml
 # python3 run/run.py configs/d_configs/configs_cage_t100_none_d6.yaml
-
-python3 run/run.py configs/t100_configs/configs_cage_t100_set1_kmeansweights.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set1_randomweights.yaml
 
 # python3 run/run.py configs/t100_configs/configs_cage_t100.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_2.yaml
