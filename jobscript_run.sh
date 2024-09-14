@@ -11,17 +11,22 @@ source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
-python3 run/run.py configs/t100_configs/configs_cage_t100_none.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_none_scaled.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_none.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_none_scaled.yaml
 
-python3 run/run.py configs/s_configs/configs_cage_t100_set1_s42.yaml
-python3 run/run.py configs/s_configs/configs_cage_t100_set1_s43.yaml
-python3 run/run.py configs/s_configs/configs_cage_t100_set1_s44.yaml
-python3 run/run.py configs/s_configs/configs_cage_t100_set1_s45.yaml
-python3 run/run.py configs/s_configs/configs_cage_t100_set1_s46.yaml
+# python3 run/run.py configs/s_configs/configs_cage_t100_set1_s42.yaml
+# python3 run/run.py configs/s_configs/configs_cage_t100_set1_s43.yaml
+# python3 run/run.py configs/s_configs/configs_cage_t100_set1_s44.yaml
+# python3 run/run.py configs/s_configs/configs_cage_t100_set1_s45.yaml
+# python3 run/run.py configs/s_configs/configs_cage_t100_set1_s46.yaml
 
-python3 run/run.py configs/t100_configs/configs_cage_t100_set1_kmeansweights.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set1_randomweights.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set1_kmeansweights.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set1_randomweights.yaml
+
+python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming.yaml
+python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming_sitting_still.yaml
+python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_unlabeled.yaml
+python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_labeled.yaml
 
 
 
@@ -29,8 +34,7 @@ python3 run/run.py configs/t100_configs/configs_cage_t100_set1_randomweights.yam
 
 
 
-# python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming.yaml
-# python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming_sitting_still.yaml
+
 
 # python3 run/run.py configs/robust_configs/configs_cage_t100_relu0.1.yaml
 # python3 run/run.py configs/robust_configs/configs_cage_t100_relu0.01.yaml

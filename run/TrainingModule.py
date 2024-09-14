@@ -35,7 +35,9 @@ class TrainingModule(LightningModule):
         # Generate predictions
         labels_hat = self.model(features)
         if labels_hat.shape[0] == 1:
-            labels_hat = labels_hat.squeeze(2) # We want to squeeze out last dim but not first dim if batch_size=1 
+            pass
+            # TODO: Commented out for generalizability grooming experiment because was erroring and unnecessary
+            # labels_hat = labels_hat.squeeze(2) # We want to squeeze out last dim but not first dim if batch_size=1 
         else:
             labels_hat = labels_hat.squeeze() 
         if self.dataset_type == "behavioral":

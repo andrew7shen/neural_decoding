@@ -42,16 +42,14 @@ class Cage_Dataset(pl.LightningDataModule):
             # If loading data to test generalizability
             if "generalizability" in self.label_type:
 
-                # TODO: Make this better
-                # grooming
-                if len(self.label_type) == 30:
+                # Load correct generalizability experiment
+                if self.label_type == "set1_generalizability_grooming":
                     experiment_types = ["grooming"]
-                # grooming and sitting_still
-                elif len(self.label_type) > 30:
+                elif self.label_type == "set1_generalizability_grooming_sitting_still":
                     experiment_types = ["grooming", "sitting_still"]
-                # experiment_type = self.label_type[22:]
 
                 self.format_set1_data_generalizability(experiment_types)
+                
             # If loading data for just one label
             elif len(self.label_type) > 4:
                 curr_label = self.label_type[5:]
@@ -171,7 +169,7 @@ class Cage_Dataset(pl.LightningDataModule):
                 self.M = emg.size()[2]
     
         # Load data with full dataset without labels
-        elif self.label_type == "none":
+        elif "none" in self.label_type:
 
             # If using kmeans split data for sanity check
             if "data/none_data/kmeans_split" in m1_path:
@@ -187,6 +185,17 @@ class Cage_Dataset(pl.LightningDataModule):
                 self.val_dataset = [(m1_val[i], emg_val[i], labels_val[i]) for i in range(len(m1_val))]
                 self.N = m1_train.shape[1]
                 self.M = emg_train.shape[1]
+            
+            # If loading data to test generalizability
+            elif "generalizability" in self.label_type:
+
+                # Load correct generalizability experiment
+                if self.label_type == "none_generalizability_unlabeled":
+                    experiment_types = ["unlabeled"]
+                elif self.label_type == "none_generalizability_labeled":
+                    experiment_types = ["labeled"]
+
+                self.format_none_data_generalizability(experiment_types)
 
             else:
                 self.format_none_data()
@@ -194,6 +203,7 @@ class Cage_Dataset(pl.LightningDataModule):
         # Remove samples with M1 data of all zeros
         if self.remove_zeros:
             self.remove_zeros_from_dataset()
+
 
     def format_set1_data(self, labels_to_use):
 
@@ -272,6 +282,7 @@ class Cage_Dataset(pl.LightningDataModule):
         self.N = m1.shape[1]
         self.M = emg.shape[1]
 
+
     def format_set1_data_generalizability(self, experiment_types):
 
         np.set_printoptions(suppress=True)
@@ -292,7 +303,7 @@ class Cage_Dataset(pl.LightningDataModule):
         emg = np.transpose(my_cage_data.binned['filtered_EMG'])
         timeframe = my_cage_data.binned['timeframe']
 
-        # Format into trials
+        # Format into train and val sets
         m1_train = []
         emg_train = []
         behavior_train = []
@@ -302,7 +313,8 @@ class Cage_Dataset(pl.LightningDataModule):
         for N in range(len(my_cage_data.behave_tags['tag'])):
             curr_behavior = my_cage_data.behave_tags['tag'][N]
             start_idx, end_idx = find_start_end(N, timeframe)
-            # Save grooming timestamps to validation set
+
+            # If running "grooming" or "sitting_still" generalizability experiment
             if curr_behavior in experiment_types:
                 m1_val.append(m1[start_idx:end_idx+1])
                 emg_val.append(emg[start_idx:end_idx+1])
@@ -323,6 +335,7 @@ class Cage_Dataset(pl.LightningDataModule):
         self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
         self.N = m1.shape[1]
         self.M = emg.shape[1]
+
 
     def format_none_data(self):
 
@@ -386,6 +399,92 @@ class Cage_Dataset(pl.LightningDataModule):
         self.N = m1.shape[1]
         self.M = emg.shape[1]
         
+
+    def format_none_data_generalizability(self, experiment_types):
+
+        np.set_printoptions(suppress=True)
+
+        def find_start_end(N, timeframe):
+            segment_range = np.where((timeframe>=my_cage_data.behave_tags['start_time'][N]) & (timeframe<=my_cage_data.behave_tags['end_time'][N]))[0]
+            start_idx = segment_range[0]
+            end_idx = segment_range[-1]
+            return start_idx, end_idx
+
+        # Load in raw dataset files
+        curr_dir = os.getcwd()
+        data_path = "%s/data/pickle_files/" % curr_dir
+        file_name = 'Pop_20210709_Cage_004.pkl'
+        with open(data_path+file_name, 'rb') as fp:
+            my_cage_data = pickle.load(fp)
+        m1 = np.transpose(my_cage_data.binned['spikes'])
+        emg = np.transpose(my_cage_data.binned['filtered_EMG'])
+        timeframe = my_cage_data.binned['timeframe']
+
+        # Format labels for labeled and unlabeled timestamps
+        behavior = ["none"] * m1.shape[0]
+        for N in range(len(my_cage_data.behave_tags['tag'])):
+            curr_behavior = my_cage_data.behave_tags['tag'][N]
+            if curr_behavior == "grooming":
+                    continue
+            start_idx, end_idx = find_start_end(N, timeframe)
+            behavior[start_idx:end_idx+1] = [curr_behavior] * (end_idx+1-start_idx)
+        
+        # Format into train and val sets
+        m1_train = []
+        emg_train = []
+        behavior_train = []
+        m1_val = []
+        emg_val = []
+        behavior_val = []
+        for i in range(len(m1)):
+            curr_m1 = m1[i]
+            curr_emg = emg[i]
+            curr_behavior = behavior[i]
+
+            # If currently an unlabeled timestamp:
+            if curr_behavior == "none":
+                # Use either unlabeled or labeled timestamps as validation set
+                if experiment_types == ["unlabeled"]:
+                    m1_val.append(curr_m1)
+                    emg_val.append(curr_emg)
+                    behavior_val.append(curr_behavior)
+                elif experiment_types == ["labeled"]:
+                    m1_train.append(curr_m1)
+                    emg_train.append(curr_emg)
+                    behavior_train.append(curr_behavior)
+            # If currently a labeled timestamp:
+            else:
+                # Use either unlabeled or labeled timestamps as validation set
+                if experiment_types == ["unlabeled"]:
+                    m1_train.append(curr_m1)
+                    emg_train.append(curr_emg)
+                    behavior_train.append(curr_behavior)
+                elif experiment_types == ["labeled"]:
+                    m1_val.append(curr_m1)
+                    emg_val.append(curr_emg)
+                    behavior_val.append(curr_behavior)
+
+        # Format back into time stamps
+        X_train = torch.Tensor(np.array(m1_train))
+        y_train_emg = torch.Tensor(np.array(emg_train))
+        y_train_behavioral = np.array(behavior_train)
+        X_val = torch.Tensor(np.array(m1_val))
+        y_val_emg = torch.Tensor(np.array(emg_val))
+        y_val_behavioral = np.array(behavior_val)
+
+        # Perform min-max scaling
+        if self.scale_outputs:
+            scaler = MinMaxScaler()
+            scaler.fit(y_train_emg)
+            y_train_emg = torch.Tensor(scaler.transform(y_train_emg))
+            y_val_emg = torch.Tensor(scaler.transform(y_val_emg))
+
+        self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.N = m1.shape[1]
+        self.M = emg.shape[1]
+
+
     def remove_zeros_from_dataset(self):
         train_nozeros = []
         val_nozeros = []
@@ -409,6 +508,7 @@ class Cage_Dataset(pl.LightningDataModule):
             #     print(f"{num_zeros} zero samples out of {len(dataset)} in val set")
         self.train_dataset = train_nozeros
         self.val_dataset = val_nozeros
+
 
     def __len__(self):
         """
@@ -447,7 +547,6 @@ class Cage_Dataset(pl.LightningDataModule):
 
     def val_dataloader(self):
         return DataLoader(self.val_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn)
-
 
 
 class M1_EMG_Dataset_Toy(pl.LightningDataModule):
