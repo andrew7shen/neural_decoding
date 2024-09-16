@@ -37,8 +37,8 @@ labels_train = [v[2] for v in dataset.train_dataset]
 labels_val = [v[2] for v in dataset.val_dataset]
 
 # Create initial clusters
-# cluster_type = "kmeans"
-cluster_type = "random"
+cluster_type = "kmeans"
+# cluster_type = "random"
 k = 3
 # k = 6
 # Apply kmeans to M1 training data

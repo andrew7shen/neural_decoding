@@ -467,33 +467,45 @@ def full_R2_reg(datasets, verbose):
     val_preds = []
 
     # Generate preds for each dataset/model pair
+    total_train_samples = 0
+    total_val_samples = 0
     for i in range(len(datasets)):
         curr_dataset = datasets[i]
         train_dataset = curr_dataset.train_dataset
         val_dataset = curr_dataset.val_dataset
+        total_train_samples += len(train_dataset)
+        total_val_samples += len(val_dataset)
         # Note: group can mean different modes or different clusters
         print("\nGroup %s: train (%s), val (%s)" % (i, len(train_dataset), len(val_dataset)))
 
         # Calculate linear regression model for each cluster
         curr_m1_train = np.array([val[0] for val in train_dataset])
         curr_emg_train = np.array([val[1] for val in train_dataset])
-        curr_m1_val = np.array([val[0] for val in val_dataset])
-        curr_emg_val = np.array([val[1] for val in val_dataset])
         curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
         # Fit with Ridge regression
-        curr_model = Ridge(alpha=200.0).fit(curr_m1_train, curr_emg_train)
-
-        # Generate train and val preds and append to full list
+        curr_model = Ridge(alpha=10000.0).fit(curr_m1_train, curr_emg_train)
+        # Generate train preds and append to full list
         train_emgs.append(torch.Tensor(curr_emg_train))
         train_preds.append(torch.Tensor(curr_model.predict(curr_m1_train)))
-        val_emgs.append(torch.Tensor(curr_emg_val))
-        val_preds.append(torch.Tensor(curr_model.predict(curr_m1_val)))
-
-        # Calculate train/val R2 for current cluster
+        # Calculate train R2 for current cluster
         curr_train_r2 = r2_score(torch.Tensor(curr_emg_train), torch.Tensor(curr_model.predict(curr_m1_train)))
-        curr_val_r2 = r2_score(torch.Tensor(curr_emg_val), torch.Tensor(curr_model.predict(curr_m1_val)))
         print("Train R2: %s" % curr_train_r2)
-        print("Val R2: %s" % curr_val_r2)
+
+        # Check if there are samples in validation set
+        if len(val_dataset) != 0:
+
+            # Calculate linear regression model for each cluster
+            curr_m1_val = np.array([val[0] for val in val_dataset])
+            curr_emg_val = np.array([val[1] for val in val_dataset])
+            # Generate val preds and append to full list
+            val_emgs.append(torch.Tensor(curr_emg_val))
+            val_preds.append(torch.Tensor(curr_model.predict(curr_m1_val)))
+            # Calculate val R2 for current cluster
+            curr_val_r2 = r2_score(torch.Tensor(curr_emg_val), torch.Tensor(curr_model.predict(curr_m1_val)))
+            print("Val R2: %s" % curr_val_r2)
+        
+        else:
+            print("Val R2: None")
 
     # Calculate final R^2 value
     train_emgs = torch.cat(train_emgs)
@@ -504,7 +516,7 @@ def full_R2_reg(datasets, verbose):
     val_r2 = r2_score(val_emgs, val_preds)
 
     # Format output string
-    print("\nFull Dataset")
+    print("\nFull Dataset %s: train (%s), val (%s)" % (i, total_train_samples, total_val_samples))
     print("Train R2: %s" % train_r2)
     print("Val R2: %s\n" % val_r2)
 
@@ -595,7 +607,7 @@ def sep_R2_reg(dataset, verbose):
     emg_val = np.array([val[1] for val in val_dataset])
     # model = LinearRegression().fit(m1_train, emg_train)
     # Fit with Ridge regression
-    model = Ridge(alpha=500.0).fit(m1_train, emg_train)
+    model = Ridge(alpha=5000.0).fit(m1_train, emg_train)
     # Fit with neural network
     # model = MLPRegressor(random_state=1, max_iter=300).fit(m1_train, emg_train)
 
@@ -1097,7 +1109,7 @@ if __name__ == "__main__":
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=True)
+    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)

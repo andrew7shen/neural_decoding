@@ -39,8 +39,24 @@ class Cage_Dataset(pl.LightningDataModule):
 
         # Load data with Set1 labels
         if "set1" in self.label_type:
+
+            # If loading kmeans split data
+            if "kmeans_split" in m1_path:
+                path = m1_path
+                m1_train = torch.Tensor(np.load("%s/m1_train_%s.npy" % (path, self.kmeans_cluster)))
+                emg_train = torch.Tensor(np.load("%s/emg_train_%s.npy" % (path, self.kmeans_cluster)))
+                labels_train = np.load("%s/labels_train_%s.npy" % (path, self.kmeans_cluster))
+                m1_val = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
+                emg_val = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
+                labels_val = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
+
+                self.train_dataset = [(m1_train[i], emg_train[i], labels_train[i]) for i in range(len(m1_train))]
+                self.val_dataset = [(m1_val[i], emg_val[i], labels_val[i]) for i in range(len(m1_val))]
+                self.N = m1_train.shape[1]
+                self.M = emg_train.shape[1]
+
             # If loading data to test generalizability
-            if "generalizability" in self.label_type:
+            elif "generalizability" in self.label_type:
 
                 # Load correct generalizability experiment
                 if self.label_type == "set1_generalizability_grooming":
@@ -172,7 +188,7 @@ class Cage_Dataset(pl.LightningDataModule):
         elif "none" in self.label_type:
 
             # If using kmeans split data for sanity check
-            if "data/none_data/kmeans_split" in m1_path:
+            if "kmeans_split" in m1_path:
                 path = m1_path
                 m1_train = torch.Tensor(np.load("%s/m1_train_%s.npy" % (path, self.kmeans_cluster)))
                 emg_train = torch.Tensor(np.load("%s/emg_train_%s.npy" % (path, self.kmeans_cluster)))
