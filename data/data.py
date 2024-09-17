@@ -13,6 +13,167 @@ from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 import cage_data
 import pickle as pickle
+import h5py
+from tqdm import tqdm
+
+class Mouse_Dataset(pl.LightningDataModule):
+
+    def __init__(self, m1_path, emg_path, behavioral_path, 
+                    num_modes, batch_size, dataset_type, 
+                    seed, kmeans_cluster, label_type,
+                    remove_zeros, scale_outputs):
+        super().__init__()
+
+        # Assign class variables
+        self.batch_size = batch_size
+        self.num_modes = num_modes
+        self.train_dataset = None
+        self.val_dataset = None
+        self.dataset_type = dataset_type
+        self.N = None
+        self.M = None
+        self.seed = seed
+        self.kmeans_cluster = kmeans_cluster
+        self.label_type = label_type
+        self.remove_zeros = remove_zeros
+        self.scale_outputs = scale_outputs
+
+        # Load in mouse dataset from .mat file
+        filepath = "/Users/andrewshen/Github_Repos/neural_decoding/data/mouse_files/D020DataForDecoding.mat"
+        f = h5py.File(filepath)
+        arrays = {}
+        for k, v in tqdm(f.items()):
+            arrays[k] = np.array(v) 
+
+        # Extract M1, EMG, and labels
+        neural = arrays["firingRates"]
+        cortexInds = arrays["cortexInds"]
+        m1 = neural[:,149:] # Extract dimensions 150 to 232 for M1 data
+        emg = arrays["emg"]
+        behavior = arrays["humanBehaviorLabels"]
+
+        # Get indices where there are "nan" values in the timestamp
+        nan_indices = np.where(np.any(np.isnan(m1), axis=1))[0]
+        m1 = np.delete(m1, nan_indices, axis=0)
+        emg = np.delete(emg, nan_indices, axis=0)
+        behavior = np.delete(behavior, nan_indices, axis=0)
+
+        # Condense data into 25ms timestamps
+        m1_25ms = []
+        emg_25ms = []
+        behavior_25ms = []
+        for i in range(0, len(m1), 25):
+            m1_25ms.append(np.mean(m1[i:i+25], axis=0))
+            emg_25ms.append(np.mean(emg[i:i+25], axis=0))
+            # Take majority behavior label
+            behavior_counts = np.bincount(behavior[i:i+25].squeeze(1).astype(np.int64))
+            majority_behavior = np.argmax(behavior_counts)
+            behavior_25ms.append(float(majority_behavior))
+        # Convert back to arrays
+        m1 = np.array(m1_25ms)
+        emg = np.array(emg_25ms)
+        behavior = np.array(behavior_25ms)
+
+        # Format into bins of B=10
+        B = 10
+        m1_b10 = []
+        for i in range(len(m1)-B):
+            # Extract current timestamp and the B-1 subsequent timestamps
+            m1_b10.append(np.concatenate(m1[i:i+10]))
+        # Convert back to arrays
+        m1 = np.stack(m1_b10)
+        emg = np.array(emg[:-B]) # In order to match the B=10 formatting for M1
+        behavior = np.array(behavior[:-B]) # In order to match the B=10 formatting for M1
+
+        # Format into trials
+        m1_trials = []
+        emg_trials = []
+        behavior_trials = []
+        # Calculate length of each behavior
+        last_behavior = behavior[0]
+        curr_m1_trial = []
+        curr_emg_trial = []
+        curr_behavior_trial = []
+        for i in range(len(behavior)):
+            curr_behavior = behavior[i]
+            # Still within the same behavior
+            if curr_behavior == last_behavior:
+                curr_m1_trial.append(m1[i])
+                curr_emg_trial.append(emg[i])
+                curr_behavior_trial.append(behavior[i])
+            # Reached start of new behavior
+            else:
+                # Update last behavior
+                last_behavior = curr_behavior
+                m1_trials.append(curr_m1_trial)
+                emg_trials.append(curr_emg_trial)
+                behavior_trials.append(curr_behavior_trial)
+                # Reset buffers
+                curr_m1_trial = [m1[i]]
+                curr_emg_trial = [emg[i]]
+                curr_behavior_trial = [behavior[i]]
+        # Clear buffer one last time
+        m1_trials.append(curr_m1_trial)
+        emg_trials.append(curr_emg_trial)
+        behavior_trials.append(curr_behavior_trial)
+
+        # Create train/val splits
+        labels_trials = [[emg_trials[i], behavior_trials[i]] for i in range(len(emg_trials))]
+        X_train, X_val, y_train, y_val = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
+
+        # Format back into time stamps
+        X_train = torch.Tensor(np.concatenate(X_train))
+        X_val = torch.Tensor(np.concatenate(X_val))
+        y_train_emg = torch.Tensor(np.concatenate([y[0] for y in y_train]))
+        y_train_behavioral = np.concatenate([y[1] for y in y_train])
+        y_val_emg = torch.Tensor(np.concatenate([y[0] for y in y_val]))
+        y_val_behavioral = np.concatenate([y[1] for y in y_val])
+
+        # Create final datasets for training
+        self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.N = m1.shape[1]
+        self.M = emg.shape[1]
+
+
+    def __len__(self):
+        """
+        Returns number of samples in the training set.
+        """
+        
+        return len(self.train_dataset) + len(self.val_dataset)
+
+
+    def __getitem__(self, index):
+
+        # Not used for the training
+        return self.train_dataset[index]
+
+
+    def collate_fn(self, batch):
+        
+        final_batch = {}
+        X = []  # m1
+        Y1 = []  # emg
+        Y2 = []  # behavioral
+        for sample in batch:
+            X.append(sample[0])
+            Y1.append(sample[1])
+            Y2.append(sample[2])
+        final_batch["m1"] = torch.stack(X)
+        final_batch["emg"] = torch.stack(Y1).float()
+        final_batch["behavioral"] = Y2
+
+        return final_batch
+
+
+    def train_dataloader(self):
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn, shuffle=True)
+
+
+    def val_dataloader(self):
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn)
+
 
 class Cage_Dataset(pl.LightningDataModule):
     
@@ -21,6 +182,8 @@ class Cage_Dataset(pl.LightningDataModule):
                  seed, kmeans_cluster, label_type,
                  remove_zeros, scale_outputs):
         super().__init__()
+
+        # Assign class variables
         self.batch_size = batch_size
         self.num_modes = num_modes
         self.train_dataset = None

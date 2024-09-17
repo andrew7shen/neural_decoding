@@ -23,10 +23,12 @@ cd neural_decoding/
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set1_kmeansweights.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set1_randomweights.yaml
 
-python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming.yaml
-python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming_sitting_still.yaml
-python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_unlabeled.yaml
-python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_labeled.yaml
+# python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming.yaml
+# python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_grooming_sitting_still.yaml
+# python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_unlabeled.yaml
+# python3 run/run.py configs/generalizability_configs/configs_cage_t100_set1_generalizability_labeled.yaml
+
+python3 run/run.py configs/mouse_configs/configs_mouse.yaml
 
 
 
