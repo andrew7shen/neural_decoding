@@ -39,7 +39,8 @@ class Mouse_Dataset(pl.LightningDataModule):
         self.scale_outputs = scale_outputs
 
         # Load in mouse dataset from .mat file
-        filepath = "/Users/andrewshen/Github_Repos/neural_decoding/data/mouse_files/D020DataForDecoding.mat"
+        curr_dir = os.getcwd()
+        filepath = f"{curr_dir}/data/mouse_files/D020DataForDecoding.mat"
         f = h5py.File(filepath)
         arrays = {}
         for k, v in tqdm(f.items()):
