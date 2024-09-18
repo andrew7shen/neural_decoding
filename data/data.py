@@ -38,6 +38,110 @@ class Mouse_Dataset(pl.LightningDataModule):
         self.remove_zeros = remove_zeros
         self.scale_outputs = scale_outputs
 
+        # If loading data for just one label
+        if len(self.label_type) > 5:
+            curr_label = float(self.label_type[6:])
+            self.format_mouse_data(curr_label)
+        # If loading data for all labels
+        else:
+            self.format_mouse_data("all")
+
+
+    def format_mouse_data(self, labels_to_use):
+
+        # Format and save data if files don't exist
+        curr_dir = os.getcwd()
+        if not os.path.exists(f"{curr_dir}/data/mouse_files/m1.npy"):
+            self.format_and_save()
+
+        # Load pre-saved partially formatted mouse data files
+        m1 = np.load(f"{curr_dir}/data/mouse_files/m1.npy")
+        emg = np.load(f"{curr_dir}/data/mouse_files/emg.npy")
+        behavior = np.load(f"{curr_dir}/data/mouse_files/behavior.npy")
+
+        # Format into trials
+        m1_trials = []
+        emg_trials = []
+        behavior_trials = []
+        # Calculate length of each behavior
+        last_behavior = behavior[0]
+        curr_m1_trial = []
+        curr_emg_trial = []
+        curr_behavior_trial = []
+        for i in range(len(behavior)):
+            curr_behavior = behavior[i]
+            # Still within the same behavior
+            if curr_behavior == last_behavior:
+                curr_m1_trial.append(m1[i])
+                curr_emg_trial.append(emg[i])
+                curr_behavior_trial.append(behavior[i])
+            # Reached start of new behavior
+            else:
+                # Update last behavior
+                last_behavior = curr_behavior
+                m1_trials.append(curr_m1_trial)
+                emg_trials.append(curr_emg_trial)
+                behavior_trials.append(curr_behavior_trial)
+                # Reset buffers
+                curr_m1_trial = [m1[i]]
+                curr_emg_trial = [emg[i]]
+                curr_behavior_trial = [behavior[i]]
+        # Clear buffer one last time
+        m1_trials.append(curr_m1_trial)
+        emg_trials.append(curr_emg_trial)
+        behavior_trials.append(curr_behavior_trial)
+
+        # Create train/val splits
+        labels_trials = [[emg_trials[i], behavior_trials[i]] for i in range(len(emg_trials))]
+        X_train, X_val, y_train, y_val = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
+
+        # If only loading data with one label
+        if labels_to_use != "all":
+            # For each dataset split of train and val
+            for split in ["train", "val"]:
+                new_X = []
+                new_y = []
+                if split == "train":
+                    curr_X = X_train
+                    curr_y = y_train
+                elif split == "val":
+                    curr_X = X_val
+                    curr_y = y_val
+                # For each trial in dataset
+                for i in range(len(curr_y)):
+                    curr_trial_X = curr_X[i]
+                    curr_trial_y = curr_y[i]
+                    curr_label = curr_trial_y[1][0]
+                    if curr_label == labels_to_use:
+                        new_X.append(curr_trial_X)
+                        new_y.append(curr_trial_y)
+                # Save new dataset with only data from one label
+                if split == "train":
+                    X_train = new_X
+                    y_train = new_y
+                elif split == "val":
+                    X_val = new_X
+                    y_val = new_y
+
+        # Format back into time stamps
+        if len(X_train) != 0:
+            X_train = torch.Tensor(np.concatenate(X_train))
+            y_train_emg = torch.Tensor(np.concatenate([y[0] for y in y_train]))
+            y_train_behavioral = np.concatenate([y[1] for y in y_train])
+        if len(X_val) != 0:
+            X_val = torch.Tensor(np.concatenate(X_val))
+            y_val_emg = torch.Tensor(np.concatenate([y[0] for y in y_val]))
+            y_val_behavioral = np.concatenate([y[1] for y in y_val])
+
+        # Create final datasets for training
+        self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
+        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.N = m1.shape[1]
+        self.M = emg.shape[1]
+
+
+    def format_and_save(self):
+
         # Load in mouse dataset from .mat file
         curr_dir = os.getcwd()
         filepath = f"{curr_dir}/data/mouse_files/D020DataForDecoding.mat"
@@ -86,55 +190,10 @@ class Mouse_Dataset(pl.LightningDataModule):
         emg = np.array(emg[:-B]) # In order to match the B=10 formatting for M1
         behavior = np.array(behavior[:-B]) # In order to match the B=10 formatting for M1
 
-        # Format into trials
-        m1_trials = []
-        emg_trials = []
-        behavior_trials = []
-        # Calculate length of each behavior
-        last_behavior = behavior[0]
-        curr_m1_trial = []
-        curr_emg_trial = []
-        curr_behavior_trial = []
-        for i in range(len(behavior)):
-            curr_behavior = behavior[i]
-            # Still within the same behavior
-            if curr_behavior == last_behavior:
-                curr_m1_trial.append(m1[i])
-                curr_emg_trial.append(emg[i])
-                curr_behavior_trial.append(behavior[i])
-            # Reached start of new behavior
-            else:
-                # Update last behavior
-                last_behavior = curr_behavior
-                m1_trials.append(curr_m1_trial)
-                emg_trials.append(curr_emg_trial)
-                behavior_trials.append(curr_behavior_trial)
-                # Reset buffers
-                curr_m1_trial = [m1[i]]
-                curr_emg_trial = [emg[i]]
-                curr_behavior_trial = [behavior[i]]
-        # Clear buffer one last time
-        m1_trials.append(curr_m1_trial)
-        emg_trials.append(curr_emg_trial)
-        behavior_trials.append(curr_behavior_trial)
-
-        # Create train/val splits
-        labels_trials = [[emg_trials[i], behavior_trials[i]] for i in range(len(emg_trials))]
-        X_train, X_val, y_train, y_val = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
-
-        # Format back into time stamps
-        X_train = torch.Tensor(np.concatenate(X_train))
-        X_val = torch.Tensor(np.concatenate(X_val))
-        y_train_emg = torch.Tensor(np.concatenate([y[0] for y in y_train]))
-        y_train_behavioral = np.concatenate([y[1] for y in y_train])
-        y_val_emg = torch.Tensor(np.concatenate([y[0] for y in y_val]))
-        y_val_behavioral = np.concatenate([y[1] for y in y_val])
-
-        # Create final datasets for training
-        self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
-        self.N = m1.shape[1]
-        self.M = emg.shape[1]
+        # Save formatted M1, EMG, and behavior numpy arrays
+        np.save(f"{curr_dir}/data/mouse_files/m1.npy", m1)
+        np.save(f"{curr_dir}/data/mouse_files/emg.npy", emg)
+        np.save(f"{curr_dir}/data/mouse_files/behavior.npy", behavior)
 
 
     def __len__(self):

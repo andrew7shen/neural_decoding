@@ -137,7 +137,6 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
     cluster_probs = torch.stack(cluster_probs).tolist()
     torch.set_printoptions(sci_mode=False)
     cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
-    # import pdb; pdb.set_trace()
 
     # Create color map and label options for multiple modes
     cmap_colors = ["yellow","green","blue","red","purple","orange","pink"]
@@ -483,7 +482,7 @@ def full_R2_reg(datasets, verbose):
         curr_emg_train = np.array([val[1] for val in train_dataset])
         curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
         # Fit with Ridge regression
-        curr_model = Ridge(alpha=10000.0).fit(curr_m1_train, curr_emg_train)
+        curr_model = Ridge(alpha=100.0).fit(curr_m1_train, curr_emg_train)
         # Generate train preds and append to full list
         train_emgs.append(torch.Tensor(curr_emg_train))
         train_preds.append(torch.Tensor(curr_model.predict(curr_m1_train)))
@@ -607,7 +606,7 @@ def sep_R2_reg(dataset, verbose):
     emg_val = np.array([val[1] for val in val_dataset])
     # model = LinearRegression().fit(m1_train, emg_train)
     # Fit with Ridge regression
-    model = Ridge(alpha=5000.0).fit(m1_train, emg_train)
+    model = Ridge(alpha=100.0).fit(m1_train, emg_train)
     # Fit with neural network
     # model = MLPRegressor(random_state=1, max_iter=300).fit(m1_train, emg_train)
 
@@ -1000,11 +999,18 @@ if __name__ == "__main__":
 
     # Read in configs and dataset
     config = load_config()
-    dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+    if config.label_type == "mouse":
+        dataset = Mouse_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed,
                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+    else:
+        dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                            behavioral_path=config.behavioral_path, num_modes=config.d, 
+                            batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
     
     # Print dataset statistics
     dataset_statistics(dataset=dataset, verbose=False)
@@ -1071,8 +1077,18 @@ if __name__ == "__main__":
             datasets.append(curr_dataset)
     # If using mode data, format separate datasets
     else:
+        # If using mouse data
+        if dataset.label_type == "mouse":
+            for mode in ["0.0", "1.0", "2.0", "3.0", "4.0", "5.0", "6.0", "7.0", "8.0", "9.0", "10.0"]:
+                curr_label_type = "%s_%s" % (config.label_type, mode)
+                curr_dataset = Mouse_Dataset(m1_path="", emg_path="", 
+                                behavioral_path="", num_modes=config.d, 
+                                batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                                kmeans_cluster=config.kmeans_cluster, label_type=curr_label_type,
+                                remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+                datasets.append(curr_dataset)
         # If using set1 data
-        if dataset.label_type == "set1":
+        elif dataset.label_type == "set1":
             for mode in ["crawling", "pg", "sitting_still"]:
                 curr_label_type = "%s_%s" % (config.label_type, mode)
                 curr_dataset = Cage_Dataset(m1_path="", emg_path="", 
@@ -1109,7 +1125,7 @@ if __name__ == "__main__":
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
+    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=True)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)
