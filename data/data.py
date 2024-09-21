@@ -157,12 +157,6 @@ class Mouse_Dataset(pl.LightningDataModule):
         emg = arrays["emg"]
         behavior = arrays["humanBehaviorLabels"]
 
-        # Get indices where there are "nan" values in the timestamp
-        nan_indices = np.where(np.any(np.isnan(m1), axis=1))[0]
-        m1 = np.delete(m1, nan_indices, axis=0)
-        emg = np.delete(emg, nan_indices, axis=0)
-        behavior = np.delete(behavior, nan_indices, axis=0)
-
         # Condense data into 25ms timestamps
         m1_25ms = []
         emg_25ms = []
@@ -189,6 +183,12 @@ class Mouse_Dataset(pl.LightningDataModule):
         m1 = np.stack(m1_b10)
         emg = np.array(emg[:-B]) # In order to match the B=10 formatting for M1
         behavior = np.array(behavior[:-B]) # In order to match the B=10 formatting for M1
+
+        # Remove features with "nan" values
+        nan_indices = np.where(np.any(np.isnan(m1), axis=1))[0]
+        m1 = np.delete(m1, nan_indices, axis=0)
+        emg = np.delete(emg, nan_indices, axis=0)
+        behavior = np.delete(behavior, nan_indices, axis=0)
 
         # Save formatted M1, EMG, and behavior numpy arrays
         np.save(f"{curr_dir}/data/mouse_files/m1.npy", m1)

@@ -88,7 +88,11 @@ if __name__ == "__main__":
                 model.model.dm.linears[i].weight = weights[i]
 
     # Define model checkpoints
-    save_callback = ModelCheckpoint(dirpath = config.save_path, filename='checkpoint_{epoch}_%s' % config.d)
+    if config.run_id == "none":
+        callback_filename = 'checkpoint_{epoch}_%s' % config.d
+    else:
+        callback_filename = 'checkpoint%s_{epoch}' % config.run_id
+    save_callback = ModelCheckpoint(dirpath = config.save_path, filename=callback_filename)
 
     # Define trainer
     if config.record:

@@ -33,6 +33,7 @@ class Config():
         self.label_type = args["label_type"]
         self.remove_zeros = args["remove_zeros"]
         self.scale_outputs = args["scale_outputs"]
+        self.run_id = args["run_id"]
 
 
 def load_config():
