@@ -23,5 +23,5 @@ kmeans_cluster: 0
 set_decoder_weights: "none"
 label_type: "none_generalizability_unlabeled"
 remove_zeros: True
-scale_outputs: False
-run_id: 317
+scale_outputs: True
+run_id: 325

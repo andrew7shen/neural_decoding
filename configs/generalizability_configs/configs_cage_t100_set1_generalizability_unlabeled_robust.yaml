@@ -18,10 +18,10 @@ temperature: 1
 weight_decay: 0.01
 hidden_dim: 30
 cluster_model_type: "method1"
-decoder_model_type: ""
+decoder_model_type: "onlytanh"
 kmeans_cluster: 0
 set_decoder_weights: "none"
-label_type: "set1_generalizability_grooming_sitting_still"
+label_type: "none_generalizability_unlabeled"
 remove_zeros: True
 scale_outputs: True
-run_id: 324
+run_id: 329
