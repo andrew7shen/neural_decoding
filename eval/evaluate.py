@@ -482,7 +482,7 @@ def full_R2_reg(datasets, verbose):
         curr_emg_train = np.array([val[1] for val in train_dataset])
         curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
         # Fit with Ridge regression
-        curr_model = Ridge(alpha=50.0).fit(curr_m1_train, curr_emg_train)
+        curr_model = Ridge(alpha=750.0).fit(curr_m1_train, curr_emg_train)
         # Generate train preds and append to full list
         train_emgs.append(torch.Tensor(curr_emg_train))
         train_preds.append(torch.Tensor(curr_model.predict(curr_m1_train)))
@@ -606,7 +606,7 @@ def sep_R2_reg(dataset, verbose):
     emg_val = np.array([val[1] for val in val_dataset])
     # model = LinearRegression().fit(m1_train, emg_train)
     # Fit with Ridge regression
-    model = Ridge(alpha=0.0).fit(m1_train, emg_train)
+    model = Ridge(alpha=5000.0).fit(m1_train, emg_train)
     # Fit with neural network
     # model = MLPRegressor(random_state=1, max_iter=300).fit(m1_train, emg_train)
 

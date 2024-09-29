@@ -11,13 +11,22 @@ source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.05.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.1.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.5.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_w0.01.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_w0.05.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_w0.1.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_w0.5.yaml
+
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.02.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.03.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.04.yaml
 python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.05.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.1.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.5.yaml
-python3 run/run.py configs/generalizability_configs/regularization/labeled_w0.01.yaml
-python3 run/run.py configs/generalizability_configs/regularization/labeled_w0.05.yaml
-python3 run/run.py configs/generalizability_configs/regularization/labeled_w0.1.yaml
-python3 run/run.py configs/generalizability_configs/regularization/labeled_w0.5.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.06.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.07.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.08.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.09.yaml
 
 
 # python3 run/run.py configs/t100_configs/configs_cage_t100_none.yaml

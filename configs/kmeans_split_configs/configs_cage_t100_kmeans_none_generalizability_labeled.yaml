@@ -22,5 +22,6 @@ decoder_model_type: ""
 kmeans_cluster: 0
 set_decoder_weights: "none"
 label_type: "none_generalizability_labeled"
-remove_zeros: False
+remove_zeros: True
 scale_outputs: False
+run_id: "none"
