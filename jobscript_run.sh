@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
-#SBATCH -t 2-00:00
+#SBATCH -t 12:00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_out.txt
@@ -19,11 +19,11 @@ cd neural_decoding/
 # python3 run/run.py configs/generalizability_configs/regularization/labeled_w0.1.yaml
 # python3 run/run.py configs/generalizability_configs/regularization/labeled_w0.5.yaml
 
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.02.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.03.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.04.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.05.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.06.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.02.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.03.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.04.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.05.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.06.yaml
 python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.07.yaml
 python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.08.yaml
 python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.09.yaml
