@@ -39,8 +39,8 @@ labels_val = [v[2] for v in dataset.val_dataset]
 # Create initial clusters
 cluster_type = "kmeans"
 # cluster_type = "random"
-k = 3
-# k = 6
+# k = 3
+k = 6
 # Apply kmeans to M1 training data
 if cluster_type == "kmeans":
     kmeans = KMeans(n_clusters=k, n_init=10, random_state=42)
