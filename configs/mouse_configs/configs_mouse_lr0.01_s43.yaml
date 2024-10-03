@@ -1,11 +1,11 @@
 T: None
 N: None
 M: None
-d: 3  # num_modes
-b: 8
+d: 11  # num_modes
+b: 64
 type: "emg"
 epochs: 500
-lr: 0.0001
+lr: 0.01
 record: True
 ev: False
 m1_path: ""
@@ -13,15 +13,19 @@ emg_path: ""
 behavioral_path: ""
 save_path: "checkpoints"
 model: "combined"
-seed: 42
+seed: 43
 temperature: 1
 weight_decay: 0.01
 hidden_dim: 30
 cluster_model_type: "method1"
+# decoder_model_type: "relu0.1"
+# decoder_model_type: "relu0.01"
+# decoder_model_type: "onlyrelu0.01"
+# decoder_model_type: "onlytanh"
 decoder_model_type: ""
 kmeans_cluster: 0
 set_decoder_weights: "none"
-label_type: "set1_generalizability_grooming"
-remove_zeros: True
-scale_outputs: True
-run_id: 377
+label_type: "mouse"
+remove_zeros: False
+scale_outputs: False
+run_id: 382

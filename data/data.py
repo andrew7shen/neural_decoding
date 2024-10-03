@@ -562,7 +562,7 @@ class Cage_Dataset(pl.LightningDataModule):
                 m1_train.append(m1[start_idx:end_idx+1])
                 emg_train.append(emg[start_idx:end_idx+1])
                 behavior_train.append([curr_behavior]*(end_idx-start_idx+1))
-            
+
         # Format back into time stamps
         X_train = torch.Tensor(np.concatenate(m1_train))
         y_train_emg = torch.Tensor(np.concatenate(emg_train))
@@ -570,6 +570,14 @@ class Cage_Dataset(pl.LightningDataModule):
         X_val = torch.Tensor(np.concatenate(m1_val))
         y_val_emg = torch.Tensor(np.concatenate(emg_val))
         y_val_behavioral = np.concatenate(behavior_val)
+
+        # Perform min-max scaling
+        if self.scale_outputs:
+            scaler = MinMaxScaler()
+            scaler.fit(y_train_emg)
+            y_train_emg = torch.Tensor(scaler.transform(y_train_emg))
+            y_val_emg = torch.Tensor(scaler.transform(y_val_emg))
+
         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
         self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
         self.N = m1.shape[1]
