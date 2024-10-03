@@ -28,15 +28,18 @@ cd neural_decoding/
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.08.yaml
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.09.yaml
 
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.01.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.05.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.1.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.5.yaml
 
-python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.01.yaml
-python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.05.yaml
-python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.1.yaml
-python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.5.yaml
+
+# Temporarily just running the first
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.01.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.05.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.1.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.5.yaml
+
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.01.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.05.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.1.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.5.yaml
 
 
 
