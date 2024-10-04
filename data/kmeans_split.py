@@ -12,7 +12,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from data import Cage_Dataset
+from data import Cage_Dataset, Mouse_Dataset
 from utils.constants import *
 import random
 
@@ -23,11 +23,19 @@ Run script using command: "python3 data/kmeans_split.py configs/t100_configs/con
 config = load_config()
 curr_dir = os.getcwd()
     
-dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
-                           behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed,
-                           kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
-                           remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+# Load in dataset
+if config.label_type == "mouse":
+    dataset = Mouse_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                        behavioral_path=config.behavioral_path, num_modes=config.d, 
+                        batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                        kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
+                        remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+else:
+    dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                        behavioral_path=config.behavioral_path, num_modes=config.d, 
+                        batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                        kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
+                        remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
 
 m1_train = torch.stack([v[0] for v in dataset.train_dataset])
 m1_val = torch.stack([v[0] for v in dataset.val_dataset])
@@ -40,7 +48,8 @@ labels_val = [v[2] for v in dataset.val_dataset]
 cluster_type = "kmeans"
 # cluster_type = "random"
 # k = 3
-k = 6
+# k = 6
+k = 11
 # Apply kmeans to M1 training data
 if cluster_type == "kmeans":
     kmeans = KMeans(n_clusters=k, n_init=10, random_state=42)

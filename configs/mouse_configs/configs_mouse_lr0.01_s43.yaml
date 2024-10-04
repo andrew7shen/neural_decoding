@@ -28,4 +28,4 @@ set_decoder_weights: "none"
 label_type: "mouse"
 remove_zeros: False
 scale_outputs: False
-run_id: 382
+run_id: 378

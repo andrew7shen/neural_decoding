@@ -5,12 +5,12 @@ d: 11  # num_modes
 b: 64
 type: "emg"
 epochs: 500
-lr: 0.01
+lr: 0.0001
 record: True
 ev: False
-m1_path: ""
-emg_path: ""
-behavioral_path: ""
+m1_path: "data/mouse_data/kmeans_split/k11"
+emg_path: "data/mouse_data/kmeans_split/k11"
+behavioral_path: "data/mouse_data/kmeans_split/k11"
 save_path: "checkpoints"
 model: "combined"
 seed: 42
@@ -28,4 +28,4 @@ set_decoder_weights: "none"
 label_type: "mouse"
 remove_zeros: False
 scale_outputs: False
-run_id: 377
+run_id: 306

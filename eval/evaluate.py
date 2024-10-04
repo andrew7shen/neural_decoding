@@ -482,7 +482,7 @@ def full_R2_reg(datasets, verbose):
         curr_emg_train = np.array([val[1] for val in train_dataset])
         curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
         # Fit with Ridge regression
-        curr_model = Ridge(alpha=450.0).fit(curr_m1_train, curr_emg_train)
+        curr_model = Ridge(alpha=15.0).fit(curr_m1_train, curr_emg_train)
         # Generate train preds and append to full list
         train_emgs.append(torch.Tensor(curr_emg_train))
         train_preds.append(torch.Tensor(curr_model.predict(curr_m1_train)))
@@ -606,7 +606,7 @@ def sep_R2_reg(dataset, verbose):
     emg_val = np.array([val[1] for val in val_dataset])
     # model = LinearRegression().fit(m1_train, emg_train)
     # Fit with Ridge regression
-    model = Ridge(alpha=5000.0).fit(m1_train, emg_train)
+    model = Ridge(alpha=15.0).fit(m1_train, emg_train)
     # Fit with neural network
     # model = MLPRegressor(random_state=1, max_iter=300).fit(m1_train, emg_train)
 
@@ -1067,14 +1067,25 @@ if __name__ == "__main__":
             k = 6
         elif "k3" in config.m1_path:
             k = 3
+        elif "k11" in config.m1_path:
+            k = 11
         # Load datasets for each cluster
-        for k in range(k):
-            curr_dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
-                           behavioral_path=config.behavioral_path, num_modes=config.d, 
-                           batch_size=config.b, dataset_type=config.type, seed=config.seed, 
-                           kmeans_cluster=k, label_type=config.label_type,
-                           remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
-            datasets.append(curr_dataset)
+        if dataset.label_type == "mouse":
+            for k in range(k):
+                curr_dataset = Mouse_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                            behavioral_path=config.behavioral_path, num_modes=config.d, 
+                            batch_size=config.b, dataset_type=config.type, seed=config.seed, 
+                            kmeans_cluster=k, label_type=config.label_type,
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+                datasets.append(curr_dataset)
+        else:
+            for k in range(k):
+                curr_dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                            behavioral_path=config.behavioral_path, num_modes=config.d, 
+                            batch_size=config.b, dataset_type=config.type, seed=config.seed, 
+                            kmeans_cluster=k, label_type=config.label_type,
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+                datasets.append(curr_dataset)
     # If using mode data, format separate datasets
     else:
         # If using mouse data
@@ -1122,6 +1133,7 @@ if __name__ == "__main__":
                                      config=config, verbose=False)
 
     # Calculate full R2 value
+    dataset_lengths = [len(dataset) for dataset in datasets]
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
