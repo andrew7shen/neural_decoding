@@ -72,6 +72,8 @@ class ClusterModel(nn.Module):
         # print(x)
         # import pdb; pdb.set_trace()
         x = x/self.temperature
+        # print(x)
+        # import pdb; pdb.set_trace()
         x = self.softmax(x) 
         # print(x)
         # import pdb; pdb.set_trace()
