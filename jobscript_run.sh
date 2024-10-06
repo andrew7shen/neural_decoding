@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
-#SBATCH -t 2-00:00
+#SBATCH -t 1-00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_out.txt
@@ -28,21 +28,24 @@ cd neural_decoding/
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.08.yaml
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.09.yaml
 
-
-
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.06.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.08.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.1.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.12.yaml
 python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.15.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.17.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.19.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.21.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.23.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.25.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.27.yaml
+python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.29.yaml
 
-python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.02.yaml
-python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.03.yaml
-python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.04.yaml
-python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.05.yaml
-python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.07.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.02.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.03.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.04.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.05.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.07.yaml
 
-
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp0.1.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp5.0.yaml
 
 
 # python3 run/run.py configs/t100_configs/configs_cage_t100_none.yaml
@@ -88,17 +91,8 @@ python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0
 # python3 run/run.py configs/generalizability_configs/regularization/grooming_sitting_still_w0.25.yaml
 # python3 run/run.py configs/generalizability_configs/regularization/grooming_sitting_still_w0.5.yaml
 
-
 # python3 run/run.py configs/mouse_configs/configs_mouse.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_lr0.01_s42.yaml
-
-
-
-
-
-
-
-
+# python3 run/run.py configs/mouse_configs/configs_mouse_lr0.01_s42.yaml
 
 # python3 run/run.py configs/robust_configs/configs_cage_t100_relu0.1.yaml
 # python3 run/run.py configs/robust_configs/configs_cage_t100_relu0.01.yaml
