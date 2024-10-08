@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
-#SBATCH -t 1-00:00
+#SBATCH -t 6:00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_out.txt
@@ -34,8 +34,8 @@ cd neural_decoding/
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.21.yaml
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.23.yaml
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.25.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.27.yaml
-python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.29.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.27.yaml
+# python3 run/run.py configs/generalizability_configs/regularization/unlabeled_d6_w0.29.yaml
 
 # python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.02.yaml
 # python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.03.yaml
