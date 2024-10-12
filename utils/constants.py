@@ -34,6 +34,7 @@ class Config():
         self.remove_zeros = args["remove_zeros"]
         self.scale_outputs = args["scale_outputs"]
         self.run_id = args["run_id"]
+        self.anneal_temperature = args["anneal_temperature"]
 
 
 def load_config():

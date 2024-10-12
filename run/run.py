@@ -48,21 +48,18 @@ if __name__ == "__main__":
                               hidden_dim=config.hidden_dim,
                               output_dim=dataset.M,
                               num_modes=config.d, 
-                              temperature=config.temperature,
                               ev=config.ev,
                               cluster_model_type=config.cluster_model_type,
                               decoder_model_type=config.decoder_model_type)
-        # Trying old code
-        # model = CombinedModel(input_dim=dataset.N,
-        #                       output_dim=dataset.M,
-        #                       num_modes=config.d, 
-        #                       temperature=config.temperature,
-        #                       ev=config.ev)
+    
+    # Define Training Module
     model = TrainingModule(model=model,
                            lr=config.lr,
                            weight_decay=config.weight_decay,
                            record=config.record,
-                           type=config.type)
+                           type=config.type,
+                           temperature=config.temperature,
+                           anneal_temperature=config.anneal_temperature)
     
     # Set initial decoder weights
     weights = []

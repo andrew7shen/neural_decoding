@@ -14,7 +14,7 @@ behavioral_path: "data/set2_data/behavioral_set2_t100.npy"
 save_path: "checkpoints"
 model: "combined"
 seed: 42
-temperature: 5.0
+temperature: 10.0
 anneal_temperature: True
 weight_decay: 0.01
 hidden_dim: 30
@@ -25,4 +25,4 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 424
+run_id: 425

@@ -12,7 +12,7 @@ class ClusterModel(nn.Module):
     num_modes: d
     """
 
-    def __init__(self, input_dim, hidden_dim, num_modes, temperature, cluster_model_type):
+    def __init__(self, input_dim, hidden_dim, num_modes, cluster_model_type):
         super().__init__()
 
         self.cluster_model_type = cluster_model_type
@@ -40,9 +40,8 @@ class ClusterModel(nn.Module):
         #         net.load_state_dict(state_dict)
 
         self.softmax = nn.Softmax(dim=2)
-        self.temperature = temperature
 
-    def forward(self, x):
+    def forward(self, x, temperature):
         x_d = []
         
         # METHOD #1: Original linear method
@@ -61,22 +60,12 @@ class ClusterModel(nn.Module):
             for linear in self.linears:
                 x_d.append(linear(x))
 
-
         x = torch.stack(x_d, 2)
-        # x = x + 1e-4
-        
-        # commented for now
-        # x = torch.clamp(x, min=-3.0)
 
-        # torch.set_printoptions(sci_mode=False)
-        # print(x)
+        # Scale by temperature
         # import pdb; pdb.set_trace()
-        x = x/self.temperature
-        # print(x)
-        # import pdb; pdb.set_trace()
+        x = x/temperature
         x = self.softmax(x) 
-        # print(x)
-        # import pdb; pdb.set_trace()
         return x
     
     
@@ -128,27 +117,18 @@ class DecoderModel(nn.Module):
 
 class CombinedModel(nn.Module):
 
-    def __init__(self, input_dim, hidden_dim, output_dim, num_modes, temperature, ev, cluster_model_type, decoder_model_type):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_modes, ev, cluster_model_type, decoder_model_type):
         super(CombinedModel, self).__init__()
-        self.cm = ClusterModel(input_dim, hidden_dim, num_modes, temperature, cluster_model_type)
+        self.cm = ClusterModel(input_dim, hidden_dim, num_modes, cluster_model_type)
         self.dm = DecoderModel(input_dim, output_dim, num_modes, decoder_model_type)
         self.ev = ev
         self.counter = 0
 
-    def forward(self, x):
-        x1 = self.cm(x)
+    def forward(self, x, temperature):
+        x1 = self.cm(x, temperature)
         x2 = self.dm(x)
         output = torch.sum(x1 * x2, dim=-1)
         self.counter +=1
-
-        # print(x1)
-        # import pdb; pdb.set_trace()
-
-        # torch.set_printoptions(sci_mode=False)
-        # if self.counter % 900 == 0:
-        #     print(x1)
-        #     import pdb; pdb.set_trace()
-        #     pass
 
         # Return clustering and decoding outputs if mode is "eval"
         if self.ev == True:

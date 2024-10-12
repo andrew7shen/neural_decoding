@@ -10,7 +10,7 @@ from sklearn.metrics import r2_score
 
 class TrainingModule(LightningModule):
 
-    def __init__(self, model, lr, weight_decay, record, type):
+    def __init__(self, model, lr, weight_decay, record, type, temperature, anneal_temperature):
         super().__init__()
         self.model = model
         self.lr = lr
@@ -21,6 +21,9 @@ class TrainingModule(LightningModule):
         self.training_step_preds = []
         self.val_step_labels = []
         self.val_step_preds = []
+        self.temperature = temperature
+        self.anneal_temperature = anneal_temperature
+
 
     def forward(self, x):
         return self.model.forward(x)
@@ -33,7 +36,7 @@ class TrainingModule(LightningModule):
         labels = batch["emg"]
 
         # Generate predictions
-        labels_hat = self.model(features)
+        labels_hat = self.model(features, self.temperature)
         if labels_hat.shape[0] == 1:
             pass
             # TODO: Commented out for generalizability grooming experiment because was erroring and unnecessary
@@ -58,7 +61,7 @@ class TrainingModule(LightningModule):
         labels = batch["emg"]
 
         # Generate predictions
-        labels_hat = self.model(features)
+        labels_hat = self.model(features, self.temperature)
         if labels_hat.shape[0] == 1:
             pass
             # TODO: Commented out for generalizability grooming experiment because was erroring and unnecessary
@@ -90,9 +93,14 @@ class Callback(pl.Callback):
         super().__init__()
         self.dataset = dataset
         self.epoch_number = 0
+        self.initial_temp = None
 
 
     def on_train_epoch_end(self, trainer, pl_module):
+
+        # Set initial temperature
+        if self.epoch_number == 0:
+            self.initial_temp = pl_module.temperature
         
         # Calculate loss over the epoch
         labels = torch.Tensor(pl_module.training_step_labels)
@@ -111,6 +119,11 @@ class Callback(pl.Callback):
         pl_module.training_step_labels = []
         pl_module.training_step_preds = []
         self.epoch_number += 1
+
+        # Anneal temperature
+        pl_module.log("temperature", pl_module.temperature)
+        if pl_module.anneal_temperature:
+            pl_module.temperature = self.linearTemp(self.epoch_number, self.initial_temp)
         
 
     def on_validation_epoch_end(self, trainer, pl_module):
@@ -130,3 +143,13 @@ class Callback(pl.Callback):
         # Reset stored labels and preds for current epoch
         pl_module.val_step_labels = []
         pl_module.val_step_preds = []
+
+
+    def linearTemp(self, epoch, initial_temp):
+        end_temp = 0.01
+        num_epochs = 500
+
+        # Anneal temperature at linear rate
+        curr_temp = initial_temp - epoch*(initial_temp-end_temp)/(num_epochs)
+
+        return curr_temp

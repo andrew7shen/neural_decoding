@@ -1044,19 +1044,21 @@ if __name__ == "__main__":
     # model_id = 259
     # model_id = 259
     # model_id = 273
-    model_id = 277
+    # model_id = 277
+    # model_id = 260
+    model_id = 407
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     # plot_type = "baseline"
     # plot_type = "behavior_average"
-    plot_type = "behavior_average_unweighted"
+    # plot_type = "behavior_average_unweighted"
     # Check decoding
-    
-    sep_decoders_R2(dataset=dataset,
-                    model_path=model_path,
-                    config=config,
-                    plot_type=plot_type,
-                    model_id=model_id,
-                    verbose=False)
+    for plot_type in ["behavior_average", "behavior_average_unweighted"]:
+        sep_decoders_R2(dataset=dataset,
+                        model_path=model_path,
+                        config=config,
+                        plot_type=plot_type,
+                        model_id=model_id,
+                        verbose=True)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
@@ -1137,7 +1139,7 @@ if __name__ == "__main__":
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=True)
+    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)

@@ -15,6 +15,7 @@ save_path: "checkpoints"
 model: "combined"
 seed: 42
 temperature: 1.0
+anneal_temperature: True
 weight_decay: 0.01
 hidden_dim: 30
 cluster_model_type: "method1"
@@ -24,4 +25,4 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 418
+run_id: 423
