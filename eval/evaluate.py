@@ -825,6 +825,10 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
         decoder_outputs.append(curr_decoder_outputs.squeeze())
         sample_behaviors.append(curr_behavior)
     cluster_probs = torch.stack(cluster_probs)
+
+    # TODO: Calculate discreteness metric
+    import pdb; pdb.set_trace()
+
     decoder_outputs = torch.stack(decoder_outputs)
     torch.set_printoptions(sci_mode=False)
     # cluster_ids = [val.index(max(val))+1 for val in cluster_probs]

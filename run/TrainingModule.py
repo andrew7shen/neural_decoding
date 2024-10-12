@@ -146,7 +146,8 @@ class Callback(pl.Callback):
 
 
     def linearTemp(self, epoch, initial_temp):
-        end_temp = 0.01
+        # end_temp = 0.01
+        end_temp = 0.001
         num_epochs = 500
 
         # Anneal temperature at linear rate
