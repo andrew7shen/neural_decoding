@@ -6,6 +6,7 @@ import torch
 import torch.optim as optim
 import torch.nn.functional as F
 import pytorch_lightning as pl
+import math
 from sklearn.metrics import r2_score
 
 class TrainingModule(LightningModule):
@@ -26,7 +27,7 @@ class TrainingModule(LightningModule):
 
 
     def forward(self, x):
-        return self.model.forward(x)
+        return self.model.forward(x, self.temperature)
 
     
     def training_step(self, batch):
@@ -122,8 +123,15 @@ class Callback(pl.Callback):
 
         # Anneal temperature
         pl_module.log("temperature", pl_module.temperature)
-        if pl_module.anneal_temperature:
+        if pl_module.anneal_temperature == "linear":
             pl_module.temperature = self.linearTemp(self.epoch_number, self.initial_temp)
+        elif pl_module.anneal_temperature == "cosine":
+            pl_module.temperature = self.cosineTemp(self.epoch_number, self.initial_temp)
+        elif pl_module.anneal_temperature == "none":
+            pass
+        else:
+            print("ERROR: choose valid annealing parameter")
+            exit()
         
 
     def on_validation_epoch_end(self, trainer, pl_module):
@@ -146,11 +154,23 @@ class Callback(pl.Callback):
 
 
     def linearTemp(self, epoch, initial_temp):
-        # end_temp = 0.01
-        end_temp = 0.001
+        end_temp = 0.01
+        # end_temp = 0.001
         num_epochs = 500
 
         # Anneal temperature at linear rate
         curr_temp = initial_temp - epoch*(initial_temp-end_temp)/(num_epochs)
+
+        return curr_temp
+    
+    
+    def cosineTemp(self, epoch, initial_temp):
+        end_temp = 0.01
+        # end_temp = 0.001
+        num_epochs = 500
+
+        # Anneal temperature at cosine rate
+        # From Pytorch documentation for CosineAnnealingLR (https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html)
+        curr_temp = end_temp+0.5*(initial_temp-end_temp)*(1+math.cos(epoch*math.pi/num_epochs))
 
         return curr_temp

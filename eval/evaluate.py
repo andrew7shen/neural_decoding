@@ -794,8 +794,7 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
     model = CombinedModel(input_dim=dataset.N,
                           hidden_dim=config.hidden_dim,
                               output_dim=dataset.M,
-                              num_modes=config.d, 
-                              temperature=config.temperature,
+                              num_modes=config.d,
                               ev=eval_mode,
                               cluster_model_type=config.cluster_model_type,
                               decoder_model_type=config.decoder_model_type)
@@ -805,7 +804,9 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                            lr=config.lr,
                            weight_decay=config.weight_decay,
                            record=config.record,
-                           type=config.type)
+                           type=config.type,
+                           temperature=config.temperature,
+                           anneal_temperature=config.anneal_temperature)
     model.load_state_dict(state_dict)
 
     # Generate cm and dm weights
@@ -827,7 +828,7 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
     cluster_probs = torch.stack(cluster_probs)
 
     # TODO: Calculate discreteness metric
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
 
     decoder_outputs = torch.stack(decoder_outputs)
     torch.set_printoptions(sci_mode=False)
@@ -1050,19 +1051,23 @@ if __name__ == "__main__":
     # model_id = 273
     # model_id = 277
     # model_id = 260
-    model_id = 407
+    model_id = 423
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     # plot_type = "baseline"
     # plot_type = "behavior_average"
-    # plot_type = "behavior_average_unweighted"
+    # plot_types = ["behavior_average", "behavior_average_unweighted"]
+    plot_types = ["behavior_average_unweighted"]
     # Check decoding
-    for plot_type in ["behavior_average", "behavior_average_unweighted"]:
-        sep_decoders_R2(dataset=dataset,
-                        model_path=model_path,
-                        config=config,
-                        plot_type=plot_type,
-                        model_id=model_id,
-                        verbose=True)
+    model_ids = [428, 429, 430, 431, 432]
+    for model_id in model_ids:
+        model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
+        for plot_type in plot_types:
+            sep_decoders_R2(dataset=dataset,
+                            model_path=model_path,
+                            config=config,
+                            plot_type=plot_type,
+                            model_id=model_id,
+                            verbose=True)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
