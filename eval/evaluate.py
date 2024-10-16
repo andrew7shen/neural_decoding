@@ -218,7 +218,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
 
         # Plot cluster distributions with sliding functionality
         range_to_show = 100
-        slider = True
+        slider = False
         if not slider:
             plt.figure(figsize=(12,2))
             plt.stackplot(x, y, labels=['1','2','3'], colors=["yellow", "green", "blue"])
