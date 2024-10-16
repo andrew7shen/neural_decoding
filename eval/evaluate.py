@@ -111,7 +111,6 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                           hidden_dim=config.hidden_dim,
                               output_dim=dataset.M,
                               num_modes=config.d, 
-                              temperature=config.temperature,
                               ev=eval_mode,
                               cluster_model_type=config.cluster_model_type,
                               decoder_model_type=config.decoder_model_type)
@@ -121,7 +120,9 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                            lr=config.lr,
                            weight_decay=config.weight_decay,
                            record=config.record,
-                           type=config.type)
+                           type=config.type,
+                           temperature=config.temperature,
+                           anneal_temperature=config.anneal_temperature)
     model.load_state_dict(state_dict)
 
     # Calculate learned cluster labels
@@ -209,9 +210,15 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
             [v[2] for v in cluster_probs[:num_to_print]],
         ]
 
+        # Count number of timestamps with discrete clustering
+        max_vals = [max(cluster_prob) for cluster_prob in cluster_probs]
+        limit = 0.9
+        num_above_limit = sum(max_val > limit for max_val in max_vals)
+        print(f"{num_above_limit} out of {len(cluster_probs)} above {limit}")
+
         # Plot cluster distributions with sliding functionality
         range_to_show = 100
-        slider = False
+        slider = True
         if not slider:
             plt.figure(figsize=(12,2))
             plt.stackplot(x, y, labels=['1','2','3'], colors=["yellow", "green", "blue"])
@@ -1024,13 +1031,14 @@ if __name__ == "__main__":
     run_kmeans(dataset=dataset, config=config, verbose=False)
 
     # Evaluate model clustering 
-    model_ids = [277]
+    # model_ids = [120]
+    model_ids = [426]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
-        # plot_type = "distributions"
-        plot_type = "majority"
+        plot_type = "distributions"
+        # plot_type = "majority"
         # plot_type = "mode_average"
         # plot_type = "confusion_matrix"
         # Check clustering
@@ -1040,7 +1048,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=False)
+                        verbose=True)
 
     # Evaluate model decoding
     # model_id = 120
@@ -1056,9 +1064,11 @@ if __name__ == "__main__":
     # plot_type = "baseline"
     # plot_type = "behavior_average"
     # plot_types = ["behavior_average", "behavior_average_unweighted"]
-    plot_types = ["behavior_average_unweighted"]
+    # plot_types = ["behavior_average_unweighted"]
+    plot_types = ["behavior_average"]
     # Check decoding
-    model_ids = [428, 429, 430, 431, 432]
+    model_ids = [423, 424, 425, 426, 427]
+    # model_ids = [436, 437, 438, 439, 440]
     for model_id in model_ids:
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         for plot_type in plot_types:
@@ -1067,7 +1077,7 @@ if __name__ == "__main__":
                             config=config,
                             plot_type=plot_type,
                             model_id=model_id,
-                            verbose=True)
+                            verbose=False)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
