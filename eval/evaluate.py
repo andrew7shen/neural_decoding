@@ -140,8 +140,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
     cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
 
     # Create color map and label options for multiple modes
-    cmap_colors = ["yellow","green","blue","red","purple","orange","pink"]
-    number_labels = ["1", "2", "3", "4", "5", "6", "7"]
+    cmap_colors = ["yellow","green","blue","red","purple","orange","pink","brown","gray","olive","cyan"]
+    number_labels = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"] 
 
     # Graph of EMG with behavioral label and learned cluster labels overlaid with color
     if plot_type == "majority":
@@ -204,11 +204,20 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
 
         # Format input data
         x = timestamps[:num_to_print]
-        y = [
-            [v[0] for v in cluster_probs[:num_to_print]],
-            [v[1] for v in cluster_probs[:num_to_print]],
-            [v[2] for v in cluster_probs[:num_to_print]],
-        ]
+        y = []
+        labels = []
+        colors = []
+        
+        for i in range(len(cluster_probs[0])):
+            y.append([v[i] for v in cluster_probs[:num_to_print]])
+            labels.append(number_labels[i])
+            colors.append(cmap_colors[i])
+        # TODO: Original code
+        # y = [
+        #     [v[0] for v in cluster_probs[:num_to_print]],
+        #     [v[1] for v in cluster_probs[:num_to_print]],
+        #     [v[2] for v in cluster_probs[:num_to_print]],
+        # ]
 
         # Count number of timestamps with discrete clustering
         max_vals = [max(cluster_prob) for cluster_prob in cluster_probs]
@@ -221,7 +230,11 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
         slider = False
         if not slider:
             plt.figure(figsize=(12,2))
-            plt.stackplot(x, y, labels=['1','2','3'], colors=["yellow", "green", "blue"])
+
+            plt.stackplot(x, y, labels=labels, colors=colors)
+            # TODO: Original code
+            # plt.stackplot(x, y, labels=['1','2','3'], colors=["yellow", "green", "blue"])
+
             plt.title("Learned Cluster Distributions")
             plt.xlabel("Timestamp")
         else:
@@ -1032,7 +1045,8 @@ if __name__ == "__main__":
 
     # Evaluate model clustering 
     # model_ids = [120]
-    model_ids = [426]
+    # model_ids = [426]
+    model_ids = [409]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
