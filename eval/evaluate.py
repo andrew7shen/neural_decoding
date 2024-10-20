@@ -122,7 +122,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                            record=config.record,
                            type=config.type,
                            temperature=config.temperature,
-                           anneal_temperature=config.anneal_temperature)
+                           anneal_temperature=config.anneal_temperature,
+                           num_epochs=config.epochs)
     model.load_state_dict(state_dict)
 
     # Calculate learned cluster labels
@@ -164,20 +165,26 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
         pca1 = pca_result[:,0]
         pca2 = pca_result[:,1]
 
-        ids_array = np.array(ids)
-        cluster_ids_array = np.array(cluster_ids)
-        num_timestamps = len(ids_array)
+        ids_array = np.array(ids)[:num_to_print]
+        cluster_ids_array = np.array(cluster_ids)[:num_to_print]
+        num_timestamps = num_to_print
+        # TODO: Original code
+        # num_timestamps = len(ids_array)
         fig, (ax1, ax2) = plt.subplots(2, figsize=(10,3))
 
         # Plot EMG info 
         if plot_pcs: 
-            ax1.plot(timestamps, pca1, color="black")
-            ax1.plot(timestamps, pca2, color="white")
+            ax1.plot(timestamps[:num_to_print], pca1[:num_to_print], color="black")
+            ax1.plot(timestamps[:num_to_print], pca2[:num_to_print], color="white")
         else:
-            ax1.plot(timestamps, train_dataset_1, color="black")
+            ax1.plot(timestamps[:num_to_print], train_dataset_1[:num_to_print], color="black")
         
-        cmap = ListedColormap(["yellow","green","blue"], name='from_list', N=None)
+        cmap = ListedColormap(cmap_colors, name='from_list', N=None)
         cmap_preds = ListedColormap(cmap_colors[:config.d], name='from_list', N=None)
+        # TODO: Original code
+        # cmap = ListedColormap(["yellow","green","blue"], name='from_list', N=None)
+        # cmap_preds = ListedColormap(cmap_colors[:config.d], name='from_list', N=None)
+        # Plot ground truth majority labels
         ax1.imshow(np.expand_dims(ids_array, 0),
                 cmap=cmap,
                 alpha=1.0,
@@ -186,11 +193,12 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
 
         # Plot EMG info 
         if plot_pcs: 
-            ax2.plot(timestamps, pca1, color="black")
-            ax2.plot(timestamps, pca2, color="white")
+            ax2.plot(timestamps[:num_to_print], pca1[:num_to_print], color="black")
+            ax2.plot(timestamps[:num_to_print], pca2[:num_to_print], color="white")
         else:
-            ax2.plot(timestamps, train_dataset_1, color="black")
+            ax2.plot(timestamps[:num_to_print], train_dataset_1[:num_to_print], color="black")
 
+        # Plot predicted majority labels
         ax2.imshow(np.expand_dims(cluster_ids_array, 0),
                 cmap=cmap_preds,
                 alpha=1.0,
@@ -294,6 +302,82 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
         print("Printing confusion matrix, C[i,j] is number of observations in group 'i' but predicted to be 'j'")
         print(confusion_matrix(ids, cluster_ids))
 
+    elif plot_type == "discrete_state_overlap":
+
+        # Populate overlap dict
+        overlap_dict = {}
+        num_modes = len(cluster_probs[0])
+        for i in range(num_modes):
+            curr_dict = {}
+            for j in range(num_modes):
+                curr_dict[j] = 0
+            overlap_dict[i] = curr_dict
+        
+        # Calculate discrete state overlap between ground truth and predicted labels
+        # Outside keys are ground truth labels (i.e. manual labels)
+        # If using cage dataset
+        if dataset.label_type == "set2":
+            ids = [val-1 for val in ids]
+            cluster_ids = [val-1 for val in cluster_ids]
+        # If using mouse dataset
+        elif dataset.label_type == "mouse":
+            ids = [val[2] for val in dataset.train_dataset]
+            cluster_ids = [val-1 for val in cluster_ids]
+        for i in range(len(ids)):
+            curr_manual_label = ids[i]
+            curr_pred_label = cluster_ids[i]
+            overlap_dict[curr_manual_label][curr_pred_label] += 1
+
+        # Convert dictionary to nested list for input into heatmap
+        overlap_list = []
+        for outer_key in overlap_dict.keys():
+            curr_list = []
+            for inner_key in overlap_dict[outer_key].keys():
+                curr_list.append(overlap_dict[outer_key][inner_key])
+            overlap_list.append(curr_list)
+        overlap_array = np.transpose(np.array(overlap_list))
+
+        # Normalize over each manually annotated states
+        normalize = False
+        if normalize:
+            normalized_array = []
+            for i in range(len(overlap_array)):
+                curr_list = []
+                curr_column_sum = sum(overlap_array[:,i])
+                for j in range(len(overlap_array)):
+                    curr_list.append(overlap_array[j][i]/curr_column_sum)
+                normalized_array.append(curr_list)
+            normalized_array = np.transpose(np.array(normalized_array))
+            overlap_array = normalized_array
+
+        # Create heatmap of overlap values
+        fig, ax = plt.subplots()
+        heatmap = ax.imshow(overlap_array)
+        fig.colorbar(heatmap)
+        # If working with cage data
+        if num_modes == 3:
+            row_labels = ["1", "2", "3"]
+            column_labels = ["crawl", "precision", "power"]
+            title_str = "Discrete State Overlap (Cage Dataset)"
+        # If working with mouse data
+        elif num_modes == 11:
+            row_labels = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+            column_labels = ["unlabeled", 'climbdown', 'climbup', 'eating', 'grooming',
+                             'jumpdown', 'jumping', 'rearing', 'still', 'walkflat', 'walkgrid']
+            title_str = "Discrete State Overlap (Mouse Dataset)"
+        ax.set_xticks(np.arange(overlap_array.shape[1]))
+        ax.set_yticks(np.arange(overlap_array.shape[0]))  
+        ax.set_xticklabels(column_labels, rotation=45)
+        ax.set_yticklabels(row_labels)
+        ax.set_xlabel('Manually annotated states')
+        ax.set_ylabel('Inferred discrete states')
+        ax.set_title(title_str)
+        fig.tight_layout()
+        # plt.show()
+        if normalize:
+            plt.savefig("figures/%s_heatmap_norm.png" % model_id)
+        else:
+            plt.savefig("figures/%s_heatmap.png" % model_id)
     # plt.show()
 
 
@@ -1046,15 +1130,24 @@ if __name__ == "__main__":
     # Evaluate model clustering 
     # model_ids = [120]
     # model_ids = [426]
-    model_ids = [409]
+    # model_ids = [442, 443]
+
+    model_ids = [449]
+    # model_ids = [120]
+    # model_ids = [443]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
-        model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
+        if model_id in [449]:
+            model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
+        else:
+            model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
-        plot_type = "distributions"
+        # num_to_print = 10000
+        # plot_type = "distributions"
         # plot_type = "majority"
         # plot_type = "mode_average"
         # plot_type = "confusion_matrix"
+        plot_type = "discrete_state_overlap"
         # Check clustering
         check_clustering(dataset=dataset,
                         model_path=model_path,
