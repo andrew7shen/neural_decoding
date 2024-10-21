@@ -15,6 +15,7 @@ save_path: "checkpoints"
 model: "combined"
 seed: 42
 temperature: 1
+anneal_temperature: "none"
 weight_decay: 0.01
 hidden_dim: 30
 cluster_model_type: "method1"

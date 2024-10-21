@@ -702,6 +702,7 @@ def sep_R2_reg(dataset, verbose):
         return
     
     # Calculate linear regression model
+    use_ffnn = True
     train_dataset = dataset.train_dataset
     val_dataset = dataset.val_dataset
     m1_train = np.array([val[0] for val in train_dataset])
@@ -710,9 +711,13 @@ def sep_R2_reg(dataset, verbose):
     emg_val = np.array([val[1] for val in val_dataset])
     # model = LinearRegression().fit(m1_train, emg_train)
     # Fit with Ridge regression
-    model = Ridge(alpha=15.0).fit(m1_train, emg_train)
+    if not use_ffnn:
+        model = Ridge(alpha=15.0).fit(m1_train, emg_train)
     # Fit with neural network
-    # model = MLPRegressor(random_state=1, max_iter=300).fit(m1_train, emg_train)
+    elif use_ffnn:
+        print("Fitting MLPRegressor...")
+        num_epochs = 300
+        model = MLPRegressor(random_state=1, max_iter=num_epochs, verbose=True).fit(m1_train, emg_train)
 
     # Generate train and val preds
     train_preds = model.predict(m1_train)
@@ -724,6 +729,9 @@ def sep_R2_reg(dataset, verbose):
     print("\nFull Dataset: train (%s), val (%s)" % (len(train_dataset), len(val_dataset)))
     print("Train R2: %s" % train_r2)
     print("Val R2: %s\n" % val_r2)
+
+    if use_ffnn:
+        return []
 
     # Generate predicted value for each input training sample
     r2_list = []
@@ -1155,7 +1163,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=True)
+                        verbose=False)
 
     # Evaluate model decoding
     # model_id = 120
@@ -1265,7 +1273,7 @@ if __name__ == "__main__":
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
+    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=True)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)
