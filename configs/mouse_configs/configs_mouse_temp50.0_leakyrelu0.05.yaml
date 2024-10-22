@@ -20,10 +20,10 @@ anneal_temperature: "cosine"
 weight_decay: 0.0025
 hidden_dim: 30
 cluster_model_type: "method1"
-decoder_model_type: ""
+decoder_model_type: "leakyrelu_0.05"
 kmeans_cluster: 0
 set_decoder_weights: "none"
 label_type: "mouse"
 remove_zeros: False
 scale_outputs: False
-run_id: 443
+run_id: 478

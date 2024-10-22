@@ -105,6 +105,11 @@ class DecoderModel(nn.Module):
 
         elif self.decoder_model_type == "onlytanh":
             x = torch.tanh(x)
+
+        # Leaky Relu
+        elif "leakyrelu" in self.decoder_model_type:
+            slope_val = float(self.decoder_model_type.split("_")[-1])
+            x = nn.LeakyReLU(slope_val)(x)
         
         else:
             scale_outputs = False
