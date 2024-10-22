@@ -128,7 +128,7 @@ class Callback(pl.Callback):
         if pl_module.anneal_temperature == "linear":
             pl_module.temperature = self.linearTemp(self.epoch_number, self.initial_temp)
         elif pl_module.anneal_temperature == "cosine":
-            pl_module.temperature = self.cosineTemp(self.epoch_number, self.initial_temp, pl_module.num_epochs)
+            pl_module.temperature = self.cosineTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
         elif pl_module.anneal_temperature == "cosine_flatten":
             pl_module.temperature = self.cosineFlattenTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
         elif pl_module.anneal_temperature == "none":
@@ -168,10 +168,10 @@ class Callback(pl.Callback):
         return curr_temp
     
     
-    def cosineTemp(self, epoch, initial_temp, num_epochs):
-        end_temp = 0.01
+    def cosineTemp(self, epoch, initial_temp, end_temp):
+        # end_temp = 0.01
         # end_temp = 0.001
-        # num_epochs = 500
+        num_epochs = 500
 
         # Anneal temperature at cosine rate
         # From Pytorch documentation for CosineAnnealingLR (https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html)
