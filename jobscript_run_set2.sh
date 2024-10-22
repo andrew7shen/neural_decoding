@@ -2,7 +2,7 @@
 #SBATCH -A p31796
 #SBATCH -p normal
 #SBATCH -t 3:00:00
-#SBATCH -N 20
+#SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_out.txt
 #SBATCH --error=training_err.txt
