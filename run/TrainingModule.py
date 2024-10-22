@@ -136,7 +136,7 @@ class Callback(pl.Callback):
         else:
             print("ERROR: choose valid annealing parameter")
             exit()
-        print(pl_module.temperature)
+        # print(pl_module.temperature)
 
     def on_validation_epoch_end(self, trainer, pl_module):
         

@@ -717,7 +717,7 @@ def sep_R2_reg(dataset, verbose):
     elif use_ffnn:
         print("Fitting MLPRegressor...")
         num_epochs = 300
-        model = MLPRegressor(random_state=1, max_iter=num_epochs, verbose=True).fit(m1_train, emg_train)
+        model = MLPRegressor(random_state=1, max_iter=num_epochs, verbose=False).fit(m1_train, emg_train)
 
     # Generate train and val preds
     train_preds = model.predict(m1_train)
@@ -918,7 +918,9 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                            record=config.record,
                            type=config.type,
                            temperature=config.temperature,
-                           anneal_temperature=config.anneal_temperature)
+                           anneal_temperature=config.anneal_temperature,
+                           num_epochs=config.epochs,
+                           end_temperature=config.end_temperature)
     model.load_state_dict(state_dict)
 
     # Generate cm and dm weights
@@ -1178,21 +1180,27 @@ if __name__ == "__main__":
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     # plot_type = "baseline"
     # plot_type = "behavior_average"
-    # plot_types = ["behavior_average", "behavior_average_unweighted"]
+    plot_types = ["behavior_average", "behavior_average_unweighted"]
     # plot_types = ["behavior_average_unweighted"]
-    plot_types = ["behavior_average"]
+    # plot_types = ["behavior_average"]
     # Check decoding
-    model_ids = [423, 424, 425, 426, 427]
+    # model_ids = [423, 424, 425, 426, 427]
     # model_ids = [436, 437, 438, 439, 440]
+    model_ids = [447, 448, 449]
     for model_id in model_ids:
-        model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
+        if model_id in [449]:
+            model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
+        elif model_id in [448]:
+            model_path = "checkpoints/checkpoint%s_epoch=599.ckpt" % model_id
+        else:
+            model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         for plot_type in plot_types:
             sep_decoders_R2(dataset=dataset,
                             model_path=model_path,
                             config=config,
                             plot_type=plot_type,
                             model_id=model_id,
-                            verbose=False)
+                            verbose=True)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
@@ -1273,7 +1281,7 @@ if __name__ == "__main__":
     full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=True)
+    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)
