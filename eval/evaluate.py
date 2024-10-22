@@ -123,7 +123,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                            type=config.type,
                            temperature=config.temperature,
                            anneal_temperature=config.anneal_temperature,
-                           num_epochs=config.epochs)
+                           num_epochs=config.epochs,
+                           end_temperature=config.end_temperature)
     model.load_state_dict(state_dict)
 
     # Calculate learned cluster labels
@@ -229,9 +230,10 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
 
         # Count number of timestamps with discrete clustering
         max_vals = [max(cluster_prob) for cluster_prob in cluster_probs]
-        limit = 0.9
-        num_above_limit = sum(max_val > limit for max_val in max_vals)
-        print(f"{num_above_limit} out of {len(cluster_probs)} above {limit}")
+        limits = [0.6, 0.7, 0.8, 0.9]
+        for limit in limits:
+            num_above_limit = sum(max_val > limit for max_val in max_vals)
+            print(f"{num_above_limit} out of {len(cluster_probs)} above {limit} ({num_above_limit/len(cluster_probs)})")
 
         # Plot cluster distributions with sliding functionality
         range_to_show = 100
@@ -1142,22 +1144,24 @@ if __name__ == "__main__":
     # model_ids = [426]
     # model_ids = [442, 443]
 
-    model_ids = [449]
+    # model_ids = [449]
     # model_ids = [120]
     # model_ids = [443]
+    model_ids = [484]
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         if model_id in [449]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
         else:
             model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
+            model_path = "checkpoints/checkpoint%s_epoch=474.ckpt" % model_id
         num_to_print = 7800
         # num_to_print = 10000
-        # plot_type = "distributions"
+        plot_type = "distributions"
         # plot_type = "majority"
         # plot_type = "mode_average"
         # plot_type = "confusion_matrix"
-        plot_type = "discrete_state_overlap"
+        # plot_type = "discrete_state_overlap"
         # Check clustering
         check_clustering(dataset=dataset,
                         model_path=model_path,
@@ -1165,7 +1169,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=False)
+                        verbose=True)
 
     # Evaluate model decoding
     # model_id = 120
@@ -1200,7 +1204,7 @@ if __name__ == "__main__":
                             config=config,
                             plot_type=plot_type,
                             model_id=model_id,
-                            verbose=True)
+                            verbose=False)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
