@@ -36,6 +36,7 @@ class Config():
         self.run_id = args["run_id"]
         self.anneal_temperature = args["anneal_temperature"]
         self.end_temperature = args["end_temperature"]
+        self.save_epochs = args["save_epochs"]
 
 
 def load_config():

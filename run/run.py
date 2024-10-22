@@ -91,7 +91,11 @@ if __name__ == "__main__":
         callback_filename = 'checkpoint_{epoch}_%s' % config.d
     else:
         callback_filename = 'checkpoint%s_{epoch}' % config.run_id
-    save_callback = ModelCheckpoint(dirpath = config.save_path, filename=callback_filename)
+    # Define when to save checkpoints
+    if config.save_epochs == "none":
+        save_callback = ModelCheckpoint(dirpath = config.save_path, filename=callback_filename)
+    else:
+        save_callback = ModelCheckpoint(dirpath = config.save_path, filename=callback_filename, save_top_k = -1, every_n_epochs = config.save_epochs)
 
     # Define trainer
     if config.record:

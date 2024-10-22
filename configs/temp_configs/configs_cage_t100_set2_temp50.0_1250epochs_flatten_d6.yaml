@@ -6,7 +6,7 @@ b: 8
 type: "emg"
 epochs: 1250
 lr: 0.0001
-record: True
+record: False
 ev: False
 m1_path: "data/set2_data/m1_set2_t100.npy"
 emg_path: "data/set2_data/emg_set2_t100.npy"
@@ -15,6 +15,7 @@ save_path: "checkpoints"
 model: "combined"
 seed: 42
 temperature: 50.0
+end_temperature: 0.01
 anneal_temperature: "cosine_flatten"
 weight_decay: 0.01
 hidden_dim: 30
@@ -25,4 +26,4 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 463
+run_id: "none"

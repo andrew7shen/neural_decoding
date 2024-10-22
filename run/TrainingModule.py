@@ -136,7 +136,7 @@ class Callback(pl.Callback):
         else:
             print("ERROR: choose valid annealing parameter")
             exit()
-        # print(pl_module.temperature)
+        print(pl_module.temperature)
 
     def on_validation_epoch_end(self, trainer, pl_module):
         
@@ -175,7 +175,10 @@ class Callback(pl.Callback):
 
         # Anneal temperature at cosine rate
         # From Pytorch documentation for CosineAnnealingLR (https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html)
+        
         curr_temp = end_temp+0.5*(initial_temp-end_temp)*(1+math.cos(epoch*math.pi/num_epochs))
+
+
 
         return curr_temp
     

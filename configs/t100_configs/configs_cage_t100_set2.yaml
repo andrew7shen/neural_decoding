@@ -12,9 +12,11 @@ m1_path: "data/set2_data/m1_set2_t100.npy"
 emg_path: "data/set2_data/emg_set2_t100.npy"
 behavioral_path: "data/set2_data/behavioral_set2_t100.npy"
 save_path: "checkpoints"
+save_epochs: 25
 model: "combined"
 seed: 42
 temperature: 1.0
+end_temperature: 0.01
 anneal_temperature: "none"
 weight_decay: 0.01
 hidden_dim: 30
@@ -25,4 +27,4 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 435
+run_id: 483
