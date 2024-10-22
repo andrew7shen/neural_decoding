@@ -1,4 +1,5 @@
 #!/bin/bash
+#!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
 #SBATCH -t 4:00:00
