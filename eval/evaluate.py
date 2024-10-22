@@ -354,7 +354,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
 
         # Create heatmap of overlap values
         fig, ax = plt.subplots()
-        heatmap = ax.imshow(overlap_array)
+        heatmap = ax.imshow(overlap_array, cmap='Greys')
         fig.colorbar(heatmap)
         # If working with cage data
         if num_modes == 3:
@@ -1143,25 +1143,35 @@ if __name__ == "__main__":
     # model_ids = [120]
     # model_ids = [426]
     # model_ids = [442, 443]
-
     # model_ids = [449]
     # model_ids = [120]
     # model_ids = [443]
-    model_ids = [484]
+
+    # model_ids = [484]
+    # model_ids = [483]
+    model_ids = [485]
+
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
         if model_id in [449]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
         else:
             model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
-            model_path = "checkpoints/checkpoint%s_epoch=474.ckpt" % model_id
+
+            # model_path = "checkpoints/checkpoint%s_epoch=449.ckpt" % model_id
+            # model_path = "checkpoints/checkpoint%s_epoch=474.ckpt" % model_id
+            # model_path = "checkpoints/checkpoint%s_epoch=479.ckpt" % model_id
+            model_path = "checkpoints/checkpoint%s_epoch=484.ckpt" % model_id
+            # model_path = "checkpoints/checkpoint%s_epoch=479.ckpt" % model_id
+            # model_path = "checkpoints/checkpoint%s_epoch=494.ckpt" % model_id
+            # model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
         # num_to_print = 10000
-        plot_type = "distributions"
+        # plot_type = "distributions"
         # plot_type = "majority"
         # plot_type = "mode_average"
         # plot_type = "confusion_matrix"
-        # plot_type = "discrete_state_overlap"
+        plot_type = "discrete_state_overlap"
         # Check clustering
         check_clustering(dataset=dataset,
                         model_path=model_path,

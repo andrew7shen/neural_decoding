@@ -105,7 +105,9 @@ if __name__ == "__main__":
         trainer = Trainer(max_epochs=config.epochs, callbacks=[Callback(dataset), save_callback])
 
     # Fit the model
-    trainer.fit(model, train_dataloaders=dataset.train_dataloader(), val_dataloaders=dataset.val_dataloader())
+    # trainer.fit(model, train_dataloaders=dataset.train_dataloader(), val_dataloaders=dataset.val_dataloader())
+    # TODO: temp for continued training
+    trainer.fit(model, train_dataloaders=dataset.train_dataloader(), val_dataloaders=dataset.val_dataloader(), ckpt_path="/Users/andrewshen/Github_Repos/neural_decoding/checkpoints/checkpoint483_epoch=474.ckpt")
 
     wandb.finish()
 
