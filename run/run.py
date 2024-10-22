@@ -60,7 +60,8 @@ if __name__ == "__main__":
                            type=config.type,
                            temperature=config.temperature,
                            anneal_temperature=config.anneal_temperature,
-                           num_epochs=config.epochs)
+                           num_epochs=config.epochs,
+                           end_temperature=config.end_temperature)
     
     # Set initial decoder weights
     weights = []

@@ -11,7 +11,7 @@ from sklearn.metrics import r2_score
 
 class TrainingModule(LightningModule):
 
-    def __init__(self, model, lr, weight_decay, record, type, temperature, anneal_temperature, num_epochs):
+    def __init__(self, model, lr, weight_decay, record, type, temperature, anneal_temperature, num_epochs, end_temperature):
         super().__init__()
         self.model = model
         self.lr = lr
@@ -24,6 +24,7 @@ class TrainingModule(LightningModule):
         self.val_step_preds = []
         self.temperature = temperature
         self.anneal_temperature = anneal_temperature
+        self.end_temperature = end_temperature
         self.num_epochs = num_epochs
 
 
@@ -129,7 +130,7 @@ class Callback(pl.Callback):
         elif pl_module.anneal_temperature == "cosine":
             pl_module.temperature = self.cosineTemp(self.epoch_number, self.initial_temp, pl_module.num_epochs)
         elif pl_module.anneal_temperature == "cosine_flatten":
-            pl_module.temperature = self.cosineFlattenTemp(self.epoch_number, self.initial_temp)
+            pl_module.temperature = self.cosineFlattenTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
         elif pl_module.anneal_temperature == "none":
             pass
         else:
@@ -179,8 +180,8 @@ class Callback(pl.Callback):
         return curr_temp
     
 
-    def cosineFlattenTemp(self, epoch, initial_temp):
-        end_temp = 0.01
+    def cosineFlattenTemp(self, epoch, initial_temp, end_temp):
+        # end_temp = 0.01
         # end_temp = 0.001
         num_epochs = 500
 

@@ -35,6 +35,7 @@ class Config():
         self.scale_outputs = args["scale_outputs"]
         self.run_id = args["run_id"]
         self.anneal_temperature = args["anneal_temperature"]
+        self.end_temperature = args["end_temperature"]
 
 
 def load_config():
