@@ -15,6 +15,7 @@ save_path: "checkpoints"
 model: "combined"
 seed: 42
 temperature: 50.0
+end_temperature: 0.01
 anneal_temperature: "cosine"
 weight_decay: 0.0025
 hidden_dim: 30
