@@ -1,7 +1,7 @@
 T: None
 N: None
 M: None
-d: 11  # num_modes
+d: 15  # num_modes
 b: 64
 type: "emg"
 epochs: 1000
@@ -26,4 +26,4 @@ set_decoder_weights: "none"
 label_type: "mouse"
 remove_zeros: False
 scale_outputs: False
-run_id: 469
+run_id: 472
