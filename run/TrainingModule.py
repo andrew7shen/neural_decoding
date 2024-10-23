@@ -174,7 +174,7 @@ class Callback(pl.Callback):
         num_epochs = 500
 
         # TODO: temp for continued training
-        epoch = epoch + 473
+        # epoch = epoch + 473
 
         # Anneal temperature at cosine rate
         # From Pytorch documentation for CosineAnnealingLR (https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html)
