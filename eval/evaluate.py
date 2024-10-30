@@ -340,7 +340,7 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
         overlap_array = np.transpose(np.array(overlap_list))
 
         # Normalize over each manually annotated states
-        normalize = False
+        normalize = True
         if normalize:
             normalized_array = []
             for i in range(len(overlap_array)):
@@ -377,7 +377,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
         fig.tight_layout()
         # plt.show()
         if normalize:
-            plt.savefig("figures/%s_heatmap_norm.png" % model_id)
+            # plt.savefig("figures/%s_heatmap_norm.png" % model_id)
+            plt.savefig("figures/%s_heatmap_norm.pdf" % model_id)
         else:
             plt.savefig("figures/%s_heatmap.png" % model_id)
     # plt.show()
@@ -1053,7 +1054,7 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
         number_labels = ["1", "2", "3", "4", "5", "6", "7"]
 
         # Plot averaged decoding outputs for each behavior
-        equal_scale = False
+        equal_scale = True
         fig, ax = plt.subplots(3,4, figsize=(14,7))
         ax2 = ax[0,0].twinx()
         ax2 = [[ax_inner.twinx() for ax_inner in ax_outer] for ax_outer in ax]
@@ -1085,7 +1086,15 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                         # ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
                         # ax[ax_pos][i].set_ylim([-60,70]) # Scale y-axis for equal comparison
                         # ax[ax_pos][i].set_ylim([-0.7,1.3]) # Scale y-axis for equal comparison
-                        ax[ax_pos][i].set_ylim([-1.25,2.25]) # Scale y-axis for equal comparison
+                        # ax[ax_pos][i].set_ylim([-1.25,2.25]) # Scale y-axis for equal comparison
+
+                        # TODO: Manual scaling for monkey dataset, weighted plot, cosyne submission
+                        if ax_pos == 0:
+                            ax[ax_pos][i].set_ylim([-35,70])
+                        elif ax_pos == 1:
+                            ax[ax_pos][i].set_ylim([-60,25])
+                        elif ax_pos == 2:
+                            ax[ax_pos][i].set_ylim([-70,70])
                     
                 # Plot mode values
                 else:
@@ -1101,14 +1110,23 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                     if equal_scale:
                         # ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
                         # ax[ax_pos][i].set_ylim([-60,70]) # Scale y-axis for equal comparison
-                        ax[ax_pos][i].set_ylim([-3.5,2.2]) # Scale y-axis for equal comparison
+                        # ax[ax_pos][i].set_ylim([-3.5,2.2]) # Scale y-axis for equal comparison
                         # ax[ax_pos][i].set_ylim([-1.25,1.5]) # Scale y-axis for equal comparison
+                        
+                        # TODO: Manual scaling for monkey dataset, weighted plot, cosyne submission
+                        if ax_pos == 0:
+                            ax[ax_pos][i].set_ylim([-35,70])
+                        elif ax_pos == 1:
+                            ax[ax_pos][i].set_ylim([-60,25])
+                        elif ax_pos == 2:
+                            ax[ax_pos][i].set_ylim([-70,70])
 
             ax_pos += 1
         
         if save_fig:
             if equal_scale:
                 plt.savefig("figures/decoder_outputs/%s_%s_scaled.png" % (model_id, plot_type))
+                # plt.savefig("figures/decoder_outputs/%s_%s_scaled.pdf" % (model_id, plot_type))
             else:
                 plt.savefig("figures/decoder_outputs/%s_%s.png" % (model_id, plot_type))
         else:
@@ -1179,7 +1197,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=True)
+                        verbose=False)
 
     # Evaluate model decoding
     # model_id = 120
@@ -1194,13 +1212,15 @@ if __name__ == "__main__":
     model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
     # plot_type = "baseline"
     # plot_type = "behavior_average"
-    plot_types = ["behavior_average", "behavior_average_unweighted"]
+    # plot_types = ["behavior_average", "behavior_average_unweighted"]
     # plot_types = ["behavior_average_unweighted"]
-    # plot_types = ["behavior_average"]
+    plot_types = ["behavior_average"]
     # Check decoding
     # model_ids = [423, 424, 425, 426, 427]
     # model_ids = [436, 437, 438, 439, 440]
-    model_ids = [447, 448, 449]
+    # model_ids = [447, 448, 449]
+    # model_ids = [449]
+    model_ids = [488]
     for model_id in model_ids:
         if model_id in [449]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
@@ -1208,13 +1228,17 @@ if __name__ == "__main__":
             model_path = "checkpoints/checkpoint%s_epoch=599.ckpt" % model_id
         else:
             model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
+
+            model_path = "checkpoints/checkpoint%s_epoch=449.ckpt" % model_id
+            # model_path = "checkpoints/checkpoint%s_epoch=459.ckpt" % model_id
+
         for plot_type in plot_types:
             sep_decoders_R2(dataset=dataset,
                             model_path=model_path,
                             config=config,
                             plot_type=plot_type,
                             model_id=model_id,
-                            verbose=False)
+                            verbose=True)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets

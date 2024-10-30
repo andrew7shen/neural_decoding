@@ -38,7 +38,8 @@ plt.tight_layout()
 if verbose:
     plt.show()
 else:
-    plt.savefig("figures/cosyne_figures/monkey_results.png")
+    # plt.savefig("figures/cosyne_figures/monkey_results.png")
+    plt.savefig("figures/cosyne_figures/monkey_results.pdf")
 plt.clf()
 
 
@@ -80,4 +81,5 @@ plt.tight_layout()
 if verbose:
     plt.show()
 else:
-    plt.savefig("figures/cosyne_figures/mouse_results.png")
+    # plt.savefig("figures/cosyne_figures/mouse_results.png")
+    plt.savefig("figures/cosyne_figures/mouse_results.pdf")

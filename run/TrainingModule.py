@@ -26,6 +26,7 @@ class TrainingModule(LightningModule):
         self.anneal_temperature = anneal_temperature
         self.end_temperature = end_temperature
         self.num_epochs = num_epochs
+        self.max_cluster_probs = []
 
 
     def forward(self, x):
@@ -39,7 +40,11 @@ class TrainingModule(LightningModule):
         labels = batch["emg"]
 
         # Generate predictions
-        labels_hat = self.model(features, self.temperature)
+        # labels_hat = self.model(features, self.temperature)
+        # TODO: Return clustering probs and final output
+        cluster_probs, labels_hat = self.model(features, self.temperature)
+        self.max_cluster_probs += list(torch.max(cluster_probs.squeeze(),dim=1).values)
+        
         if labels_hat.shape[0] == 1:
             pass
             # TODO: Commented out for generalizability grooming experiment because was erroring and unnecessary
@@ -64,7 +69,10 @@ class TrainingModule(LightningModule):
         labels = batch["emg"]
 
         # Generate predictions
-        labels_hat = self.model(features, self.temperature)
+        # labels_hat = self.model(features, self.temperature)
+        # TODO: Return clustering probs and final output
+        cluster_probs, labels_hat = self.model(features, self.temperature)
+
         if labels_hat.shape[0] == 1:
             pass
             # TODO: Commented out for generalizability grooming experiment because was erroring and unnecessary
@@ -123,6 +131,12 @@ class Callback(pl.Callback):
         pl_module.training_step_preds = []
         self.epoch_number += 1
 
+        # Calculate discreteness metric
+        limit = 0.9
+        discreteness_metric = sum(max_val > limit for max_val in pl_module.max_cluster_probs)/len(pl_module.max_cluster_probs)
+        pl_module.log("discreteness", discreteness_metric.item())
+        pl_module.max_cluster_probs = []
+
         # Anneal temperature
         pl_module.log("temperature", pl_module.temperature)
         if pl_module.anneal_temperature == "linear":
@@ -136,7 +150,7 @@ class Callback(pl.Callback):
         else:
             print("ERROR: choose valid annealing parameter")
             exit()
-        print(pl_module.temperature)
+        # print(pl_module.temperature)
 
     def on_validation_epoch_end(self, trainer, pl_module):
         

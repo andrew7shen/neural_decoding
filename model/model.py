@@ -138,7 +138,10 @@ class CombinedModel(nn.Module):
         # Return clustering and decoding outputs if mode is "eval"
         if self.ev == True:
             return [x1, x2]
-        return output
+        # return output
+
+        # TODO: Return clustering probs and final output
+        return [x1, output]
     
 
 
