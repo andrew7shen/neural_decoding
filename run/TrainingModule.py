@@ -120,7 +120,7 @@ class Callback(pl.Callback):
             train_loss_epoch = F.cross_entropy(labels_hat, labels)
         elif self.dataset.dataset_type == "emg":
             train_loss_epoch = F.mse_loss(labels_hat, labels)
-        print(train_loss_epoch.item())
+        # print(train_loss_epoch.item())
 
         # Calculate R^2 metric
         train_r2 = r2_score(labels, labels_hat)
@@ -145,6 +145,8 @@ class Callback(pl.Callback):
             pl_module.temperature = self.cosineTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
         elif pl_module.anneal_temperature == "cosine_flatten":
             pl_module.temperature = self.cosineFlattenTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
+        elif pl_module.anneal_temperature == "inverse":
+            pl_module.temperature = self.inverseTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
         elif pl_module.anneal_temperature == "none":
             pass
         else:
@@ -195,8 +197,6 @@ class Callback(pl.Callback):
         
         curr_temp = end_temp+0.5*(initial_temp-end_temp)*(1+math.cos(epoch*math.pi/num_epochs))
 
-
-
         return curr_temp
     
 
@@ -213,3 +213,19 @@ class Callback(pl.Callback):
             curr_temp = end_temp
 
         return curr_temp
+    
+
+    def inverseTemp(self, epoch, initial_temp, end_temp):
+        # end_temp = 0.01
+        # end_temp = 0.001
+        num_epochs = 500
+
+        # Anneal temperature at cosine rate
+        # From Pytorch documentation for CosineAnnealingLR (https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html)
+        
+        curr_temp = end_temp+0.5*(initial_temp-end_temp)*(1+math.cos(epoch*math.pi/num_epochs))
+        # curr_temp = epoch*1/(initial_temp-end_temp)
+        print(curr_temp)
+        # import pdb; pdb.set_trace()
+        return curr_temp
+    
