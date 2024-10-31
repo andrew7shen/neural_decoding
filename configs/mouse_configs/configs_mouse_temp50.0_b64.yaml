@@ -16,7 +16,7 @@ save_epochs: "none"
 model: "combined"
 seed: 42
 temperature: 50.0
-end_temperature: 0.01
+end_temperature: 1.5
 anneal_temperature: "cosine"
 weight_decay: 0.0025
 hidden_dim: 30
@@ -27,4 +27,4 @@ set_decoder_weights: "none"
 label_type: "mouse"
 remove_zeros: False
 scale_outputs: False
-run_id: 489
+run_id: 494
