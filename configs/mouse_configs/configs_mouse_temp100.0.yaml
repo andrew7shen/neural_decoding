@@ -15,7 +15,7 @@ save_path: "checkpoints"
 save_epochs: "none"
 model: "combined"
 seed: 42
-temperature: 50.0
+temperature: 100.0
 end_temperature: 0.01
 anneal_temperature: "cosine"
 weight_decay: 0.0025
@@ -27,4 +27,4 @@ set_decoder_weights: "none"
 label_type: "mouse"
 remove_zeros: False
 scale_outputs: False
-run_id: 505
+run_id: 510

@@ -15,9 +15,16 @@ cd neural_decoding/
 # python3 run/run.py configs/mouse_configs/configs_mouse_temp1.0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_temp50.0.yaml
 
+# python3 run/run.py configs/mouse_configs/configs_mouse_temp50.0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_temp40.0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_temp30.0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_temp20.0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_temp10.0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_temp5.0.yaml
+
 python3 run/run.py configs/mouse_configs/configs_mouse_temp50.0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_temp40.0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_temp30.0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_temp20.0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_temp10.0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_temp5.0.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_temp60.0.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_temp70.0.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_temp80.0.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_temp90.0.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_temp100.0.yaml
