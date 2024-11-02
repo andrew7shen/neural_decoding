@@ -145,8 +145,11 @@ class Callback(pl.Callback):
             pl_module.temperature = self.cosineTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
         elif pl_module.anneal_temperature == "cosine_flatten":
             pl_module.temperature = self.cosineFlattenTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
+        elif pl_module.anneal_temperature == "sine":
+            pl_module.temperature = self.sineTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
         elif pl_module.anneal_temperature == "inverse":
-            pl_module.temperature = self.inverseTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
+            print("ERROR: choose valid annealing parameter")
+            exit()
         elif pl_module.anneal_temperature == "none":
             pass
         else:
@@ -215,17 +218,21 @@ class Callback(pl.Callback):
         return curr_temp
     
 
-    def inverseTemp(self, epoch, initial_temp, end_temp):
+    def sineTemp(self, epoch, initial_temp, end_temp):
         # end_temp = 0.01
         # end_temp = 0.001
         num_epochs = 500
 
-        # Anneal temperature at cosine rate
-        # From Pytorch documentation for CosineAnnealingLR (https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html)
-        
-        curr_temp = end_temp+0.5*(initial_temp-end_temp)*(1+math.cos(epoch*math.pi/num_epochs))
-        # curr_temp = epoch*1/(initial_temp-end_temp)
-        print(curr_temp)
+        # TODO: Trying to re-derive cosine annealer from scratch
+        # trig_term = 0.5*(math.cos(math.pi*epoch/num_epochs)+1)
+        # curr_temp = end_temp+trig_term*(initial_temp-end_temp)
+
+        # TODO: Can try sin annealer
+        trig_term = -math.sin(0.5*math.pi*epoch/num_epochs)+1
+        curr_temp = end_temp+trig_term*(initial_temp-end_temp)
+
+        # if epoch > 450:
+        #     print(curr_temp)
         # import pdb; pdb.set_trace()
         return curr_temp
     
