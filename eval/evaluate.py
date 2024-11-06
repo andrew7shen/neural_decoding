@@ -377,8 +377,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
         fig.tight_layout()
         # plt.show()
         if normalize:
-            # plt.savefig("figures/%s_heatmap_norm.png" % model_id)
-            plt.savefig("figures/%s_heatmap_norm.pdf" % model_id)
+            plt.savefig("figures/%s_heatmap_norm.png" % model_id)
+            # plt.savefig("figures/%s_heatmap_norm.pdf" % model_id)
         else:
             plt.savefig("figures/%s_heatmap.png" % model_id)
     # plt.show()
@@ -1167,7 +1167,8 @@ if __name__ == "__main__":
 
     # model_ids = [484]
     # model_ids = [483]
-    model_ids = [485]
+    # model_ids = [485]
+    model_ids = [522, 523]
 
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
@@ -1179,7 +1180,7 @@ if __name__ == "__main__":
             # model_path = "checkpoints/checkpoint%s_epoch=449.ckpt" % model_id
             # model_path = "checkpoints/checkpoint%s_epoch=474.ckpt" % model_id
             # model_path = "checkpoints/checkpoint%s_epoch=479.ckpt" % model_id
-            model_path = "checkpoints/checkpoint%s_epoch=484.ckpt" % model_id
+            # model_path = "checkpoints/checkpoint%s_epoch=484.ckpt" % model_id
             # model_path = "checkpoints/checkpoint%s_epoch=479.ckpt" % model_id
             # model_path = "checkpoints/checkpoint%s_epoch=494.ckpt" % model_id
             # model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
@@ -1197,7 +1198,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=False)
+                        verbose=True)
 
     # Evaluate model decoding
     # model_id = 120
@@ -1238,7 +1239,7 @@ if __name__ == "__main__":
                             config=config,
                             plot_type=plot_type,
                             model_id=model_id,
-                            verbose=True)
+                            verbose=False)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets

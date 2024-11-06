@@ -15,7 +15,7 @@ save_path: "checkpoints"
 save_epochs: "none"
 model: "combined"
 seed: 42
-temperature: 100.0
+temperature: 70.0
 end_temperature: 1.5
 # anneal_temperature: "cosine"
 anneal_temperature: "sine"
@@ -28,4 +28,4 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 529
+run_id: 526
