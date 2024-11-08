@@ -966,6 +966,9 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
     for i in range(config.d):
         curr_behavior = i
         decoder_outputs_dict[curr_behavior] = torch.matmul(decoder_outputs[:,:,curr_behavior]-train_emg_mean, torch.Tensor(loadings))
+    
+    # TODO: Evaluate if falls into degeneracy
+    import pdb; pdb.set_trace()
 
     # Plot train EMG figure
     if plot_type == "baseline":
@@ -1221,7 +1224,8 @@ if __name__ == "__main__":
     # model_ids = [436, 437, 438, 439, 440]
     # model_ids = [447, 448, 449]
     # model_ids = [449]
-    model_ids = [488]
+    # model_ids = [488]
+    model_ids = [522, 523]
     for model_id in model_ids:
         if model_id in [449]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
@@ -1230,7 +1234,7 @@ if __name__ == "__main__":
         else:
             model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
 
-            model_path = "checkpoints/checkpoint%s_epoch=449.ckpt" % model_id
+            # model_path = "checkpoints/checkpoint%s_epoch=449.ckpt" % model_id
             # model_path = "checkpoints/checkpoint%s_epoch=459.ckpt" % model_id
 
         for plot_type in plot_types:
@@ -1239,7 +1243,7 @@ if __name__ == "__main__":
                             config=config,
                             plot_type=plot_type,
                             model_id=model_id,
-                            verbose=False)
+                            verbose=True)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
