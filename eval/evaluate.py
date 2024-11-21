@@ -968,7 +968,7 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
         decoder_outputs_dict[curr_behavior] = torch.matmul(decoder_outputs[:,:,curr_behavior]-train_emg_mean, torch.Tensor(loadings))
     
     # TODO: Evaluate if falls into degeneracy
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
 
     # Plot train EMG figure
     if plot_type == "baseline":
@@ -1171,7 +1171,8 @@ if __name__ == "__main__":
     # model_ids = [484]
     # model_ids = [483]
     # model_ids = [485]
-    model_ids = [522, 523]
+    # model_ids = [522, 523]
+    model_ids = [524]
 
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
@@ -1189,11 +1190,11 @@ if __name__ == "__main__":
             # model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
         # num_to_print = 10000
-        # plot_type = "distributions"
+        plot_type = "distributions"
         # plot_type = "majority"
         # plot_type = "mode_average"
         # plot_type = "confusion_matrix"
-        plot_type = "discrete_state_overlap"
+        # plot_type = "discrete_state_overlap"
         # Check clustering
         check_clustering(dataset=dataset,
                         model_path=model_path,
@@ -1225,7 +1226,8 @@ if __name__ == "__main__":
     # model_ids = [447, 448, 449]
     # model_ids = [449]
     # model_ids = [488]
-    model_ids = [522, 523]
+    # model_ids = [522, 523]
+    model_ids = [524]
     for model_id in model_ids:
         if model_id in [449]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
