@@ -122,12 +122,15 @@ class DecoderModel(nn.Module):
 
 class CombinedModel(nn.Module):
 
-    def __init__(self, input_dim, hidden_dim, output_dim, num_modes, ev, cluster_model_type, decoder_model_type):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_modes, ev, cluster_model_type, decoder_model_type, combined_model_type):
         super(CombinedModel, self).__init__()
         self.cm = ClusterModel(input_dim, hidden_dim, num_modes, cluster_model_type)
         self.dm = DecoderModel(input_dim, output_dim, num_modes, decoder_model_type)
         self.ev = ev
         self.counter = 0
+        self.combined_model_type = combined_model_type
+        # Trainable scale vector
+        self.scale_vector = nn.Parameter(torch.randn(output_dim))
 
     def forward(self, x, temperature):
         x1 = self.cm(x, temperature)
@@ -135,10 +138,15 @@ class CombinedModel(nn.Module):
         output = torch.sum(x1 * x2, dim=-1)
         self.counter +=1
 
+        # TODO: Try scaling vector
+        if self.combined_model_type == "scalevector":
+            output = output*self.scale_vector
+
         # Return clustering and decoding outputs if mode is "eval"
         if self.ev == True:
             return [x1, x2]
         # return output
+        
 
         # TODO: Return clustering probs and final output
         return [x1, output]

@@ -16,17 +16,19 @@ save_epochs: "none"
 model: "combined"
 seed: 42
 temperature: 100.0
-# end_temperature: 1.5
-end_temperature: 0.01
+end_temperature: 1.5
+# end_temperature: 0.01
 # anneal_temperature: "cosine"
 anneal_temperature: "sine"
 weight_decay: 0.01
 hidden_dim: 30
 cluster_model_type: "method1"
-decoder_model_type: ""
+# decoder_model_type: ""
+decoder_model_type: "onlytanh"
+combined_model_type: "scalevector"
 kmeans_cluster: 0
 set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 547
+run_id: 559

@@ -50,7 +50,8 @@ if __name__ == "__main__":
                               num_modes=config.d, 
                               ev=config.ev,
                               cluster_model_type=config.cluster_model_type,
-                              decoder_model_type=config.decoder_model_type)
+                              decoder_model_type=config.decoder_model_type,
+                              combined_model_type=config.combined_model_type)
     
     # Define Training Module
     model = TrainingModule(model=model,

@@ -37,6 +37,7 @@ class Config():
         self.anneal_temperature = args["anneal_temperature"]
         self.end_temperature = args["end_temperature"]
         self.save_epochs = args["save_epochs"]
+        self.combined_model_type = args["combined_model_type"]
 
 
 def load_config():
