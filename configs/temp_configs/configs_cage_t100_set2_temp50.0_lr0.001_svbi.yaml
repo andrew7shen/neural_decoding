@@ -5,7 +5,7 @@ d: 3  # num_modes
 b: 8
 type: "emg"
 epochs: 500
-lr: 0.0001
+lr: 0.001
 record: True
 ev: False
 m1_path: "data/set2_data/m1_set2_t100.npy"
@@ -15,21 +15,23 @@ save_path: "checkpoints"
 save_epochs: "none"
 model: "combined"
 seed: 42
-temperature: 0.01
-
-# temperature: 1.3
-# temperature: 0.8348
-
-end_temperature: 0.01
-anneal_temperature: "linear"
+temperature: 50.0
+end_temperature: 1.5
+# end_temperature: 0.01
+# anneal_temperature: "cosine"
+anneal_temperature: "sine"
 weight_decay: 0.01
 hidden_dim: 30
 cluster_model_type: "method1"
-decoder_model_type: ""
-combined_model_type: ""
+# decoder_model_type: ""
+decoder_model_type: "onlytanh"
+# combined_model_type: "scalevector"
+# combined_model_type: "scalevector_bias"
+# combined_model_type: "scalevector_init"
+combined_model_type: "scalevector_bias_init"
 kmeans_cluster: 0
 set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 414
+run_id: 569

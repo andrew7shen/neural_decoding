@@ -130,7 +130,18 @@ class CombinedModel(nn.Module):
         self.counter = 0
         self.combined_model_type = combined_model_type
         # Trainable scale vector
-        self.scale_vector = nn.Parameter(torch.randn(output_dim))
+        # TODO: Try scaling vector with initialization
+        if "init" in self.combined_model_type:
+            # Initializing scalevector as max of each of the 16 muscle dimensions (*Note: this is unique to monkey dataset)
+            init_vector = torch.Tensor([ 69.0413,  95.1343, 121.0038,  31.5815,  23.6285,  73.8865, 180.4965, 
+                                        105.6594, 126.7641,  43.9303,  51.0514,  42.1889,  78.7334,  67.2236, 
+                                        96.1045,  76.3258])
+            self.scale_vector = nn.Parameter(init_vector)
+        # TODO: Try scaling vector without initialization
+        else:
+            self.scale_vector = nn.Parameter(torch.randn(output_dim))
+        # Trainable bias vector
+        self.bias_vector = nn.Parameter(torch.zeros(output_dim))
 
     def forward(self, x, temperature):
         x1 = self.cm(x, temperature)
@@ -139,8 +150,12 @@ class CombinedModel(nn.Module):
         self.counter +=1
 
         # TODO: Try scaling vector
-        if self.combined_model_type == "scalevector":
+        if self.combined_model_type in ["scalevector", "scalevector_init"]:
             output = output*self.scale_vector
+
+        # TODO: Try scaling vector with bias term
+        if "bias" in self.combined_model_type:
+            output = output*self.scale_vector + self.bias_vector
 
         # Return clustering and decoding outputs if mode is "eval"
         if self.ev == True:

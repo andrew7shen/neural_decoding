@@ -386,6 +386,10 @@ class Cage_Dataset(pl.LightningDataModule):
                 y_val_behavioral = np.stack([v[1] for v in y_val])
                 y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
 
+                # TODO: Extract max value across each muscle channel for initializing scalevector
+                max_vals = torch.max(torch.cat((y_train_emg, y_val_emg)), dim=0)[0]
+                # print(max_vals)
+
                 # Perform min-max scaling
                 if self.scale_outputs:
                     plot_variance = False

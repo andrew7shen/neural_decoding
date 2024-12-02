@@ -6,7 +6,8 @@ b: 8
 type: "emg"
 epochs: 500
 lr: 0.001
-record: True
+# record: True
+record: False
 ev: False
 m1_path: "data/set2_data/m1_set2_t100.npy"
 emg_path: "data/set2_data/emg_set2_t100.npy"
@@ -26,9 +27,13 @@ cluster_model_type: "method1"
 # decoder_model_type: ""
 decoder_model_type: "onlytanh"
 combined_model_type: "scalevector"
+# combined_model_type: "scalevector_bias"
+# combined_model_type: "scalevector_init"
+# combined_model_type: "scalevector_bias_init"
 kmeans_cluster: 0
 set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 562
+# run_id: 562
+run_id: "none"

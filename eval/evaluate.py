@@ -912,7 +912,8 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                               num_modes=config.d,
                               ev=eval_mode,
                               cluster_model_type=config.cluster_model_type,
-                              decoder_model_type=config.decoder_model_type)
+                              decoder_model_type=config.decoder_model_type,
+                              combined_model_type=config.combined_model_type)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model=model,
@@ -1202,7 +1203,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=True)
+                        verbose=False)
 
     # Evaluate model decoding
     # model_id = 120
@@ -1227,7 +1228,9 @@ if __name__ == "__main__":
     # model_ids = [449]
     # model_ids = [488]
     # model_ids = [522, 523]
-    model_ids = [524]
+    # model_ids = [524]
+    # model_ids = [536]
+    model_ids = [562]
     for model_id in model_ids:
         if model_id in [449]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
