@@ -11,10 +11,17 @@ source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.001_sv.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.001_svb.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.001_svi.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.001_svbi.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.00025.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.0005.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.001.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.0025.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.005.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.01.yaml
+
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.001_sv.yaml
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.001_svb.yaml
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.001_svi.yaml
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lr0.001_svbi.yaml
 
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0.yaml
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp60.0.yaml
