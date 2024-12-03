@@ -26,10 +26,11 @@ cluster_model_type: "method1"
 # decoder_model_type: ""
 decoder_model_type: "onlytanh"
 # combined_model_type: "scalevector"
-combined_model_type: "scalevector_bias_init"
+# combined_model_type: "scalevector_bias_init"
+combined_model_type: "scalevector_bias"
 kmeans_cluster: 0
 set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 588
+run_id: 597

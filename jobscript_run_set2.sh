@@ -26,19 +26,19 @@ cd neural_decoding/
 
 
 
-# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0.yaml
-# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp60.0.yaml
-# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp70.0.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp60.0.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp70.0.yaml
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp80.0.yaml
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp90.0.yaml
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp100.0.yaml
 
-# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_endtemp0.01.yaml
-# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp60.0_endtemp0.01.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_endtemp0.01.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp60.0_endtemp0.01.yaml
 python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp70.0_endtemp0.01.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp80.0_endtemp0.01.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp90.0_endtemp0.01.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp100.0_endtemp0.01.yaml
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp80.0_endtemp0.01.yaml
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp90.0_endtemp0.01.yaml
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp100.0_endtemp0.01.yaml
 
 
 
