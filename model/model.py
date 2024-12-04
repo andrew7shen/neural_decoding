@@ -138,10 +138,11 @@ class CombinedModel(nn.Module):
                                         96.1045,  76.3258])
             self.scale_vector = nn.Parameter(init_vector)
         # TODO: Try scaling vector without initialization
-        else:
+        elif "scalevector" in self.combined_model_type:
             self.scale_vector = nn.Parameter(torch.randn(output_dim))
         # Trainable bias vector
-        self.bias_vector = nn.Parameter(torch.zeros(output_dim))
+        if "scalevector" in self.combined_model_type:
+            self.bias_vector = nn.Parameter(torch.zeros(output_dim))
 
     def forward(self, x, temperature):
         x1 = self.cm(x, temperature)
