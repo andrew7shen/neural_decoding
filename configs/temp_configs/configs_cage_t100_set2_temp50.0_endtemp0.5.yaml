@@ -5,7 +5,7 @@ d: 3  # num_modes
 b: 8
 type: "emg"
 epochs: 500
-lr: 0.001
+lr: 0.0001
 record: True
 ev: False
 m1_path: "data/set2_data/m1_set2_t100.npy"
@@ -34,4 +34,4 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 604
+run_id: 606
