@@ -38,6 +38,7 @@ class Config():
         self.end_temperature = args["end_temperature"]
         self.save_epochs = args["save_epochs"]
         self.combined_model_type = args["combined_model_type"]
+        self.lambda_val = args["lambda_val"]
 
 
 def load_config():

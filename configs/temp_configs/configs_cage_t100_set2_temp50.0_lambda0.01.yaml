@@ -6,8 +6,7 @@ b: 8
 type: "emg"
 epochs: 500
 lr: 0.001
-# record: True
-record: False
+record: True
 ev: False
 m1_path: "data/set2_data/m1_set2_t100.npy"
 emg_path: "data/set2_data/emg_set2_t100.npy"
@@ -17,35 +16,17 @@ save_epochs: "none"
 model: "combined"
 seed: 42
 temperature: 50.0
-# temperature: 0.01
-# temperature: 0.05
-# temperature: 0.1
-# temperature: 0.2
-# temperature: 0.3
-# temperature: 0.4
-# temperature: 0.5
-# temperature: 0.75
-# temperature: 1.0
-# temperature: 1.5
-
 end_temperature: 1.5
-# end_temperature: 0.01
-# anneal_temperature: "cosine"
 anneal_temperature: "sine"
 weight_decay: 0.01
 lambda_val: 0.01
 hidden_dim: 30
 cluster_model_type: "method1"
 decoder_model_type: ""
-# decoder_model_type: "onlytanh"
 combined_model_type: ""
-# combined_model_type: "scalevector"
-# combined_model_type: "scalevector_bias_init"
-# combined_model_type: "scalevector_bias"
 kmeans_cluster: 0
 set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-# run_id: 592
-run_id: "none"
+run_id: 611

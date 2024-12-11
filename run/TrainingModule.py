@@ -11,7 +11,8 @@ from sklearn.metrics import r2_score
 
 class TrainingModule(LightningModule):
 
-    def __init__(self, model, lr, weight_decay, record, type, temperature, anneal_temperature, num_epochs, end_temperature):
+    def __init__(self, model, lr, weight_decay, record, type, 
+                 temperature, anneal_temperature, num_epochs, end_temperature, lambda_val):
         super().__init__()
         self.model = model
         self.lr = lr
@@ -27,6 +28,7 @@ class TrainingModule(LightningModule):
         self.end_temperature = end_temperature
         self.num_epochs = num_epochs
         self.max_cluster_probs = []
+        self.lambda_val = lambda_val
 
 
     def forward(self, x):
@@ -55,6 +57,11 @@ class TrainingModule(LightningModule):
             train_loss = F.cross_entropy(labels_hat, labels)
         elif self.dataset_type == "emg":
             train_loss = F.mse_loss(labels_hat, labels)
+
+        # TODO: Add L2 regularization of decoder weights
+        l2_norm = sum(p.pow(2).sum() for p in self.model.dm.parameters())
+        train_loss += self.lambda_val * l2_norm
+
         self.log("train_loss", train_loss, on_step=True)
         self.training_step_labels += labels.tolist()
         self.training_step_preds += labels_hat.tolist()
