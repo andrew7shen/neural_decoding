@@ -154,6 +154,8 @@ class Callback(pl.Callback):
             pl_module.temperature = self.cosineFlattenTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
         elif pl_module.anneal_temperature == "sine":
             pl_module.temperature = self.sineTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
+        elif pl_module.anneal_temperature == "sine_flatten":
+            pl_module.temperature = self.sineFlattenTemp(self.epoch_number, self.initial_temp, pl_module.end_temperature)
         elif pl_module.anneal_temperature == "inverse":
             print("ERROR: choose valid annealing parameter")
             exit()
@@ -241,5 +243,20 @@ class Callback(pl.Callback):
         # if epoch > 450:
         #     print(curr_temp)
         # import pdb; pdb.set_trace()
+        return curr_temp
+    
+    def sineFlattenTemp(self, epoch, initial_temp, end_temp):
+        # end_temp = 0.01
+        # end_temp = 0.001
+        num_epochs = 500
+
+        # Anneal temperature at sine rate
+        if epoch < num_epochs:
+            trig_term = -math.sin(0.5*math.pi*epoch/num_epochs)+1
+            curr_temp = end_temp+trig_term*(initial_temp-end_temp)
+
+        else:
+            curr_temp = end_temp
+
         return curr_temp
     
