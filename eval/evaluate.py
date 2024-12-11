@@ -1230,7 +1230,7 @@ if __name__ == "__main__":
     # model_ids = [522, 523]
     # model_ids = [524]
     # model_ids = [536]
-    model_ids = [562]
+    model_ids = [609]
     for model_id in model_ids:
         if model_id in [449]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id

@@ -15,7 +15,18 @@ save_path: "checkpoints"
 save_epochs: "none"
 model: "combined"
 seed: 42
-temperature: 50.0
+# temperature: 50.0
+# temperature: 0.01
+# temperature: 0.05
+# temperature: 0.1
+# temperature: 0.2
+# temperature: 0.3
+# temperature: 0.4
+# temperature: 0.5
+# temperature: 0.75
+# temperature: 1.0
+temperature: 1.5
+
 end_temperature: 1.5
 # end_temperature: 0.01
 # anneal_temperature: "cosine"
@@ -23,11 +34,12 @@ anneal_temperature: "sine"
 weight_decay: 0.01
 hidden_dim: 30
 cluster_model_type: "method1"
-# decoder_model_type: ""
-decoder_model_type: "onlytanh"
+decoder_model_type: ""
+# decoder_model_type: "onlytanh"
+combined_model_type: ""
 # combined_model_type: "scalevector"
 # combined_model_type: "scalevector_bias_init"
-combined_model_type: "scalevector_bias"
+# combined_model_type: "scalevector_bias"
 kmeans_cluster: 0
 set_decoder_weights: "none"
 label_type: "set2"
