@@ -17,9 +17,6 @@ python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.
 python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.1.yaml
 
 python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_500epochs_flatten.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_600epochs_flatten.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_750epochs_flatten.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_1000epochs_flatten.yaml
 python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_1250epochs_flatten.yaml
 
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_endtemp0.01.yaml
