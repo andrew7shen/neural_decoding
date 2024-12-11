@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
-#SBATCH -t 1-00:00
+#SBATCH -t 6:00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_out.txt
@@ -13,11 +13,14 @@ cd neural_decoding/
 
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.yaml
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.01.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.05.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.1.yaml
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.05.yaml
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.1.yaml
 
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_500epochs_flatten.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_1250epochs_flatten.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.001.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.005.yaml
+
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_500epochs_flatten.yaml
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_1250epochs_flatten.yaml
 
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_endtemp0.01.yaml
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_endtemp0.05.yaml
