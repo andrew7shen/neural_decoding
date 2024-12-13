@@ -59,7 +59,7 @@ class TrainingModule(LightningModule):
             train_loss = F.mse_loss(labels_hat, labels)
 
         # TODO: Add L2 regularization of decoder weights
-        l2_norm = sum(p.pow(2).sum() for p in self.model.dm.parameters())
+        l2_norm = sum(p[1].pow(2).sum() for p in self.model.dm.named_parameters() if "weight" in p[0])
         train_loss += self.lambda_val * l2_norm
 
         self.log("train_loss", train_loss, on_step=True)

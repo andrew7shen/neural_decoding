@@ -11,7 +11,7 @@ source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
-# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.yaml
+python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.yaml
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.01.yaml
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.05.yaml
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.1.yaml
