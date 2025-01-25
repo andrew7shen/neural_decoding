@@ -18,7 +18,7 @@ seed: 42
 temperature: 50.0
 end_temperature: 1.5
 anneal_temperature: "sine"
-weight_decay: 0.01
+weight_decay: 0
 lambda_val: 0.1
 hidden_dim: 30
 cluster_model_type: "method1"
@@ -29,4 +29,4 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 616
+run_id: 633
