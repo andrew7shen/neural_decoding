@@ -143,6 +143,11 @@ class CombinedModel(nn.Module):
         # Trainable bias vector
         if "scalevector" in self.combined_model_type:
             self.bias_vector = nn.Parameter(torch.zeros(output_dim))
+            # TODO: May have left this in when not training scalevector models with bias, check if leaving this in makes any difference
+
+        # Trainable global bias vector
+        if "global_bias" in self.combined_model_type:
+            self.bias_vector = nn.Parameter(torch.zeros(output_dim))
 
     def forward(self, x, temperature):
         x1 = self.cm(x, temperature)
@@ -154,8 +159,10 @@ class CombinedModel(nn.Module):
         if self.combined_model_type in ["scalevector", "scalevector_init"]:
             output = output*self.scale_vector
 
-        # TODO: Try scaling vector with bias term
-        if "bias" in self.combined_model_type:
+        # TODO: Try scaling vector with global bias term and scale vector bias term
+        if "global_bias" in self.combined_model_type:
+            output = output + self.bias_vector
+        elif "bias" in self.combined_model_type:
             output = output*self.scale_vector + self.bias_vector
 
         # Return clustering and decoding outputs if mode is "eval"
