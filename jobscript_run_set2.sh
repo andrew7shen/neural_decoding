@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
-#SBATCH -t 12:00:00
+#SBATCH -t 3:00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_out.txt
@@ -11,7 +11,7 @@ source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2.yaml
 python3 run/run.py configs/t100_configs/configs_cage_t100_set2_globalbias.yaml
 
 # python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp50.0_lambda0.yaml
