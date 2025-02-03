@@ -39,6 +39,7 @@ class Config():
         self.save_epochs = args["save_epochs"]
         self.combined_model_type = args["combined_model_type"]
         self.lambda_val = args["lambda_val"]
+        self.l1_lambda_val = args["l1_lambda_val"]
 
 
 def load_config():

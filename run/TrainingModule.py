@@ -12,7 +12,7 @@ from sklearn.metrics import r2_score
 class TrainingModule(LightningModule):
 
     def __init__(self, model, lr, weight_decay, record, type, 
-                 temperature, anneal_temperature, num_epochs, end_temperature, lambda_val):
+                 temperature, anneal_temperature, num_epochs, end_temperature, lambda_val, l1_lambda_val):
         super().__init__()
         self.model = model
         self.lr = lr
@@ -29,6 +29,7 @@ class TrainingModule(LightningModule):
         self.num_epochs = num_epochs
         self.max_cluster_probs = []
         self.lambda_val = lambda_val
+        self.l1_lambda_val = l1_lambda_val
 
 
     def forward(self, x):
@@ -61,6 +62,10 @@ class TrainingModule(LightningModule):
         # TODO: Add L2 regularization of decoder weights
         l2_norm = sum(p[1].pow(2).sum() for p in self.model.dm.named_parameters() if "weight" in p[0])
         train_loss += self.lambda_val * l2_norm
+
+        # TODO: Add L1 regularization of final output weights
+        l1_norm = sum(p[1].pow(2).sum() for p in self.model.named_parameters() if "weight" in p[0])
+        train_loss += self.l1_lambda_val * l1_norm
 
         self.log("train_loss", train_loss, on_step=True)
         self.training_step_labels += labels.tolist()
