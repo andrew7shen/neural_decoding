@@ -59,14 +59,13 @@ class TrainingModule(LightningModule):
         elif self.dataset_type == "emg":
             train_loss = F.mse_loss(labels_hat, labels)
 
-        # TODO: Add L2 regularization of decoder weights
+        # Add L2 regularization of decoder weights
         l2_norm = sum(p[1].pow(2).sum() for p in self.model.dm.named_parameters() if "weight" in p[0])
         train_loss += self.lambda_val * l2_norm
 
-        # TODO: Add L1 regularization of final output weights
-        # l1_norm = sum(p[1].abs().sum() for p in self.model.named_parameters() if "weight" in p[0])
+        # Add L1 regularization of final outputs
         outputs = self.model.cm(batch["m1"], self.temperature) * self.model.dm(batch["m1"])
-        l1_norm = sum(p[1].abs().sum() for p in outputs)
+        l1_norm = sum(p.abs().sum() for p in outputs)
         train_loss += self.l1_lambda_val * l1_norm
 
         self.log("train_loss", train_loss, on_step=True)

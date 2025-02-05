@@ -925,7 +925,8 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                            anneal_temperature=config.anneal_temperature,
                            num_epochs=config.epochs,
                            end_temperature=config.end_temperature,
-                           lambda_val=config.lambda_val)
+                           lambda_val=config.lambda_val,
+                           l1_lambda_val=config.l1_lambda_val)
     model.load_state_dict(state_dict)
 
     # Generate cm and dm weights
@@ -1234,7 +1235,9 @@ if __name__ == "__main__":
     # model_ids = [611, 616, 619]
     # model_ids = [621, 622, 628]
     # model_ids = [627]
-    model_ids = [637]
+
+    # model_ids = [639, 640, 641, 642, 643, 644, 645, 646, 647, 648]
+    model_ids = [649, 650, 651]
     for model_id in model_ids:
         if model_id in [449]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
