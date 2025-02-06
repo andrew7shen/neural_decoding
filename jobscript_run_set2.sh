@@ -11,15 +11,27 @@ source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.01.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.025.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.05.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.1.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.25.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.5.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.01.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.013.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.016.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.019.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.022.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.025.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.05.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.1.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.25.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.5.yaml
 
-# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05.yaml
+
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.01.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.013.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.016.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.019.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.022.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.025.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.1.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.15.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_globalbias.yaml
