@@ -1096,11 +1096,14 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
 
                         # TODO: Manual scaling for monkey dataset, weighted plot, cosyne submission
                         if ax_pos == 0:
-                            ax[ax_pos][i].set_ylim([-35,70])
+                            # ax[ax_pos][i].set_ylim([-35,70])
+                            ax[ax_pos][i].set_ylim([-65,70]) # TODO: expand y-axis range to view full plots with global bias
                         elif ax_pos == 1:
-                            ax[ax_pos][i].set_ylim([-60,25])
+                            # ax[ax_pos][i].set_ylim([-60,25])
+                            ax[ax_pos][i].set_ylim([-80,35])
                         elif ax_pos == 2:
-                            ax[ax_pos][i].set_ylim([-70,70])
+                            # ax[ax_pos][i].set_ylim([-70,70])
+                            ax[ax_pos][i].set_ylim([-90,70])
                     
                 # Plot mode values
                 else:
@@ -1121,11 +1124,14 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                         
                         # TODO: Manual scaling for monkey dataset, weighted plot, cosyne submission
                         if ax_pos == 0:
-                            ax[ax_pos][i].set_ylim([-35,70])
+                            # ax[ax_pos][i].set_ylim([-35,70])
+                            ax[ax_pos][i].set_ylim([-65,70]) # TODO: expand y-axis range to view full plots with global bias
                         elif ax_pos == 1:
-                            ax[ax_pos][i].set_ylim([-60,25])
+                            # ax[ax_pos][i].set_ylim([-60,25])
+                            ax[ax_pos][i].set_ylim([-80,35])
                         elif ax_pos == 2:
-                            ax[ax_pos][i].set_ylim([-70,70])
+                            # ax[ax_pos][i].set_ylim([-70,70])
+                            ax[ax_pos][i].set_ylim([-90,70])
 
             ax_pos += 1
         
@@ -1235,9 +1241,11 @@ if __name__ == "__main__":
     # model_ids = [611, 616, 619]
     # model_ids = [621, 622, 628]
     # model_ids = [627]
-
     # model_ids = [639, 640, 641, 642, 643, 644, 645, 646, 647, 648]
-    model_ids = [649, 650, 651]
+    # model_ids = [649, 650, 651]
+
+    # model_ids = [652, 653, 659, 660, 655, 656, 663, 664, 665, 666, 670]
+    model_ids = [663, 664, 665, 666, 669, 670]
     for model_id in model_ids:
         if model_id in [449]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
