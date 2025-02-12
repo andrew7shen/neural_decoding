@@ -25,10 +25,11 @@ hidden_dim: 30
 cluster_model_type: "method1"
 decoder_model_type: ""
 # combined_model_type: ""
-combined_model_type: "global_bias"
+# combined_model_type: "global_bias"
+combined_model_type: "global_bias_init"
 kmeans_cluster: 0
 set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 671
+run_id: 683

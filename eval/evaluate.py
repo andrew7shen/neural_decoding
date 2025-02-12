@@ -966,9 +966,11 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
 
     # Apply PC loading matrix to dm outputs
     decoder_outputs_dict = {} # key: mode id, value: mode output mapped to 2d space
+    decoder_outputs_muscle_dict = {}
     for i in range(config.d):
         curr_behavior = i
         decoder_outputs_dict[curr_behavior] = torch.matmul(decoder_outputs[:,:,curr_behavior]-train_emg_mean, torch.Tensor(loadings))
+        decoder_outputs_muscle_dict[curr_behavior] = decoder_outputs[:,:,curr_behavior]
     
     # TODO: Evaluate if falls into degeneracy
     # import pdb; pdb.set_trace()
@@ -1020,25 +1022,32 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
             else:
                 plt.show()
     
-    elif plot_type in ["behavior_average", "behavior_average_unweighted"]:
+    elif plot_type in ["behavior_average", "behavior_average_unweighted", "behavior_average_muscle"]:
 
         # Split up predictions into each behavior
         probs_behaviors_dict = {}
         outputs_behaviors_dict = {}
+        outputs_behaviors_muscle_dict = {}
         emgs_behaviors_dict = {}
+        emgs_behaviors_muscle_dict = {}
         for i in range(len(sample_behaviors)):
             curr_behavior = sample_behaviors[i]
             curr_probs = cluster_probs[i]
             curr_outputs = [decoder_outputs_dict[key][i].detach() for key in decoder_outputs_dict.keys()]
+            curr_outputs_muscle = [decoder_outputs_muscle_dict[key][i].detach() for key in decoder_outputs_muscle_dict.keys()]
             curr_emgs = [pca1[i], pca2[i]]
             if curr_behavior not in probs_behaviors_dict.keys():
                 probs_behaviors_dict[curr_behavior] = [curr_probs.detach()]
                 outputs_behaviors_dict[curr_behavior] = [torch.stack(curr_outputs)]
+                outputs_behaviors_muscle_dict[curr_behavior] = [torch.stack(curr_outputs_muscle)]
                 emgs_behaviors_dict[curr_behavior] = [torch.Tensor(curr_emgs)]
+                emgs_behaviors_muscle_dict[curr_behavior] = [torch.Tensor(train_emg[i])]
             else:
                 probs_behaviors_dict[curr_behavior].append(curr_probs.detach())
                 outputs_behaviors_dict[curr_behavior].append(torch.stack(curr_outputs))
+                outputs_behaviors_muscle_dict[curr_behavior].append(torch.stack(curr_outputs_muscle))
                 emgs_behaviors_dict[curr_behavior].append(torch.Tensor(curr_emgs))
+                emgs_behaviors_muscle_dict[curr_behavior].append(torch.Tensor(train_emg[i]))
         
         # Calculate average over all trials across each behavior
         trial_range = 100
@@ -1050,10 +1059,18 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
             num_items = len(v)
             outputs_behaviors_dict[k] = torch.reshape(torch.stack(v), (num_items//trial_range, trial_range, dataset.num_modes, 2))
             outputs_behaviors_dict[k] = torch.mean(outputs_behaviors_dict[k], dim=0)
+        for k,v in outputs_behaviors_muscle_dict.items():
+            num_items = len(v)
+            outputs_behaviors_muscle_dict[k] = torch.reshape(torch.stack(v), (num_items//trial_range, trial_range, dataset.num_modes, dataset.M))
+            outputs_behaviors_muscle_dict[k] = torch.mean(outputs_behaviors_muscle_dict[k], dim=0)
         for k,v in emgs_behaviors_dict.items():
             num_items = len(v)
             emgs_behaviors_dict[k] = torch.reshape(torch.stack(v), (num_items//trial_range, trial_range, 2))
             emgs_behaviors_dict[k] = torch.mean(emgs_behaviors_dict[k], dim=0)
+        for k,v in emgs_behaviors_muscle_dict.items():
+            num_items = len(v)
+            emgs_behaviors_muscle_dict[k] = torch.reshape(torch.stack(v), (num_items//trial_range, trial_range, dataset.M))
+            emgs_behaviors_muscle_dict[k] = torch.mean(emgs_behaviors_muscle_dict[k], dim=0)
         
         # Create color map and label options for multiple modes
         cmap_colors = ["yellow","green","blue","red","purple","orange","pink"]
@@ -1074,20 +1091,32 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
             # PCA1 and PCA2 for outputs
             y1 = torch.transpose(v[:,:,0], 0, 1)
             y2 = torch.transpose(v[:,:,1], 0, 1)
-            # Ground truth EMG
+            # Ground truth EMG PCA
             y_1 = emgs_behaviors_dict[k][:,0]
             y_2 = emgs_behaviors_dict[k][:,1]
-            # Final output values
+            # Final output PCA values
             y1_final = y*y1
             y2_final = y*y2
+
+            # Ground truth EMG, just plotting first 2 EMG muscles
+            y_1_muscle = emgs_behaviors_muscle_dict[k][:,0]
+            y_2_muscle = emgs_behaviors_muscle_dict[k][:,1]
+            # Predicted EMG, just plotting first 2 EMG muscle predictions
+            y1_muscle = torch.transpose(outputs_behaviors_muscle_dict[k][:,:,0], 0, 1)
+            y2_muscle = torch.transpose(outputs_behaviors_muscle_dict[k][:,:,1], 0, 1)
+
             # Plot output distributions
             for i in range(len(y1)+1):
 
                 # Plot ground truth EMG values
                 if i == 0: 
                     ax[ax_pos, i].set_title("Behavior %s, EMG" % (k), fontsize=10)
-                    ax[ax_pos, i].plot(x, y_1, label="PCA1", color="red")
-                    ax[ax_pos, i].plot(x, y_2, label="PCA2", color="blue")
+                    if plot_type == "behavior_average":
+                        ax[ax_pos, i].plot(x, y_1, label="PCA1", color="red")
+                        ax[ax_pos, i].plot(x, y_2, label="PCA2", color="blue")
+                    elif plot_type == "behavior_average_muscle":
+                        ax[ax_pos, i].plot(x, y_1_muscle, label="PCA1", color="purple")
+                        ax[ax_pos, i].plot(x, y_2_muscle, label="PCA2", color="orange")
                     if equal_scale:
                         # ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
                         # ax[ax_pos][i].set_ylim([-60,70]) # Scale y-axis for equal comparison
@@ -1095,15 +1124,23 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                         # ax[ax_pos][i].set_ylim([-1.25,2.25]) # Scale y-axis for equal comparison
 
                         # TODO: Manual scaling for monkey dataset, weighted plot, cosyne submission
-                        if ax_pos == 0:
-                            # ax[ax_pos][i].set_ylim([-35,70])
-                            ax[ax_pos][i].set_ylim([-65,70]) # TODO: expand y-axis range to view full plots with global bias
-                        elif ax_pos == 1:
-                            # ax[ax_pos][i].set_ylim([-60,25])
-                            ax[ax_pos][i].set_ylim([-80,35])
-                        elif ax_pos == 2:
-                            # ax[ax_pos][i].set_ylim([-70,70])
-                            ax[ax_pos][i].set_ylim([-90,70])
+                        if plot_type in ["behavior_average_unweighted", "behavior_average"]:
+                            if ax_pos == 0:
+                                # ax[ax_pos][i].set_ylim([-35,70])
+                                ax[ax_pos][i].set_ylim([-65,70]) # TODO: expand y-axis range to view full plots with global bias
+                            elif ax_pos == 1:
+                                # ax[ax_pos][i].set_ylim([-60,25])
+                                ax[ax_pos][i].set_ylim([-80,35])
+                            elif ax_pos == 2:
+                                # ax[ax_pos][i].set_ylim([-70,70])
+                                ax[ax_pos][i].set_ylim([-90,70])
+                        elif plot_type == "behavior_average_muscle":
+                            if ax_pos == 0:
+                                ax[ax_pos][i].set_ylim([-5,150])
+                            elif ax_pos == 1:
+                                ax[ax_pos][i].set_ylim([-5,150])
+                            elif ax_pos == 2:
+                                ax[ax_pos][i].set_ylim([-5,150])
                     
                 # Plot mode values
                 else:
@@ -1114,6 +1151,9 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                     elif plot_type == "behavior_average":
                         ax[ax_pos, i].plot(x, y1_final[i-1], label="PCA1_final", color="red", linestyle='dashed')
                         ax[ax_pos, i].plot(x, y2_final[i-1], label="PCA2_final", color="blue", linestyle='dashed')
+                    elif plot_type == "behavior_average_muscle":
+                        ax[ax_pos, i].plot(x, y1_muscle[i-1], label="PCA1_final", color="purple", linestyle='dashed')
+                        ax[ax_pos, i].plot(x, y2_muscle[i-1], label="PCA2_final", color="orange", linestyle='dashed')
                     ax2[ax_pos][i].plot(x, y[i-1], label="prob", color="black")
                     ax2[ax_pos][i].set_ylim([0,1])
                     if equal_scale:
@@ -1123,15 +1163,23 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                         # ax[ax_pos][i].set_ylim([-1.25,1.5]) # Scale y-axis for equal comparison
                         
                         # TODO: Manual scaling for monkey dataset, weighted plot, cosyne submission
-                        if ax_pos == 0:
-                            # ax[ax_pos][i].set_ylim([-35,70])
-                            ax[ax_pos][i].set_ylim([-65,70]) # TODO: expand y-axis range to view full plots with global bias
-                        elif ax_pos == 1:
-                            # ax[ax_pos][i].set_ylim([-60,25])
-                            ax[ax_pos][i].set_ylim([-80,35])
-                        elif ax_pos == 2:
-                            # ax[ax_pos][i].set_ylim([-70,70])
-                            ax[ax_pos][i].set_ylim([-90,70])
+                        if plot_type in ["behavior_average_unweighted", "behavior_average"]:
+                            if ax_pos == 0:
+                                # ax[ax_pos][i].set_ylim([-35,70])
+                                ax[ax_pos][i].set_ylim([-65,70]) # TODO: expand y-axis range to view full plots with global bias
+                            elif ax_pos == 1:
+                                # ax[ax_pos][i].set_ylim([-60,25])
+                                ax[ax_pos][i].set_ylim([-80,35])
+                            elif ax_pos == 2:
+                                # ax[ax_pos][i].set_ylim([-70,70])
+                                ax[ax_pos][i].set_ylim([-90,70])
+                        elif plot_type == "behavior_average_muscle":
+                            if ax_pos == 0:
+                                ax[ax_pos][i].set_ylim([-5,150])
+                            elif ax_pos == 1:
+                                ax[ax_pos][i].set_ylim([-5,150])
+                            elif ax_pos == 2:
+                                ax[ax_pos][i].set_ylim([-5,150])
 
             ax_pos += 1
         
@@ -1228,7 +1276,8 @@ if __name__ == "__main__":
     # plot_type = "behavior_average"
     # plot_types = ["behavior_average", "behavior_average_unweighted"]
     # plot_types = ["behavior_average_unweighted"]
-    plot_types = ["behavior_average"]
+    # plot_types = ["behavior_average"]
+    plot_types = ["behavior_average_muscle"]
     # Check decoding
     # model_ids = [423, 424, 425, 426, 427]
     # model_ids = [436, 437, 438, 439, 440]
@@ -1243,9 +1292,14 @@ if __name__ == "__main__":
     # model_ids = [627]
     # model_ids = [639, 640, 641, 642, 643, 644, 645, 646, 647, 648]
     # model_ids = [649, 650, 651]
-
     # model_ids = [652, 653, 659, 660, 655, 656, 663, 664, 665, 666, 670]
-    model_ids = [663, 664, 665, 666, 669, 670]
+    # model_ids = [663, 664, 665, 666, 669, 670]
+    model_ids = [666, 669, 670]
+
+    # model_ids = [671, 672, 673]
+    # model_ids = [672]
+    # model_ids = [677, 678, 679]
+         
     for model_id in model_ids:
         if model_id in [449]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id

@@ -20,7 +20,7 @@ end_temperature: 0.01
 anneal_temperature: "none"
 weight_decay: 0.01
 lambda_val: 0
-l1_lambda_val: 0.019
+l1_lambda_val: 0.5
 hidden_dim: 30
 cluster_model_type: "method1"
 decoder_model_type: ""
@@ -32,4 +32,4 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 684
+run_id: 689
