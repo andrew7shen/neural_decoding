@@ -131,7 +131,7 @@ class CombinedModel(nn.Module):
         self.combined_model_type = combined_model_type
         # Trainable scale vector
         # Try scaling vector with initialization
-        if "init" in self.combined_model_type:
+        if "init" in self.combined_model_type and self.combined_model_type != "global_bias_init": # TODO: Add second part to test whether presence of scale_vector makes a difference
             # Initializing scalevector as max of each of the 16 muscle dimensions (*Note: this is unique to monkey dataset)
             init_vector = torch.Tensor([ 69.0413,  95.1343, 121.0038,  31.5815,  23.6285,  73.8865, 180.4965, 105.6594, 
                                         126.7641,  43.9303,  51.0514,  42.1889,  78.7334,  67.2236, 96.1045,  76.3258])

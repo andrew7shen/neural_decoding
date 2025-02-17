@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
-#SBATCH -t 1-00:00
+#SBATCH -t 6:00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_out.txt
@@ -27,15 +27,15 @@ cd neural_decoding/
 python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.yaml
 python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.01.yaml
 python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.013.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.016_s42.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.019.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.022.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.025_s42.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05_s42.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.1.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.016_s42.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.019.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.022.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.025_s42.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05_s42.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.1.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.15.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_globalbias.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.5.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.5.yaml
 
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.016_s42.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.016_s43.yaml
