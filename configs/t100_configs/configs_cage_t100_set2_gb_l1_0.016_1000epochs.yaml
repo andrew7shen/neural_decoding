@@ -4,7 +4,7 @@ M: None
 d: 3  # num_modes
 b: 8
 type: "emg"
-epochs: 500
+epochs: 1000
 lr: 0.0001
 record: True
 ev: False
@@ -32,4 +32,4 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 693
+run_id: 696

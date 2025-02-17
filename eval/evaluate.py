@@ -1136,11 +1136,11 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                                 ax[ax_pos][i].set_ylim([-90,70])
                         elif plot_type == "behavior_average_muscle":
                             if ax_pos == 0:
-                                ax[ax_pos][i].set_ylim([-5,150])
+                                ax[ax_pos][i].set_ylim([-25,150])
                             elif ax_pos == 1:
-                                ax[ax_pos][i].set_ylim([-5,150])
+                                ax[ax_pos][i].set_ylim([-25,150])
                             elif ax_pos == 2:
-                                ax[ax_pos][i].set_ylim([-5,150])
+                                ax[ax_pos][i].set_ylim([-25,150])
                     
                 # Plot mode values
                 else:
@@ -1175,11 +1175,11 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                                 ax[ax_pos][i].set_ylim([-90,70])
                         elif plot_type == "behavior_average_muscle":
                             if ax_pos == 0:
-                                ax[ax_pos][i].set_ylim([-5,150])
+                                ax[ax_pos][i].set_ylim([-25,150])
                             elif ax_pos == 1:
-                                ax[ax_pos][i].set_ylim([-5,150])
+                                ax[ax_pos][i].set_ylim([-25,150])
                             elif ax_pos == 2:
-                                ax[ax_pos][i].set_ylim([-5,150])
+                                ax[ax_pos][i].set_ylim([-25,150])
 
             ax_pos += 1
         
@@ -1300,8 +1300,8 @@ if __name__ == "__main__":
     # model_ids = [672]
     # model_ids = [677, 678, 679]
 
-    # model_ids = [680, 681, 682, 683, 684, 685, 686, 687, 688, 689]
-    model_ids = [663]
+    model_ids = [680, 681, 682, 683, 684, 685, 686, 687, 688, 689]
+    # model_ids = [663]
          
     for model_id in model_ids:
         if model_id in [449]:
