@@ -18,7 +18,7 @@ class ClusterModel(nn.Module):
         self.cluster_model_type = cluster_model_type
 
         # METHOD #1: Original linear method
-        if self.cluster_model_type == "method1":
+        if "method1" in self.cluster_model_type:
             self.linears = nn.ModuleList([nn.Linear(input_dim, 1) for i in range(num_modes)])
         
         # METHOD #2: Explore non-linearities
@@ -45,7 +45,7 @@ class ClusterModel(nn.Module):
         x_d = []
         
         # METHOD #1: Original linear method
-        if self.cluster_model_type == "method1":
+        if "method1" in self.cluster_model_type:
             for linear in self.linears:
                 x_d.append(linear(x))
 
@@ -65,7 +65,14 @@ class ClusterModel(nn.Module):
         # Scale by temperature
         # import pdb; pdb.set_trace()
         x = x/temperature
-        x = self.softmax(x) 
+
+        # Try new logistic architecture
+        if "logistic" in self.cluster_model_type:
+            x = torch.sigmoid(x)
+        # Use regular softmax architecture
+        else:
+            x = self.softmax(x) 
+
         return x
     
     

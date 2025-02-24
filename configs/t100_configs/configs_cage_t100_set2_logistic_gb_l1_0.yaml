@@ -22,7 +22,7 @@ weight_decay: 0.01
 lambda_val: 0
 l1_lambda_val: 0
 hidden_dim: 30
-cluster_model_type: "method1"
+cluster_model_type: "method1_logistic"
 decoder_model_type: ""
 # combined_model_type: ""
 # combined_model_type: "global_bias"
@@ -32,4 +32,4 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-run_id: 697
+run_id: 701

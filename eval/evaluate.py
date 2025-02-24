@@ -1104,6 +1104,9 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
             # Predicted EMG, just plotting first 2 EMG muscle predictions
             y1_muscle = torch.transpose(outputs_behaviors_muscle_dict[k][:,:,0], 0, 1)
             y2_muscle = torch.transpose(outputs_behaviors_muscle_dict[k][:,:,1], 0, 1)
+            # Scale predicted EMG by clustering probabilities
+            y1_muscle_final = y*y1_muscle
+            y2_muscle_final = y*y2_muscle
 
             # Plot output distributions
             for i in range(len(y1)+1):
@@ -1152,8 +1155,8 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                         ax[ax_pos, i].plot(x, y1_final[i-1], label="PCA1_final", color="red", linestyle='dashed')
                         ax[ax_pos, i].plot(x, y2_final[i-1], label="PCA2_final", color="blue", linestyle='dashed')
                     elif plot_type == "behavior_average_muscle":
-                        ax[ax_pos, i].plot(x, y1_muscle[i-1], label="PCA1_final", color="purple", linestyle='dashed')
-                        ax[ax_pos, i].plot(x, y2_muscle[i-1], label="PCA2_final", color="orange", linestyle='dashed')
+                        ax[ax_pos, i].plot(x, y1_muscle_final[i-1], label="PCA1_final", color="purple", linestyle='dashed')
+                        ax[ax_pos, i].plot(x, y2_muscle_final[i-1], label="PCA2_final", color="orange", linestyle='dashed')
                     ax2[ax_pos][i].plot(x, y[i-1], label="prob", color="black")
                     ax2[ax_pos][i].set_ylim([0,1])
                     if equal_scale:
@@ -1277,7 +1280,8 @@ if __name__ == "__main__":
     # plot_types = ["behavior_average", "behavior_average_unweighted"]
     # plot_types = ["behavior_average_unweighted"]
     # plot_types = ["behavior_average"]
-    plot_types = ["behavior_average", "behavior_average_muscle"]
+    # plot_types = ["behavior_average", "behavior_average_muscle"]
+    plot_types = ["behavior_average_muscle"]
     # Check decoding
     # model_ids = [423, 424, 425, 426, 427]
     # model_ids = [436, 437, 438, 439, 440]
@@ -1300,14 +1304,18 @@ if __name__ == "__main__":
     # model_ids = [672]
     # model_ids = [677, 678, 679]
 
-    model_ids = [680, 681, 682, 683, 684, 685, 686, 687, 688, 689]
+    # model_ids = [680, 681, 682, 683, 684, 685, 686, 687, 688, 689]
     # model_ids = [663]
+    model_ids = [693, 694, 695, 696]
+    # model_ids = [693]
          
     for model_id in model_ids:
-        if model_id in [449]:
+        if model_id in [449, 695]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
-        elif model_id in [448]:
+        elif model_id in [448, 694]:
             model_path = "checkpoints/checkpoint%s_epoch=599.ckpt" % model_id
+        elif model_id in [696]:
+            model_path = "checkpoints/checkpoint%s_epoch=999.ckpt" % model_id
         else:
             model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
 
