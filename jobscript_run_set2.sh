@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
-#SBATCH -t 1-00:00
+#SBATCH -t 12:00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_out.txt
@@ -55,6 +55,7 @@ python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.0075.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05_s43.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05_s44.yaml
 
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_logistic_gb_l1_0_s42.yaml
 python3 run/run.py configs/t100_configs/configs_cage_t100_set2_logistic_gb_l1_0.yaml
 python3 run/run.py configs/t100_configs/configs_cage_t100_set2_logistic_gb_l1_0.016.yaml
 python3 run/run.py configs/t100_configs/configs_cage_t100_set2_logistic_gb_l1_0.025.yaml

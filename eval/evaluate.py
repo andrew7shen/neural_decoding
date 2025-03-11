@@ -1280,8 +1280,9 @@ if __name__ == "__main__":
     # plot_types = ["behavior_average", "behavior_average_unweighted"]
     # plot_types = ["behavior_average_unweighted"]
     # plot_types = ["behavior_average"]
-    # plot_types = ["behavior_average", "behavior_average_muscle"]
-    plot_types = ["behavior_average_muscle"]
+    plot_types = ["behavior_average", "behavior_average_muscle"]
+    # plot_types = ["behavior_average_muscle"]
+
     # Check decoding
     # model_ids = [423, 424, 425, 426, 427]
     # model_ids = [436, 437, 438, 439, 440]
@@ -1306,8 +1307,10 @@ if __name__ == "__main__":
 
     # model_ids = [680, 681, 682, 683, 684, 685, 686, 687, 688, 689]
     # model_ids = [663]
-    model_ids = [693, 694, 695, 696]
+    # model_ids = [693, 694, 695, 696]
     # model_ids = [693]
+    # model_ids = [697, 698, 699, 700]
+    model_ids = [701, 702, 703]
          
     for model_id in model_ids:
         if model_id in [449, 695]:
