@@ -55,7 +55,7 @@ cd neural_decoding/
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05_s43.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05_s44.yaml
 
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_logistic_gb_l1_0_s42.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_logistic_gb_l1_0_s42.yaml
 python3 run/run.py configs/t100_configs/configs_cage_t100_set2_logistic_gb_l1_0.yaml
 python3 run/run.py configs/t100_configs/configs_cage_t100_set2_logistic_gb_l1_0.016.yaml
 python3 run/run.py configs/t100_configs/configs_cage_t100_set2_logistic_gb_l1_0.025.yaml
