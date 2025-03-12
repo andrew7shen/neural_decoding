@@ -393,6 +393,11 @@ class Cage_Dataset(pl.LightningDataModule):
                 mean_vals = torch.mean(torch.cat((y_train_emg, y_val_emg)), dim=0)
                 # print(mean_vals)
 
+                # TODO: Mean center EMG data
+                train_mean = y_train_emg.mean(axis=0)
+                y_train_emg = y_train_emg - train_mean
+                y_val_emg = y_val_emg - train_mean
+
                 # Perform min-max scaling
                 if self.scale_outputs:
                     plot_variance = False
