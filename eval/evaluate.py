@@ -1232,7 +1232,8 @@ if __name__ == "__main__":
     # model_ids = [483]
     # model_ids = [485]
     # model_ids = [522, 523]
-    model_ids = [524]
+    # model_ids = [524]
+    model_ids = [711, 712, 713]
 
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id

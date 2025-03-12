@@ -394,9 +394,9 @@ class Cage_Dataset(pl.LightningDataModule):
                 # print(mean_vals)
 
                 # TODO: Mean center M1 data
-                train_m1_mean = X_train.mean(axis=0)
-                X_train = X_train - train_m1_mean
-                X_val = X_val - train_m1_mean
+                # train_m1_mean = X_train.mean(axis=0)
+                # X_train = X_train - train_m1_mean
+                # X_val = X_val - train_m1_mean
 
                 # TODO: Mean center EMG data
                 train_emg_mean = y_train_emg.mean(axis=0)
