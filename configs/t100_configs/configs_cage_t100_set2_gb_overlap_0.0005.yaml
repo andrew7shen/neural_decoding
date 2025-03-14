@@ -21,7 +21,7 @@ anneal_temperature: "none"
 weight_decay: 0.01
 lambda_val: 0
 l1_lambda_val: 0
-overlap_lambda_val: 0.01
+overlap_lambda_val: 0.0005
 hidden_dim: 30
 cluster_model_type: "method1"
 decoder_model_type: ""
@@ -34,4 +34,4 @@ label_type: "set2"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "none"
-run_id: 729
+run_id: 734

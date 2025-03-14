@@ -24,7 +24,7 @@ cd neural_decoding/
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.5.yaml
 
 
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.0025.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.005.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.0075.yaml
@@ -32,11 +32,11 @@ python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.013.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.016_s42.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.019.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.02.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.02.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.022.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.025_s42.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.03.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.025_s42.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.03.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05_s42.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.1.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.15.yaml
@@ -44,11 +44,12 @@ python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.05.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.5.yaml
 
 python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.01.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.02.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.03.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.04.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.05.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.0005.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.001.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.002.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.003.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.04.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.05.yaml
 
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.016_s42.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.016_600epochs.yaml
