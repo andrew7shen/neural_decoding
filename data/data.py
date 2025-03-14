@@ -256,7 +256,7 @@ class Cage_Dataset(pl.LightningDataModule):
     def __init__(self, m1_path, emg_path, behavioral_path, 
                  num_modes, batch_size, dataset_type, 
                  seed, kmeans_cluster, label_type,
-                 remove_zeros, scale_outputs):
+                 remove_zeros, scale_outputs, mean_centering):
         super().__init__()
 
         # Assign class variables
@@ -272,6 +272,7 @@ class Cage_Dataset(pl.LightningDataModule):
         self.label_type = label_type
         self.remove_zeros = remove_zeros
         self.scale_outputs = scale_outputs
+        self.mean_centering = mean_centering
 
         # Set manual seed
         torch.manual_seed(seed)
@@ -394,15 +395,17 @@ class Cage_Dataset(pl.LightningDataModule):
                 # print(mean_vals)
 
                 # TODO: Mean center M1 data
-                train_m1_mean = X_train.mean(axis=0)
-                X_train = X_train - train_m1_mean
-                X_val = X_val - train_m1_mean
+                if "m1" in self.mean_centering:
+                    train_m1_mean = X_train.mean(axis=0)
+                    X_train = X_train - train_m1_mean
+                    X_val = X_val - train_m1_mean
 
                 # TODO: Mean center EMG data
-                train_emg_mean = y_train_emg.mean(axis=0)
-                y_train_emg = y_train_emg - train_emg_mean
-                y_val_emg = y_val_emg - train_emg_mean
-
+                if "emg" in self.mean_centering:
+                    train_emg_mean = y_train_emg.mean(axis=0)
+                    y_train_emg = y_train_emg - train_emg_mean
+                    y_val_emg = y_val_emg - train_emg_mean
+                
                 # Perform min-max scaling
                 if self.scale_outputs:
                     plot_variance = False

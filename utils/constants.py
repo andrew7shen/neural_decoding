@@ -40,6 +40,8 @@ class Config():
         self.combined_model_type = args["combined_model_type"]
         self.lambda_val = args["lambda_val"]
         self.l1_lambda_val = args["l1_lambda_val"]
+        self.mean_centering = args["mean_centering"]
+        self.overlap_lambda_val = args["overlap_lambda_val"]
 
 
 def load_config():

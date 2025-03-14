@@ -12,7 +12,7 @@ from sklearn.metrics import r2_score
 class TrainingModule(LightningModule):
 
     def __init__(self, model, lr, weight_decay, record, type, 
-                 temperature, anneal_temperature, num_epochs, end_temperature, lambda_val, l1_lambda_val):
+                 temperature, anneal_temperature, num_epochs, end_temperature, lambda_val, l1_lambda_val, overlap_lambda_val):
         super().__init__()
         self.model = model
         self.lr = lr
@@ -30,6 +30,7 @@ class TrainingModule(LightningModule):
         self.max_cluster_probs = []
         self.lambda_val = lambda_val
         self.l1_lambda_val = l1_lambda_val
+        self.overlap_lambda_val = overlap_lambda_val
 
 
     def forward(self, x):
@@ -67,6 +68,10 @@ class TrainingModule(LightningModule):
         outputs = self.model.cm(batch["m1"], self.temperature) * self.model.dm(batch["m1"])
         l1_norm = sum(p.abs().sum() for p in outputs)
         train_loss += self.l1_lambda_val * l1_norm
+
+        # Add overlap penalty of final outputs
+        inner_product = torch.abs(outputs.mT@outputs)
+        train_loss += self.overlap_lambda_val * torch.sum(inner_product)
 
         self.log("train_loss", train_loss, on_step=True)
         self.training_step_labels += labels.tolist()
@@ -136,7 +141,7 @@ class Callback(pl.Callback):
         # print(train_loss_epoch.item())
 
         # Calculate R^2 metric
-        train_r2 = r2_score(labels, labels_hat)
+        train_r2 = r2_score(labels.numpy(), labels_hat.numpy())
         pl_module.log("train_r2", train_r2)
 
         # Reset stored labels and preds for current epoch
@@ -183,7 +188,7 @@ class Callback(pl.Callback):
             val_loss_epoch = F.mse_loss(labels_hat, labels)
 
         # Calculate R^2 metric
-        val_r2 = r2_score(labels, labels_hat)
+        val_r2 = r2_score(labels.numpy(), labels_hat.numpy())
         pl_module.log("val_r2", val_r2)
 
         # Reset stored labels and preds for current epoch

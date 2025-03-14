@@ -20,7 +20,7 @@ end_temperature: 0.01
 anneal_temperature: "none"
 weight_decay: 0.01
 lambda_val: 0
-l1_lambda_val: 0
+l1_lambda_val: 0.05
 overlap_lambda_val: 0
 hidden_dim: 30
 cluster_model_type: "method1"
@@ -34,4 +34,4 @@ label_type: "set2"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-run_id: 723
+run_id: 727
