@@ -21,7 +21,7 @@ class Mouse_Dataset(pl.LightningDataModule):
     def __init__(self, m1_path, emg_path, behavioral_path, 
                     num_modes, batch_size, dataset_type, 
                     seed, kmeans_cluster, label_type,
-                    remove_zeros, scale_outputs):
+                    remove_zeros, scale_outputs, mean_centering):
         super().__init__()
 
         # Assign class variables
@@ -37,6 +37,7 @@ class Mouse_Dataset(pl.LightningDataModule):
         self.label_type = label_type
         self.remove_zeros = remove_zeros
         self.scale_outputs = scale_outputs
+        self.mean_centering = mean_centering
 
         # If loading kmeans split data
         if "kmeans_split" in m1_path:
@@ -148,6 +149,25 @@ class Mouse_Dataset(pl.LightningDataModule):
             X_val = torch.Tensor(np.concatenate(X_val))
             y_val_emg = torch.Tensor(np.concatenate([y[0] for y in y_val]))
             y_val_behavioral = np.concatenate([y[1] for y in y_val])
+        
+        # Extract max value across each muscle channel for initializing scalevector
+        max_vals = torch.max(torch.cat((y_train_emg, y_val_emg)), dim=0)[0]
+        # print(max_vals)
+        # Extract mean value across each muscle channel for initializing global bias vector
+        mean_vals = torch.mean(torch.cat((y_train_emg, y_val_emg)), dim=0)
+        # print(mean_vals)
+
+        # Mean center M1 data
+        if "m1" in self.mean_centering:
+            train_m1_mean = X_train.mean(axis=0)
+            X_train = X_train - train_m1_mean
+            X_val = X_val - train_m1_mean
+
+        # Mean center EMG data
+        if "emg" in self.mean_centering:
+            train_emg_mean = y_train_emg.mean(axis=0)
+            y_train_emg = y_train_emg - train_emg_mean
+            y_val_emg = y_val_emg - train_emg_mean
 
         # Create final datasets for training
         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
@@ -394,13 +414,13 @@ class Cage_Dataset(pl.LightningDataModule):
                 mean_vals = torch.mean(torch.cat((y_train_emg, y_val_emg)), dim=0)
                 # print(mean_vals)
 
-                # TODO: Mean center M1 data
+                # Mean center M1 data
                 if "m1" in self.mean_centering:
                     train_m1_mean = X_train.mean(axis=0)
                     X_train = X_train - train_m1_mean
                     X_val = X_val - train_m1_mean
 
-                # TODO: Mean center EMG data
+                # Mean center EMG data
                 if "emg" in self.mean_centering:
                     train_emg_mean = y_train_emg.mean(axis=0)
                     y_train_emg = y_train_emg - train_emg_mean

@@ -306,6 +306,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
 
     elif plot_type == "discrete_state_overlap":
 
+        # TODO: Update this to not use clustering probabilities but rather percent value of final outputs
+
         # Populate overlap dict
         overlap_dict = {}
         num_modes = len(cluster_probs[0])
@@ -926,7 +928,8 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                            num_epochs=config.epochs,
                            end_temperature=config.end_temperature,
                            lambda_val=config.lambda_val,
-                           l1_lambda_val=config.l1_lambda_val)
+                           l1_lambda_val=config.l1_lambda_val,
+                           overlap_lambda_val=config.overlap_lambda_val)
     model.load_state_dict(state_dict)
 
     # Generate cm and dm weights
@@ -1212,7 +1215,8 @@ if __name__ == "__main__":
                             behavioral_path=config.behavioral_path, num_modes=config.d, 
                             batch_size=config.b, dataset_type=config.type, seed=config.seed,
                             kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
-                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
+                            mean_centering=config.mean_centering)
     
     # Print dataset statistics
     dataset_statistics(dataset=dataset, verbose=False)
@@ -1311,7 +1315,9 @@ if __name__ == "__main__":
     # model_ids = [693, 694, 695, 696]
     # model_ids = [693]
     # model_ids = [697, 698, 699, 700]
-    model_ids = [701, 702, 703]
+    # model_ids = [701, 702, 703]
+    # model_ids = [723, 721, 724, 725, 726]
+    model_ids = [733, 734, 735, 736]
          
     for model_id in model_ids:
         if model_id in [449, 695]:
@@ -1401,7 +1407,8 @@ if __name__ == "__main__":
                             behavioral_path=curr_behavioral_path, num_modes=config.d, 
                             batch_size=config.b, dataset_type=config.type, seed=config.seed,
                             kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
-                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
+                            mean_centering=config.mean_centering)
                 datasets.append(curr_dataset)
 
     # Calculate separate R^2 for each behavioral label in our model

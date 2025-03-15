@@ -133,6 +133,8 @@ class CombinedModel(nn.Module):
         super(CombinedModel, self).__init__()
         self.cm = ClusterModel(input_dim, hidden_dim, num_modes, cluster_model_type)
         self.dm = DecoderModel(input_dim, output_dim, num_modes, decoder_model_type)
+        self.N = input_dim
+        self.M = output_dim
         self.ev = ev
         self.counter = 0
         self.combined_model_type = combined_model_type
@@ -157,9 +159,14 @@ class CombinedModel(nn.Module):
         if self.combined_model_type == "global_bias":
             self.bias_vector = nn.Parameter(torch.zeros(output_dim))
         elif self.combined_model_type == "global_bias_init":
-            # Initializing global bias as mean of each of the 6 muscle dimensions (*Note: this is unique to monkey dataset)
-            bias_vector = torch.Tensor([23.0080, 31.4715, 45.7495, 10.9360,  7.8748, 19.1686, 28.2936, 25.5097, 
+            # Initializing global bias as mean of each of the muscle dimensions
+            # If using monkey dataset
+            if self.M == 16:
+                bias_vector = torch.Tensor([23.0080, 31.4715, 45.7495, 10.9360,  7.8748, 19.1686, 28.2936, 25.5097, 
                                         46.6512, 16.1408, 13.0669, 10.4864, 19.2127, 18.9600, 28.3749, 27.3609])
+            # IF using mouse dataset
+            elif self.M == 8:
+                bias_vector = torch.Tensor([[23.6023, 22.6074, 36.5821, 42.1190, 49.8622, 54.8491, 46.1826,  7.8997]])
             self.bias_vector = nn.Parameter(bias_vector)
 
 
