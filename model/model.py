@@ -161,7 +161,7 @@ class CombinedModel(nn.Module):
         elif self.combined_model_type == "global_bias_init":
             # Initializing global bias as mean of each of the muscle dimensions
             # If using monkey dataset
-            if self.M == 16:
+            if self.M == 16: # TODO: Change so self.M is just output_dim
                 bias_vector = torch.Tensor([23.0080, 31.4715, 45.7495, 10.9360,  7.8748, 19.1686, 28.2936, 25.5097, 
                                         46.6512, 16.1408, 13.0669, 10.4864, 19.2127, 18.9600, 28.3749, 27.3609])
             # IF using mouse dataset

@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
-#SBATCH -t 12:00:00
+#SBATCH -t 1-00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_mouse_out.txt

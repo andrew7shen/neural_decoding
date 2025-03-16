@@ -2,7 +2,7 @@ T: None
 N: None
 M: None
 d: 11  # num_modes
-b: 64
+b: 512
 type: "emg"
 epochs: 500
 lr: 0.01
@@ -32,4 +32,4 @@ label_type: "mouse"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-run_id: 743
+run_id: 745
