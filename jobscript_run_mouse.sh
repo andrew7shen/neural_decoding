@@ -12,11 +12,15 @@ module load python/3.9.16
 cd neural_decoding/
 
 python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.01.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.02.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.03.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.04.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.05.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.0005.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.001.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.0025.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.005.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.01.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.02.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.03.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.04.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.05.yaml
 
 # python3 run/run.py configs/mouse_configs/configs_mouse_baseline.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_temp1.0.yaml
