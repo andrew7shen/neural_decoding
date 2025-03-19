@@ -113,7 +113,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                               num_modes=config.d, 
                               ev=eval_mode,
                               cluster_model_type=config.cluster_model_type,
-                              decoder_model_type=config.decoder_model_type)
+                              decoder_model_type=config.decoder_model_type,
+                              combined_model_type=config.combined_model_type)
     checkpoint = torch.load(model_path)
     state_dict = checkpoint["state_dict"]
     model = TrainingModule(model=model,
@@ -124,12 +125,16 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
                            temperature=config.temperature,
                            anneal_temperature=config.anneal_temperature,
                            num_epochs=config.epochs,
-                           end_temperature=config.end_temperature)
+                           end_temperature=config.end_temperature,
+                           lambda_val=config.lambda_val,
+                           l1_lambda_val=config.l1_lambda_val,
+                           overlap_lambda_val=config.overlap_lambda_val)
     model.load_state_dict(state_dict)
 
     # Calculate learned cluster labels
     cluster_probs = []
     sample_modes = []
+    final_output_ids = []
     for sample in train:
         x = sample[0].unsqueeze(0)
         curr_output = model.forward(x)
@@ -137,6 +142,10 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
         curr_mode = sample[2]
         cluster_probs.append(curr_probs.squeeze())
         sample_modes.append(curr_mode)
+
+        # Calculate final output id using max summed final output
+        final_output_ids.append(torch.argmax((curr_output[0]*curr_output[1]).squeeze().abs().mean(dim=0)).item())
+
     cluster_probs = torch.stack(cluster_probs).tolist()
     torch.set_printoptions(sci_mode=False)
     cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
@@ -306,8 +315,6 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
 
     elif plot_type == "discrete_state_overlap":
 
-        # TODO: Update this to not use clustering probabilities but rather percent value of final outputs
-
         # Populate overlap dict
         overlap_dict = {}
         num_modes = len(cluster_probs[0])
@@ -316,22 +323,23 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
             for j in range(num_modes):
                 curr_dict[j] = 0
             overlap_dict[i] = curr_dict
-        
+
         # Calculate discrete state overlap between ground truth and predicted labels
         # Outside keys are ground truth labels (i.e. manual labels)
         # If using cage dataset
         if dataset.label_type == "set2":
             ids = [val-1 for val in ids]
-            cluster_ids = [val-1 for val in cluster_ids]
+            # cluster_ids = [val-1 for val in cluster_ids] # This code uses the clustering probabilities to determine mode assignment
         # If using mouse dataset
         elif dataset.label_type == "mouse":
             ids = [val[2] for val in dataset.train_dataset]
-            cluster_ids = [val-1 for val in cluster_ids]
+            # cluster_ids = [val-1 for val in cluster_ids] # This code uses the clustering probabilities to determine mode assignment
         for i in range(len(ids)):
             curr_manual_label = ids[i]
-            curr_pred_label = cluster_ids[i]
+            # curr_pred_label = cluster_ids[i] # This code uses the clustering probabilities to determine mode assignment
+            curr_pred_label = final_output_ids[i]
             overlap_dict[curr_manual_label][curr_pred_label] += 1
-
+        
         # Convert dictionary to nested list for input into heatmap
         overlap_list = []
         for outer_key in overlap_dict.keys():
@@ -379,10 +387,10 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
         fig.tight_layout()
         # plt.show()
         if normalize:
-            plt.savefig("figures/%s_heatmap_norm.png" % model_id)
+            plt.savefig("figures/%s_heatmap_norm_final.png" % model_id)
             # plt.savefig("figures/%s_heatmap_norm.pdf" % model_id)
         else:
-            plt.savefig("figures/%s_heatmap.png" % model_id)
+            plt.savefig("figures/%s_heatmap_final.png" % model_id)
     # plt.show()
 
 
@@ -1209,7 +1217,8 @@ if __name__ == "__main__":
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed,
                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
-                           remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+                           remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
+                           mean_centering=config.mean_centering)
     else:
         dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                             behavioral_path=config.behavioral_path, num_modes=config.d, 
@@ -1237,7 +1246,9 @@ if __name__ == "__main__":
     # model_ids = [485]
     # model_ids = [522, 523]
     # model_ids = [524]
-    model_ids = [711, 712, 713]
+    # model_ids = [711, 712, 713]
+    # model_ids = [747, 754]
+    model_ids = [746]
 
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
@@ -1255,11 +1266,11 @@ if __name__ == "__main__":
             # model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
         # num_to_print = 10000
-        plot_type = "distributions"
+        # plot_type = "distributions"
         # plot_type = "majority"
         # plot_type = "mode_average"
         # plot_type = "confusion_matrix"
-        # plot_type = "discrete_state_overlap"
+        plot_type = "discrete_state_overlap"
         # Check clustering
         check_clustering(dataset=dataset,
                         model_path=model_path,
@@ -1267,7 +1278,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=False)
+                        verbose=True)
 
     # Evaluate model decoding
     # model_id = 120
@@ -1338,7 +1349,7 @@ if __name__ == "__main__":
                             config=config,
                             plot_type=plot_type,
                             model_id=model_id,
-                            verbose=True)
+                            verbose=False)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
@@ -1378,7 +1389,8 @@ if __name__ == "__main__":
                                 behavioral_path="", num_modes=config.d, 
                                 batch_size=config.b, dataset_type=config.type, seed=config.seed,
                                 kmeans_cluster=config.kmeans_cluster, label_type=curr_label_type,
-                                remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+                                remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
+                                mean_centering=config.mean_centering)
                 datasets.append(curr_dataset)
         # If using set1 data
         elif dataset.label_type == "set1":
