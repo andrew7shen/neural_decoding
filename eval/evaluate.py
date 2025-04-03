@@ -387,8 +387,8 @@ def check_clustering(model_path, num_to_print, dataset, config, plot_type, model
         fig.tight_layout()
         # plt.show()
         if normalize:
-            plt.savefig("figures/%s_heatmap_norm_final.png" % model_id)
-            # plt.savefig("figures/%s_heatmap_norm.pdf" % model_id)
+            # plt.savefig("figures/%s_heatmap_norm_final.png" % model_id)
+            plt.savefig("figures/%s_heatmap_norm.pdf" % model_id)
         else:
             plt.savefig("figures/%s_heatmap_final.png" % model_id)
     # plt.show()
@@ -974,6 +974,7 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
     # loadings_pca1 = torch.Tensor(loadings[:,0])
     # loadings_pca2 = torch.Tensor(loadings[:,1])
     train_emg_mean = torch.mean(train_emg, dim=0)
+    import pdb; pdb.set_trace()
 
     # Apply PC loading matrix to dm outputs
     decoder_outputs_dict = {} # key: mode id, value: mode output mapped to 2d space
@@ -1108,6 +1109,9 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
             # Final output PCA values
             y1_final = y*y1
             y2_final = y*y2
+            # Calculate weighted final outputs as interpretability metric
+            # y_final = np.linalg.norm(torch.stack((y1_final, y2_final)), ord=1, axis=0) # Use 2-dim outputs
+            y_final = torch.transpose(torch.Tensor(np.linalg.norm(outputs_behaviors_muscle_dict[k]*torch.transpose(y, 0, 1).unsqueeze(-1), ord=1, axis=2)), 0, 1) # Use 16-dim outputs
 
             # Ground truth EMG, just plotting first 2 EMG muscles
             y_1_muscle = emgs_behaviors_muscle_dict[k][:,0]
@@ -1141,13 +1145,16 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                         if plot_type in ["behavior_average_unweighted", "behavior_average"]:
                             if ax_pos == 0:
                                 # ax[ax_pos][i].set_ylim([-35,70])
-                                ax[ax_pos][i].set_ylim([-65,70]) # TODO: expand y-axis range to view full plots with global bias
+                                # ax[ax_pos][i].set_ylim([-65,70]) # TODO: expand y-axis range to view full plots with global bias
+                                ax[ax_pos][i].set_ylim([-70,70])
                             elif ax_pos == 1:
                                 # ax[ax_pos][i].set_ylim([-60,25])
-                                ax[ax_pos][i].set_ylim([-80,35])
+                                # ax[ax_pos][i].set_ylim([-80,35])
+                                ax[ax_pos][i].set_ylim([-70,70])
                             elif ax_pos == 2:
                                 # ax[ax_pos][i].set_ylim([-70,70])
-                                ax[ax_pos][i].set_ylim([-90,70])
+                                # ax[ax_pos][i].set_ylim([-90,70])
+                                ax[ax_pos][i].set_ylim([-70,70])
                         elif plot_type == "behavior_average_muscle":
                             if ax_pos == 0:
                                 ax[ax_pos][i].set_ylim([-25,150])
@@ -1168,8 +1175,12 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                     elif plot_type == "behavior_average_muscle":
                         ax[ax_pos, i].plot(x, y1_muscle_final[i-1], label="PCA1_final", color="purple", linestyle='dashed')
                         ax[ax_pos, i].plot(x, y2_muscle_final[i-1], label="PCA2_final", color="orange", linestyle='dashed')
-                    ax2[ax_pos][i].plot(x, y[i-1], label="prob", color="black")
-                    ax2[ax_pos][i].set_ylim([0,1])
+                    # ax2[ax_pos][i].plot(x, y[i-1], label="prob", color="black") # TODO: old code that plots clustering probabilities
+                    # ax2[ax_pos][i].set_ylim([0,1]) # TODO: old code that plots clustering probabilities
+                    ax2[ax_pos][i].plot(x, y_final[i-1], label="prob", color="black")
+                    # ax2[ax_pos][i].set_ylim([0,80])
+                    ax2[ax_pos][i].set_ylim([0,200])
+                    # ax2[ax_pos][i].set_ylim([0,y_final.max().item()*1.05])
                     if equal_scale:
                         # ax[ax_pos][i].set_ylim([-250,550]) # Scale y-axis for equal comparison
                         # ax[ax_pos][i].set_ylim([-60,70]) # Scale y-axis for equal comparison
@@ -1180,13 +1191,16 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
                         if plot_type in ["behavior_average_unweighted", "behavior_average"]:
                             if ax_pos == 0:
                                 # ax[ax_pos][i].set_ylim([-35,70])
-                                ax[ax_pos][i].set_ylim([-65,70]) # TODO: expand y-axis range to view full plots with global bias
+                                # ax[ax_pos][i].set_ylim([-65,70]) # TODO: expand y-axis range to view full plots with global bias
+                                ax[ax_pos][i].set_ylim([-70,70])
                             elif ax_pos == 1:
                                 # ax[ax_pos][i].set_ylim([-60,25])
-                                ax[ax_pos][i].set_ylim([-80,35])
+                                # ax[ax_pos][i].set_ylim([-80,35])
+                                ax[ax_pos][i].set_ylim([-70,70])
                             elif ax_pos == 2:
                                 # ax[ax_pos][i].set_ylim([-70,70])
-                                ax[ax_pos][i].set_ylim([-90,70])
+                                # ax[ax_pos][i].set_ylim([-90,70])
+                                ax[ax_pos][i].set_ylim([-70,70])
                         elif plot_type == "behavior_average_muscle":
                             if ax_pos == 0:
                                 ax[ax_pos][i].set_ylim([-25,150])
@@ -1199,8 +1213,8 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
         
         if save_fig:
             if equal_scale:
-                plt.savefig("figures/decoder_outputs/%s_%s_scaled.png" % (model_id, plot_type))
-                # plt.savefig("figures/decoder_outputs/%s_%s_scaled.pdf" % (model_id, plot_type))
+                # plt.savefig("figures/decoder_outputs/%s_%s_scaled.png" % (model_id, plot_type))
+                plt.savefig("figures/decoder_outputs/%s_%s_scaled.pdf" % (model_id, plot_type))
             else:
                 plt.savefig("figures/decoder_outputs/%s_%s.png" % (model_id, plot_type))
         else:
@@ -1248,7 +1262,7 @@ if __name__ == "__main__":
     # model_ids = [524]
     # model_ids = [711, 712, 713]
     # model_ids = [747, 754]
-    model_ids = [746]
+    model_ids = [754]
 
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
@@ -1278,7 +1292,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=True)
+                        verbose=False)
 
     # Evaluate model decoding
     # model_id = 120
@@ -1328,7 +1342,8 @@ if __name__ == "__main__":
     # model_ids = [697, 698, 699, 700]
     # model_ids = [701, 702, 703]
     # model_ids = [723, 721, 724, 725, 726]
-    model_ids = [733, 734, 735, 736]
+    # model_ids = [733, 734, 735, 736]
+    model_ids = [721]
          
     for model_id in model_ids:
         if model_id in [449, 695]:
@@ -1349,7 +1364,7 @@ if __name__ == "__main__":
                             config=config,
                             plot_type=plot_type,
                             model_id=model_id,
-                            verbose=False)
+                            verbose=True)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets

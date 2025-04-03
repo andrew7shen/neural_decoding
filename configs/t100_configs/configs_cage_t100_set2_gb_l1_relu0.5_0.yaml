@@ -24,7 +24,7 @@ l1_lambda_val: 0
 overlap_lambda_val: 0
 hidden_dim: 30
 cluster_model_type: "method1"
-decoder_model_type: ""
+decoder_model_type: "leakyrelu_0.5"
 # combined_model_type: ""
 combined_model_type: "global_bias"
 # combined_model_type: "global_bias_init"
@@ -34,4 +34,4 @@ label_type: "set2"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-run_id: 755
+run_id: 759

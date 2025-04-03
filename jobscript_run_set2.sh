@@ -11,6 +11,12 @@ source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_relu0.01_0.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_relu0.05_0.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_relu0.1_0.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_relu0.5_0.yaml
+
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.01.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_l1_0.013.yaml
@@ -43,11 +49,11 @@ cd neural_decoding/
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_globalbias.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.5.yaml
 
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.0005.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.001.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.002.yaml
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.003.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.0005.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.001.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.002.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.003.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.04.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_overlap_0.05.yaml
 
