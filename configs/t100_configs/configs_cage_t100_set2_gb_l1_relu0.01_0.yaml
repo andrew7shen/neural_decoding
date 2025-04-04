@@ -1,7 +1,7 @@
 T: None
 N: None
 M: None
-d: 3  # num_modes
+d: 6  # num_modes
 b: 8
 type: "emg"
 epochs: 500
@@ -34,4 +34,4 @@ label_type: "set2"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-run_id: 756
+run_id: 771
