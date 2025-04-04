@@ -118,6 +118,22 @@ class DecoderModel(nn.Module):
             slope_val = float(self.decoder_model_type.split("_")[-1])
             x = nn.LeakyReLU(slope_val)(x)
         
+        # Other activation funtions
+        elif self.decoder_model_type == "relu":
+            x = nn.ReLU()(x)
+        elif self.decoder_model_type == "sigmoid":
+            x = nn.Sigmoid()(x)
+        elif self.decoder_model_type == "tanh":
+            x = nn.Tanh()(x)
+        elif self.decoder_model_type == "selu":
+            x = nn.SELU()(x)
+        elif self.decoder_model_type == "celu":
+            x = nn.CELU()(x)
+        elif self.decoder_model_type == "gelu":
+            x = nn.GELU()(x)
+        elif self.decoder_model_type == "elu":
+            x = nn.ELU()(x)
+        
         else:
             scale_outputs = False
             if scale_outputs:
