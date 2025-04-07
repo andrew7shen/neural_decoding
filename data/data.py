@@ -39,6 +39,9 @@ class Mouse_Dataset(pl.LightningDataModule):
         self.scale_outputs = scale_outputs
         self.mean_centering = mean_centering
 
+        # Set manual seed
+        torch.manual_seed(seed)
+
         # If loading kmeans split data
         if "kmeans_split" in m1_path:
             path = m1_path
