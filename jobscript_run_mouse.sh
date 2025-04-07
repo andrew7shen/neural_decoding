@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
-#SBATCH -p short
-#SBATCH -t 4:00:00
+#SBATCH -p normal
+#SBATCH -t 6:00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_mouse_out.txt
@@ -11,7 +11,13 @@ source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.01_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.05_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.1_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.5_0.yaml
+
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.0001.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.0002.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.0005.yaml
