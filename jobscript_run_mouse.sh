@@ -12,10 +12,13 @@ module load python/3.9.16
 cd neural_decoding/
 
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.01_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.01_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.05_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.1_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.5_0.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_selu_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_celu_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_elu_0.yaml
 
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.0001.yaml
