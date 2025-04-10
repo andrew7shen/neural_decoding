@@ -90,6 +90,11 @@ class DecoderModel(nn.Module):
         self.decoder_model_type = decoder_model_type
         self.linears = nn.ModuleList([nn.Linear(input_dim, output_dim) for i in range(num_modes)])
         # self.leaky_relu = nn.LeakyReLU(0.1)
+
+        # Trying tanh with scaling and offset
+        if self.decoder_model_type == "tanh_scaling_offset":
+            self.scale_vector = nn.Parameter(torch.ones(1, output_dim, num_modes))
+            self.bias_vector = nn.Parameter(torch.zeros(1, output_dim, num_modes))
     
     def forward(self, x):
         x_d = []
@@ -133,7 +138,12 @@ class DecoderModel(nn.Module):
             x = nn.GELU()(x)
         elif self.decoder_model_type == "elu":
             x = nn.ELU()(x)
-        
+
+        # Try tanh with scaling and offset
+        elif self.decoder_model_type == "tanh_scaling_offset":
+            x = torch.tanh(x)
+            x = x*self.scale_vector + self.bias_vector
+    
         else:
             scale_outputs = False
             if scale_outputs:

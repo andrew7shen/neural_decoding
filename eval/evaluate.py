@@ -1262,7 +1262,8 @@ if __name__ == "__main__":
     # model_ids = [524]
     # model_ids = [711, 712, 713]
     # model_ids = [747, 754]
-    model_ids = [754]
+    # model_ids = [754]
+    model_ids = [720, 721]
 
     for model_id in model_ids:
         # model_path = "checkpoints_intervals/%s.ckpt" % model_id
@@ -1280,11 +1281,11 @@ if __name__ == "__main__":
             # model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
         num_to_print = 7800
         # num_to_print = 10000
-        # plot_type = "distributions"
+        plot_type = "distributions"
         # plot_type = "majority"
         # plot_type = "mode_average"
         # plot_type = "confusion_matrix"
-        plot_type = "discrete_state_overlap"
+        # plot_type = "discrete_state_overlap"
         # Check clustering
         check_clustering(dataset=dataset,
                         model_path=model_path,
@@ -1292,7 +1293,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=False)
+                        verbose=True)
 
     # Evaluate model decoding
     # model_id = 120
@@ -1364,7 +1365,7 @@ if __name__ == "__main__":
                             config=config,
                             plot_type=plot_type,
                             model_id=model_id,
-                            verbose=True)
+                            verbose=False)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
