@@ -93,12 +93,12 @@ class DecoderModel(nn.Module):
 
         # Trying tanh with scaling and offset
         if self.decoder_model_type == "tanh_scaling_offset":
-            # self.scale_vector = nn.Parameter(torch.ones(1, output_dim, num_modes))
-            # self.bias_vector = nn.Parameter(torch.zeros(1, output_dim, num_modes))
+            self.scale_vector = nn.Parameter(torch.ones(1, output_dim, num_modes))
+            self.bias_vector = nn.Parameter(torch.zeros(1, output_dim, num_modes))
 
             # Trying less expressive vectors
-            self.scale_vector = nn.Parameter(torch.ones(1, output_dim, 1))
-            self.bias_vector = nn.Parameter(torch.zeros(1, output_dim, 1))
+            # self.scale_vector = nn.Parameter(torch.ones(1, output_dim, 1))
+            # self.bias_vector = nn.Parameter(torch.zeros(1, output_dim, 1))
     
     def forward(self, x):
         x_d = []
