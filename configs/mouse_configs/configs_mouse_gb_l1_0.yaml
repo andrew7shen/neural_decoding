@@ -1,7 +1,7 @@
 T: None
 N: None
 M: None
-d: 14  # num_modes
+d: 11  # num_modes
 b: 512
 type: "emg"
 epochs: 500
