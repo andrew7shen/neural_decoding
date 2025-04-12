@@ -26,7 +26,16 @@ if __name__ == "__main__":
     config = load_config()
 
     # Load in dataset
-    if config.label_type == "mouse":
+    if config.label_type == "simulated":
+        dataset = Simulated_Dataset(T=config.T, N=config.N, M=config.M, m1_path=config.m1_path, emg_path=config.emg_path, 
+                           behavioral_path=config.behavioral_path, num_modes=config.d, 
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                           kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
+                           remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
+                           mean_centering=config.mean_centering)
+        print("Simulated dataset successfully loaded!")
+        import pdb; pdb.set_trace()
+    elif config.label_type == "mouse":
         dataset = Mouse_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed,

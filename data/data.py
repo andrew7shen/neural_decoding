@@ -16,6 +16,108 @@ import pickle as pickle
 import h5py
 from tqdm import tqdm
 
+class Simulated_Dataset(pl.LightningDataModule):
+
+    def __init__(self, T, N, M, m1_path, emg_path, behavioral_path, 
+                    num_modes, batch_size, dataset_type, 
+                    seed, kmeans_cluster, label_type,
+                    remove_zeros, scale_outputs, mean_centering):
+        super().__init__()
+
+        # Assign class variables
+        self.batch_size = batch_size
+        self.num_modes = num_modes
+        self.train_dataset = None
+        self.val_dataset = None
+        self.dataset_type = dataset_type
+        self.T = T
+        self.N = N
+        self.M = M
+        self.seed = seed
+        self.kmeans_cluster = kmeans_cluster
+        self.label_type = label_type
+        self.remove_zeros = remove_zeros
+        self.scale_outputs = scale_outputs
+        self.mean_centering = mean_centering
+
+        # Set manual seed
+        torch.manual_seed(seed)
+        
+        print("In Simulated_Dataset class...")
+
+        # TODO: Generate simulated dataset
+        dataset = self.generate_simulated_dataset(self.T, self.N, self.M)
+
+        import pdb; pdb.set_trace()
+
+        # TODO: Create train/val splits
+        # TODO: Perform mean-centering
+
+    
+    def generate_simulated_dataset(self, T, N, M):
+
+        dataset = None
+
+
+        
+        # # Dataset parameters
+        # num_samples_total = num_samples
+        # num_samples = int(num_samples_total/2)
+        # m1_val_mode1 = 10.0
+        # m1_val_mode2 = 0.0
+
+        # # Generate toy dataset with EMG labels to test out full CombinedModel
+        # if self.dataset_type == "emg":
+        #     features_mode1, labels_mode1 = self.generate_emg(num_samples, m1_val_mode1, self.decoder_mode1)
+        #     features_mode2, labels_mode2 = self.generate_emg(num_samples, m1_val_mode2, self.decoder_mode2)
+        
+        # # Format datasets in pairs of (feature, label)
+        # dataset_mode1 = [(features_mode1[i], labels_mode1[i]) for i in range(len(features_mode1))]
+        # dataset_mode2 = [(features_mode2[i], labels_mode2[i]) for i in range(len(features_mode2))]
+        # dataset = dataset_mode1 + dataset_mode2
+
+        return dataset
+
+
+    def __len__(self):
+        """
+        Returns number of samples in the training set.
+        """
+        
+        return len(self.train_dataset) + len(self.val_dataset)
+
+
+    def __getitem__(self, index):
+
+        # Not used for the training
+        return self.train_dataset[index]
+
+
+    def collate_fn(self, batch):
+        
+        final_batch = {}
+        X = []  # m1
+        Y1 = []  # emg
+        Y2 = []  # behavioral
+        for sample in batch:
+            X.append(sample[0])
+            Y1.append(sample[1])
+            Y2.append(sample[2])
+        final_batch["m1"] = torch.stack(X)
+        final_batch["emg"] = torch.stack(Y1).float()
+        final_batch["behavioral"] = Y2
+
+        return final_batch
+
+
+    def train_dataloader(self):
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn, shuffle=True)
+
+
+    def val_dataloader(self):
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn)
+
+
 class Mouse_Dataset(pl.LightningDataModule):
 
     def __init__(self, m1_path, emg_path, behavioral_path, 
