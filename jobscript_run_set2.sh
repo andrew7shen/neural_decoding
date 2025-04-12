@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
-#SBATCH -t 1-00:00
+#SBATCH -t 6:00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_out.txt
@@ -17,10 +17,10 @@ cd neural_decoding/
 # Temporarily use this file to submit mouse runs also
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.yaml
 python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.003_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.005_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.01_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.05_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.003_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.005_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.01_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.05_0.yaml
 
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_relu0.0001_0.yaml
