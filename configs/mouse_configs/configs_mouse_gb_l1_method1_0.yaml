@@ -23,7 +23,7 @@ lambda_val: 0
 l1_lambda_val: 0
 overlap_lambda_val: 0
 hidden_dim: 30
-cluster_model_type: "method1"
+cluster_model_type: "method2"
 decoder_model_type: ""
 combined_model_type: "global_bias"
 kmeans_cluster: 0
@@ -32,4 +32,4 @@ label_type: "mouse"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-run_id: 813
+run_id: 814
