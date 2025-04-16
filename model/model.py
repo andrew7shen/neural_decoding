@@ -18,7 +18,7 @@ class ClusterModel(nn.Module):
         self.cluster_model_type = cluster_model_type
 
         # METHOD #1: Original linear method
-        if "method1" in self.cluster_model_type:
+        if self.cluster_model_type == "method1" or self.cluster_model_type == "method3":
             self.linears = nn.ModuleList([nn.Linear(input_dim, 1) for i in range(num_modes)])
         
         # METHOD #2: Explore non-linearities
@@ -31,6 +31,10 @@ class ClusterModel(nn.Module):
         # METHOD #3: Explore non-linearity into linears
         if self.cluster_model_type == "method3":
             self.single_ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, input_dim))
+        
+        # METHOD #4: Explore non-linearity with single FFNN
+        if self.cluster_model_type == "method4":
+            self.ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, num_modes))
         
         # METHOD #2: Initialize all ffnns to same initial model weights
         # if cluster_model_type == "method2":
@@ -48,19 +52,25 @@ class ClusterModel(nn.Module):
         if "method1" in self.cluster_model_type:
             for linear in self.linears:
                 x_d.append(linear(x))
+            x = torch.stack(x_d, 2)
 
         # METHOD #2: Explore non-linearities
         if self.cluster_model_type == "method2":
             for ffnn in self.ffnns:
                 x_d.append(ffnn(x))
+            x = torch.stack(x_d, 2)
 
         # METHOD #3: Explore non-linearity into linears
         if self.cluster_model_type == "method3":
             x = self.single_ffnn(x)
             for linear in self.linears:
                 x_d.append(linear(x))
+            x = torch.stack(x_d, 2)
 
-        x = torch.stack(x_d, 2)
+        # METHOD #4: Explore non-linearity with single FFNN
+        if self.cluster_model_type == "method4":
+            x = self.ffnn(x)
+            x = x.unsqueeze(1)
 
         # Scale by temperature
         # import pdb; pdb.set_trace()

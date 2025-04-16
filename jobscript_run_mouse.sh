@@ -15,8 +15,9 @@ python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.01_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.1_0.yaml
 
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method1_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method1_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_0.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_0.yaml
 
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.05_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.5_0.yaml
