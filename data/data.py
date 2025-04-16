@@ -46,7 +46,7 @@ class Simulated_Dataset(pl.LightningDataModule):
         print("In Simulated_Dataset class...")
 
         # TODO: Generate simulated dataset
-        dataset = self.generate_simulated_dataset(self.T, self.N, self.M)
+        dataset = self.generate_simulated_dataset()
 
         import pdb; pdb.set_trace()
 
@@ -54,29 +54,43 @@ class Simulated_Dataset(pl.LightningDataModule):
         # TODO: Perform mean-centering
 
     
-    def generate_simulated_dataset(self, T, N, M):
+    def generate_simulated_dataset(self):
 
-        dataset = None
+        # Parameters to adjust
+        t_single = np.linspace(0, 2 * np.pi, 300) # number of timepoints in each section
+        freq1 = 5
+        freq2 = 15
+        num_trials = 5
+        # Trial-specific mean offsets and magnitudes
+        input_means = [100, 90, 50, 10, 0]
+        input_magnitudes = [10, 10, 10, 10, 10] # josh said 5-10 relative to 100?
+        # Input signals (same for all trials)
+        neuron1 = np.sin(freq1 * t_single)
+        neuron2 = np.sin(freq2 * t_single)
+        # Weight combinations
+        weights = [1, 0.9, 0.5, 0.1, 0]
+        w_pairs = [(1 - w, w) for w in weights]  # list of (w1, w2)
+        # Create full signals
+        full_time = []
+        full_n1 = []
+        full_n2 = []
+        full_output = []
+        for i, ((w1, w2), mean, mag) in enumerate(zip(w_pairs, input_means, input_magnitudes)):
+            offset = i * 2 * np.pi
+            n1 = mag * np.sin(freq1 * t_single) + mean
+            n2 = mag * np.sin(freq2 * t_single) + mean
+            out = w1 * n1 + w2 * n2
+            full_time.append(t_single + offset)
+            full_n1.append(n1)
+            full_n2.append(n2)
+            full_output.append(out)
+        # Concatenate all trials
+        t_all = np.concatenate(full_time)
+        n1_all = np.concatenate(full_n1)
+        n2_all = np.concatenate(full_n2)
+        output_all = np.concatenate(full_output)
 
-
-        
-        # # Dataset parameters
-        # num_samples_total = num_samples
-        # num_samples = int(num_samples_total/2)
-        # m1_val_mode1 = 10.0
-        # m1_val_mode2 = 0.0
-
-        # # Generate toy dataset with EMG labels to test out full CombinedModel
-        # if self.dataset_type == "emg":
-        #     features_mode1, labels_mode1 = self.generate_emg(num_samples, m1_val_mode1, self.decoder_mode1)
-        #     features_mode2, labels_mode2 = self.generate_emg(num_samples, m1_val_mode2, self.decoder_mode2)
-        
-        # # Format datasets in pairs of (feature, label)
-        # dataset_mode1 = [(features_mode1[i], labels_mode1[i]) for i in range(len(features_mode1))]
-        # dataset_mode2 = [(features_mode2[i], labels_mode2[i]) for i in range(len(features_mode2))]
-        # dataset = dataset_mode1 + dataset_mode2
-
-        return dataset
+        return t_all, n1_all, n2_all, output_all
 
 
     def __len__(self):
