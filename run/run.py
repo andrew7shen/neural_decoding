@@ -33,8 +33,6 @@ if __name__ == "__main__":
                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
                            mean_centering=config.mean_centering)
-        print("Simulated dataset successfully loaded!")
-        import pdb; pdb.set_trace()
     elif config.label_type == "mouse":
         dataset = Mouse_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 

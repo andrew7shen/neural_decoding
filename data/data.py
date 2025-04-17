@@ -43,15 +43,30 @@ class Simulated_Dataset(pl.LightningDataModule):
         # Set manual seed
         torch.manual_seed(seed)
         
-        print("In Simulated_Dataset class...")
-
-        # TODO: Generate simulated dataset
+        # Generate simulated dataset
         dataset = self.generate_simulated_dataset()
+        timestamps = dataset[1]
+        m1 = np.stack([dataset[1], dataset[2]]).T
+        emg = dataset[3]
 
-        import pdb; pdb.set_trace()
+        # Create train/val splits
+        X_train, X_val, y_train, y_val = train_test_split(m1, emg, test_size=0.2, random_state=42)
+        
+        # Perform mean-centering
+        # Mean center M1 data
+        if "m1" in self.mean_centering:
+            train_m1_mean = X_train.mean(axis=0)
+            X_train = X_train - train_m1_mean
+            X_val = X_val - train_m1_mean
+        # Mean center EMG data
+        if "emg" in self.mean_centering:
+            y_train_mean = y_train.mean(axis=0)
+            y_train = y_train - y_train_mean
+            y_val = y_val - y_train_mean
 
-        # TODO: Create train/val splits
-        # TODO: Perform mean-centering
+        # Final datasets
+        self.train_dataset = [(torch.Tensor(X_train[i]), torch.Tensor([y_train[i]]), "no_label") for i in range(len(X_train))]
+        self.val_dataset = [(torch.Tensor(X_val[i]), torch.Tensor([y_val[i]]), "no_label") for i in range(len(X_val))]
 
     
     def generate_simulated_dataset(self):
