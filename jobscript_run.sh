@@ -11,6 +11,12 @@ source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
+python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001.yaml
+python3 run/run.py configs/sim_configs/configs_simulated_lr0.0001.yaml
+python3 run/run.py configs/sim_configs/configs_simulated_lr0.001.yaml
+python3 run/run.py configs/sim_configs/configs_simulated_lr0.01.yaml
+python3 run/run.py configs/sim_configs/configs_simulated_lr0.1.yaml
+
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.05.yaml
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.1.yaml
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.5.yaml
@@ -43,9 +49,9 @@ cd neural_decoding/
 # python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.05.yaml
 # python3 run/run.py configs/generalizability_configs/regularization/labeled_d6_w0.07.yaml
 
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp0.1.yaml
-python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp5.0.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2.yaml
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp0.1.yaml
+# python3 run/run.py configs/temp_configs/configs_cage_t100_set2_temp5.0.yaml
 
 
 # python3 run/run.py configs/t100_configs/configs_cage_t100_none.yaml

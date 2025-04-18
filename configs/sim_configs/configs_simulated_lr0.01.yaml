@@ -1,0 +1,35 @@
+T: 100
+N: 2
+M: 1
+d: 2  # num_modes
+b: 32
+type: "emg"
+epochs: 500
+lr: 0.01
+record: True
+ev: False
+m1_path: ""
+emg_path: ""
+behavioral_path: ""
+save_path: "checkpoints"
+save_epochs: "none"
+model: "combined"
+seed: 42
+temperature: 1.0
+end_temperature: 0.01
+anneal_temperature: "none"
+weight_decay: 0.01
+lambda_val: 0
+l1_lambda_val: 0
+overlap_lambda_val: 0
+hidden_dim: 30
+cluster_model_type: "method1"
+decoder_model_type: ""
+combined_model_type: "global_bias"
+kmeans_cluster: 0
+set_decoder_weights: "none"
+label_type: "simulated"
+remove_zeros: False
+scale_outputs: False
+mean_centering: "m1 and emg"
+run_id: 860
