@@ -2,7 +2,7 @@ T: 100
 N: 2
 M: 1
 d: 2  # num_modes
-b: 32
+b: 8
 type: "emg"
 epochs: 500
 lr: 0.00001
@@ -32,4 +32,4 @@ label_type: "simulated"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-run_id: 857
+run_id: 862
