@@ -22,11 +22,13 @@ cd neural_decoding/
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.003_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.005_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.01_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.012_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.015_0.yaml
-# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.02_0.yaml
-# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.025_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.01_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.012_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.015_0.yaml
+python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.017_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.02_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.022_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.025_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.05_0.yaml
 
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_w0.003_0.yaml
@@ -35,9 +37,9 @@ python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.015_0.ya
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_w0.05_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_w0.003_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_w0.005_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_w0.01_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_w0.012_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_w0.015_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_w0.01_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_w0.012_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_w0.015_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_w0.05_0.yaml
 
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_w0.012_0.yaml
