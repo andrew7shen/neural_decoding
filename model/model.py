@@ -23,8 +23,16 @@ class ClusterModel(nn.Module):
         
         # METHOD #2: Explore non-linearities
         if self.cluster_model_type == "method2":
+
+            # TODO: Old code
+            # self.ffnns = nn.ModuleList([nn.Sequential(nn.Linear(input_dim, hidden_dim),
+            #                                       nn.Tanh(),
+            #                                       nn.Linear(hidden_dim, 1))
+            #                                       for i in range(num_modes)])
+            
+            # TODO: Trying out different activation functions
             self.ffnns = nn.ModuleList([nn.Sequential(nn.Linear(input_dim, hidden_dim),
-                                                  nn.Tanh(),
+                                                  nn.ReLU(),
                                                   nn.Linear(hidden_dim, 1))
                                                   for i in range(num_modes)])
             
@@ -34,7 +42,12 @@ class ClusterModel(nn.Module):
         
         # METHOD #4: Explore non-linearity with single FFNN
         if self.cluster_model_type == "method4":
-            self.ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, num_modes))
+
+            # TODO: Old code
+            # self.ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, num_modes))
+
+            # TODO: Trying out different activation functions
+            self.ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, num_modes))
         
         # METHOD #2: Initialize all ffnns to same initial model weights
         # if cluster_model_type == "method2":
