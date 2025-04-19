@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
-#SBATCH -t 6:00:00
+#SBATCH -t 1:00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_out.txt
@@ -22,9 +22,9 @@ cd neural_decoding/
 # python3 run/run.py configs/sim_configs/configs_simulated_lr0.01_b4.yaml
 # python3 run/run.py configs/sim_configs/configs_simulated_lr0.1_b4.yaml
 
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b4.yaml
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b3.yaml
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b2.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b4.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b3.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b2.yaml
 python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b1.yaml
 
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.05.yaml

@@ -32,4 +32,4 @@ label_type: "simulated"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-run_id: 880
+run_id: 881

@@ -47,7 +47,8 @@ class TrainingModule(LightningModule):
         # labels_hat = self.model(features, self.temperature)
         # TODO: Return clustering probs and final output
         cluster_probs, labels_hat = self.model(features, self.temperature)
-        self.max_cluster_probs += list(torch.max(cluster_probs.squeeze(),dim=1).values)
+        # TODO: Add fix for batch size of 1
+        self.max_cluster_probs += list(torch.max(cluster_probs.squeeze(1),dim=1).values)
         
         if labels_hat.shape[0] == 1:
             pass
