@@ -51,6 +51,14 @@ python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.017_0.ya
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_w0.02_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method4_w0.025_0.yaml
 
+# Nonlinear decoder runs
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.003_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.005_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.01_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_tanhscalingoffset_w0.05_0.yaml
+
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.05_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.5_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_selu_0.yaml

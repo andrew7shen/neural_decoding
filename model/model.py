@@ -25,16 +25,16 @@ class ClusterModel(nn.Module):
         if self.cluster_model_type == "method2":
 
             # TODO: Old code
-            # self.ffnns = nn.ModuleList([nn.Sequential(nn.Linear(input_dim, hidden_dim),
-            #                                       nn.Tanh(),
-            #                                       nn.Linear(hidden_dim, 1))
-            #                                       for i in range(num_modes)])
-            
-            # TODO: Trying out different activation functions
             self.ffnns = nn.ModuleList([nn.Sequential(nn.Linear(input_dim, hidden_dim),
-                                                  nn.ReLU(),
+                                                  nn.Tanh(),
                                                   nn.Linear(hidden_dim, 1))
                                                   for i in range(num_modes)])
+            
+            # TODO: Trying out different activation functions
+            # self.ffnns = nn.ModuleList([nn.Sequential(nn.Linear(input_dim, hidden_dim),
+            #                                       nn.ReLU(),
+            #                                       nn.Linear(hidden_dim, 1))
+            #                                       for i in range(num_modes)])
             
         # METHOD #3: Explore non-linearity into linears
         if self.cluster_model_type == "method3":
@@ -44,10 +44,10 @@ class ClusterModel(nn.Module):
         if self.cluster_model_type == "method4":
 
             # TODO: Old code
-            # self.ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, num_modes))
+            self.ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, num_modes))
 
             # TODO: Trying out different activation functions
-            self.ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, num_modes))
+            # self.ffnn = nn.Sequential(nn.Linear(input_dim, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, num_modes))
         
         # METHOD #2: Initialize all ffnns to same initial model weights
         # if cluster_model_type == "method2":
