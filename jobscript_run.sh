@@ -11,16 +11,21 @@ source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001.yaml
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.0001.yaml
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.001.yaml
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.01.yaml
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.1.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.0001.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.001.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.01.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.1.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b4.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.0001_b4.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.001_b4.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.01_b4.yaml
+# python3 run/run.py configs/sim_configs/configs_simulated_lr0.1_b4.yaml
+
 python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b4.yaml
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.0001_b4.yaml
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.001_b4.yaml
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.01_b4.yaml
-python3 run/run.py configs/sim_configs/configs_simulated_lr0.1_b4.yaml
+python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b3.yaml
+python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b2.yaml
+python3 run/run.py configs/sim_configs/configs_simulated_lr0.00001_b1.yaml
 
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.05.yaml
 # python3 run/run.py configs/generalizability_configs/regularization/unlabeled_w0.1.yaml
