@@ -32,4 +32,4 @@ label_type: "set2"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-run_id: 884
+run_id: 885
