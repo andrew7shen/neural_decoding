@@ -1284,11 +1284,16 @@ def decoder_outputs_simulated(model_path, dataset, config, plot_type, model_id, 
     # Calculate final weighted output
     final_outputs = cluster_probs*decoder_outputs
 
+    import pdb; pdb.set_trace()
+    
+
     # TODO: Code to plot out dot plot of data (from Copilot)
     data_to_plot = final_outputs
     data_np = data_to_plot.detach().numpy()  # Convert to numpy array
     train_emg_np = train_emg.detach().numpy()
     num_samples, num_modes = data_np.shape
+    # Calculate the summed output values
+    summed_outputs = data_np.sum(axis=1)  # Sum across all modes for each sample
     plt.figure(figsize=(10, 6))
     for mode in range(num_modes):
         plt.plot(
@@ -1308,6 +1313,15 @@ def decoder_outputs_simulated(model_path, dataset, config, plot_type, model_id, 
             alpha=0.8,
             linewidth=2
         )
+    # # Overlay the summed output values
+    # plt.plot(
+    #     np.arange(num_samples),
+    #     summed_outputs,
+    #     label="Summed Outputs",
+    #     color="black",
+    #     linestyle="dashdot",
+    #     linewidth=2
+    # )
     plt.title("Line Plot")
     plt.xlabel("Sample Index")
     plt.ylabel("Input Data")
@@ -1453,9 +1467,10 @@ if __name__ == "__main__":
     # model_ids = [733, 734, 735, 736]
     # model_ids = [721]
 
-    # model_ids = [891]
+    model_ids = [891]
     # model_ids = [892]
-    model_ids = [916]
+    # model_ids = [916]
+    # model_ids = [918]
     
     # TODO: Temp code to generate plots for all 10 checkpoints in #916
     # for curr_id in [9, 19, 29, 39, 49, 59, 69, 79, 89, 99]:
@@ -1471,6 +1486,8 @@ if __name__ == "__main__":
             model_path = "checkpoints/checkpoint%s_epoch=249.ckpt" % model_id
         # elif model_id in [916]:
         #     model_path = f"checkpoints/checkpoint%s_epoch={curr_id}.ckpt" % model_id
+        elif model_id in [918]:
+            model_path = "checkpoints/checkpoint%s_epoch=99.ckpt" % model_id
         else:
             model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
 

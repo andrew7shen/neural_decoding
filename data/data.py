@@ -92,9 +92,9 @@ class Simulated_Dataset(pl.LightningDataModule):
         # Parameters to adjust
         t_single = np.linspace(0, 2 * np.pi, 300) # number of timepoints in each section
         freq1 = 5
-        # freq2 = 15
+        freq2 = 15
         # TODO: Try freq2 of 30
-        freq2 = 30
+        # freq2 = 30
         num_trials = 5
         # Trial-specific mean offsets and magnitudes
         input_means = [100, 90, 50, 10, 0]
@@ -112,7 +112,8 @@ class Simulated_Dataset(pl.LightningDataModule):
         full_output = []
         for i, ((w1, w2), mean, mag) in enumerate(zip(w_pairs, input_means, input_magnitudes)):
             offset = i * 2 * np.pi
-            n1 = mag * np.sin(freq1 * t_single) + mean
+            # n1 = mag * np.sin(freq1 * t_single) + mean
+            n1 = 3 * mag * np.sin(freq1 * t_single) + mean # TODO: Try scaling magnitude by 3
             n2 = mag * np.sin(freq2 * t_single) + mean
             out = w1 * n1 + w2 * n2
             full_time.append(t_single + offset)

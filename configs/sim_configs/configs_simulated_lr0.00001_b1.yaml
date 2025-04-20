@@ -34,4 +34,4 @@ remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
 eval_dataset: ""
-run_id: 918
+run_id: 919
