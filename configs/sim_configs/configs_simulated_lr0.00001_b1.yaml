@@ -12,7 +12,8 @@ m1_path: ""
 emg_path: ""
 behavioral_path: ""
 save_path: "checkpoints"
-save_epochs: 10
+# save_epochs: 10
+save_epochs: "none"
 model: "combined"
 seed: 42
 temperature: 1.0
@@ -33,4 +34,4 @@ remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
 eval_dataset: ""
-run_id: 916
+run_id: 918

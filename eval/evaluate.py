@@ -1222,8 +1222,8 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
         else:
             plt.show()
 
-
 def decoder_outputs_simulated(model_path, dataset, config, plot_type, model_id, verbose):
+# def decoder_outputs_simulated(model_path, dataset, config, plot_type, model_id, curr_id, verbose):
 
     save_fig = True
 
@@ -1313,10 +1313,12 @@ def decoder_outputs_simulated(model_path, dataset, config, plot_type, model_id, 
     plt.ylabel("Input Data")
     plt.legend()
     plt.tight_layout()
-    plt.show()
+    plt.savefig(f"/Users/andrewshen/Downloads/{model_id}.png")
+    # plt.savefig(f"/Users/andrewshen/Downloads/{model_id}_{curr_id}.png")
+    # plt.show()
 
     # TODO: CURRENTLY HERE
-    quit()
+    return
     import pdb; pdb.set_trace()
         
 
@@ -1452,8 +1454,12 @@ if __name__ == "__main__":
     # model_ids = [721]
 
     # model_ids = [891]
-    model_ids = [892]
-         
+    # model_ids = [892]
+    model_ids = [916]
+    
+    # TODO: Temp code to generate plots for all 10 checkpoints in #916
+    # for curr_id in [9, 19, 29, 39, 49, 59, 69, 79, 89, 99]:
+
     for model_id in model_ids:
         if model_id in [449, 695]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
@@ -1463,6 +1469,8 @@ if __name__ == "__main__":
             model_path = "checkpoints/checkpoint%s_epoch=999.ckpt" % model_id
         elif model_id in [891]:
             model_path = "checkpoints/checkpoint%s_epoch=249.ckpt" % model_id
+        # elif model_id in [916]:
+        #     model_path = f"checkpoints/checkpoint%s_epoch={curr_id}.ckpt" % model_id
         else:
             model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
 

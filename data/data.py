@@ -92,7 +92,9 @@ class Simulated_Dataset(pl.LightningDataModule):
         # Parameters to adjust
         t_single = np.linspace(0, 2 * np.pi, 300) # number of timepoints in each section
         freq1 = 5
-        freq2 = 15
+        # freq2 = 15
+        # TODO: Try freq2 of 30
+        freq2 = 30
         num_trials = 5
         # Trial-specific mean offsets and magnitudes
         input_means = [100, 90, 50, 10, 0]
