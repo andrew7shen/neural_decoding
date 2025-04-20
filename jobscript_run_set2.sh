@@ -4,22 +4,25 @@
 #SBATCH -t 12:00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
-#SBATCH --output=training_set2_out.txt
-#SBATCH --error=training_set2_err.txt
+#SBATCH --output=training_set2_val_out.txt
+#SBATCH --error=training_set2_val_err.txt
 
 source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
 
-python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method1_w0.02_0.yaml
-#python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method1_w0.03_0.yaml
-#python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method1_w0.04_0.yaml
-#python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method2_w0.02_0.yaml
-#python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method2_w0.03_0.yaml
-#python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method2_w0.04_0.yaml
-#python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method4_w0.02_0.yaml
-#python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method4_w0.03_0.yaml
-#python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method4_w0.04_0.yaml
+python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_0.yaml
+#python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_val_0.yaml
+
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method1_w0.02_0.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method1_w0.03_0.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method1_w0.04_0.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method2_w0.02_0.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method2_w0.03_0.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method2_w0.04_0.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method4_w0.02_0.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method4_w0.03_0.yaml
+# python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method4_w0.04_0.yaml
 
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method1_w0.0_0.yaml
 # python3 run/run.py configs/t100_configs/configs_cage_t100_set2_gb_l1_method1_w0.01_0.yaml

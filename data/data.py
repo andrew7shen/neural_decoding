@@ -28,7 +28,7 @@ class Simulated_Dataset(pl.LightningDataModule):
         self.batch_size = batch_size
         self.num_modes = num_modes
         self.train_dataset = None
-        self.val_dataset = None
+        self.eval_dataset = None
         self.dataset_type = dataset_type
         self.T = T
         self.N = N
@@ -68,23 +68,23 @@ class Simulated_Dataset(pl.LightningDataModule):
 
         # TODO: Old code
         # # Create train/val splits
-        # X_train, X_val, y_train, y_val = train_test_split(m1, emg, test_size=0.2, random_state=42)
+        # X_train, X_eval, y_train, y_eval = train_test_split(m1, emg, test_size=0.2, random_state=42)
         
         # # Perform mean-centering
         # # Mean center M1 data
         # if "m1" in self.mean_centering:
         #     train_m1_mean = X_train.mean(axis=0)
         #     X_train = X_train - train_m1_mean
-        #     X_val = X_val - train_m1_mean
+        #     X_eval = X_eval - train_m1_mean
         # # Mean center EMG data
         # if "emg" in self.mean_centering:
         #     y_train_mean = y_train.mean(axis=0)
         #     y_train = y_train - y_train_mean
-        #     y_val = y_val - y_train_mean
+        #     y_eval = y_eval - y_train_mean
 
         # # Final datasets
         # self.train_dataset = [(torch.Tensor(X_train[i]), torch.Tensor([y_train[i]]), "no_label") for i in range(len(X_train))]
-        # self.val_dataset = [(torch.Tensor(X_val[i]), torch.Tensor([y_val[i]]), "no_label") for i in range(len(X_val))]
+        # self.eval_dataset = [(torch.Tensor(X_eval[i]), torch.Tensor([y_eval[i]]), "no_label") for i in range(len(X_eval))]
 
     
     def generate_simulated_dataset(self):
@@ -131,7 +131,7 @@ class Simulated_Dataset(pl.LightningDataModule):
         Returns number of samples in the training set.
         """
         
-        return len(self.train_dataset) + len(self.val_dataset)
+        return len(self.train_dataset) + len(self.eval_dataset)
 
 
     def __getitem__(self, index):
@@ -162,7 +162,7 @@ class Simulated_Dataset(pl.LightningDataModule):
 
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn)
+        return DataLoader(self.eval_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn)
 
 
 class Mouse_Dataset(pl.LightningDataModule):
@@ -170,7 +170,7 @@ class Mouse_Dataset(pl.LightningDataModule):
     def __init__(self, m1_path, emg_path, behavioral_path, 
                     num_modes, batch_size, dataset_type, 
                     seed, kmeans_cluster, label_type,
-                    remove_zeros, scale_outputs, mean_centering):
+                    remove_zeros, scale_outputs, mean_centering, eval_dataset):
         super().__init__()
 
         # Assign class variables
@@ -187,6 +187,7 @@ class Mouse_Dataset(pl.LightningDataModule):
         self.remove_zeros = remove_zeros
         self.scale_outputs = scale_outputs
         self.mean_centering = mean_centering
+        self.eval_dataset = eval_dataset
 
         # Set manual seed
         torch.manual_seed(seed)
@@ -428,14 +429,14 @@ class Cage_Dataset(pl.LightningDataModule):
     def __init__(self, m1_path, emg_path, behavioral_path, 
                  num_modes, batch_size, dataset_type, 
                  seed, kmeans_cluster, label_type,
-                 remove_zeros, scale_outputs, mean_centering):
+                 remove_zeros, scale_outputs, mean_centering, eval_dataset):
         super().__init__()
 
         # Assign class variables
         self.batch_size = batch_size
         self.num_modes = num_modes
         self.train_dataset = None
-        self.val_dataset = None
+        self.eval_dataset = None
         self.dataset_type = dataset_type
         self.N = None
         self.M = None
@@ -445,6 +446,7 @@ class Cage_Dataset(pl.LightningDataModule):
         self.remove_zeros = remove_zeros
         self.scale_outputs = scale_outputs
         self.mean_centering = mean_centering
+        self.eval_dataset = eval_dataset
 
         # Set manual seed
         torch.manual_seed(seed)
@@ -458,12 +460,12 @@ class Cage_Dataset(pl.LightningDataModule):
                 m1_train = torch.Tensor(np.load("%s/m1_train_%s.npy" % (path, self.kmeans_cluster)))
                 emg_train = torch.Tensor(np.load("%s/emg_train_%s.npy" % (path, self.kmeans_cluster)))
                 labels_train = np.load("%s/labels_train_%s.npy" % (path, self.kmeans_cluster))
-                m1_val = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
-                emg_val = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
-                labels_val = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
+                m1_eval = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
+                emg_eval = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
+                labels_eval = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
 
                 self.train_dataset = [(m1_train[i], emg_train[i], labels_train[i]) for i in range(len(m1_train))]
-                self.val_dataset = [(m1_val[i], emg_val[i], labels_val[i]) for i in range(len(m1_val))]
+                self.eval_dataset = [(m1_eval[i], emg_eval[i], labels_eval[i]) for i in range(len(m1_eval))]
                 self.N = m1_train.shape[1]
                 self.M = emg_train.shape[1]
 
@@ -516,12 +518,12 @@ class Cage_Dataset(pl.LightningDataModule):
 
             #     if mode == "crawl":
             #         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-            #         self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+            #         self.eval_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
             #         self.N = m1.size()[2]
             #         self.M = emg.size()[2]
             #     else:
             #         self.train_dataset = self.train_dataset + [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-            #         self.val_dataset = self.val_dataset + [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+            #         self.eval_dataset = self.eval_dataset + [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
 
             # If using kmeans split data for sanity check
             if "data/set2_data/kmeans_split" in m1_path:
@@ -529,12 +531,12 @@ class Cage_Dataset(pl.LightningDataModule):
                 m1_train = torch.Tensor(np.load("%s/m1_train_%s.npy" % (path, self.kmeans_cluster)))
                 emg_train = torch.Tensor(np.load("%s/emg_train_%s.npy" % (path, self.kmeans_cluster)))
                 labels_train = np.load("%s/labels_train_%s.npy" % (path, self.kmeans_cluster))
-                m1_val = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
-                emg_val = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
-                labels_val = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
+                m1_eval = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
+                emg_eval = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
+                labels_eval = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
 
                 self.train_dataset = [(m1_train[i], emg_train[i], labels_train[i]) for i in range(len(m1_train))]
-                self.val_dataset = [(m1_val[i], emg_val[i], labels_val[i]) for i in range(len(m1_val))]
+                self.eval_dataset = [(m1_eval[i], emg_eval[i], labels_eval[i]) for i in range(len(m1_eval))]
                 self.N = m1_train.shape[1]
                 self.M = emg_train.shape[1]
 
@@ -545,38 +547,52 @@ class Cage_Dataset(pl.LightningDataModule):
                 emg = torch.Tensor(np.load(emg_path))
                 behavioral = np.load(behavioral_path)
                 labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
-                X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
 
+                # TODO: Determine which evaluation dataset to use
+                if self.eval_dataset == "":
+                    X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
+                    X_eval = X_val
+                    y_eval = y_val
+                else:
+                    X_train, X_val_test, y_train, y_val_test = train_test_split(m1, labels, test_size=0.2, random_state=42)
+                    X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+                    if self.eval_dataset == "val":
+                        X_eval = X_val
+                        y_eval = y_val
+                    elif self.eval_dataset == "test":
+                        X_eval = X_test
+                        y_eval = y_test
+                
                 # Reformat back into timestamps
                 X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
-                X_val = torch.reshape(X_val, (X_val.size()[0]*X_val.size()[1], X_val.size()[2]))
+                X_eval = torch.reshape(X_eval, (X_eval.size()[0]*X_eval.size()[1], X_eval.size()[2]))
                 y_train_emg = torch.stack([v[0] for v in y_train])
                 y_train_emg = torch.reshape(y_train_emg, (y_train_emg.size()[0]*y_train_emg.size()[1], y_train_emg.size()[2]))
                 y_train_behavioral = np.stack([v[1] for v in y_train])
                 y_train_behavioral = np.reshape(y_train_behavioral, (y_train_behavioral.shape[0]*y_train_behavioral.shape[1]))
-                y_val_emg = torch.stack([v[0] for v in y_val])
-                y_val_emg = torch.reshape(y_val_emg, (y_val_emg.size()[0]*y_val_emg.size()[1], y_val_emg.size()[2]))
-                y_val_behavioral = np.stack([v[1] for v in y_val])
-                y_val_behavioral = np.reshape(y_val_behavioral, (y_val_behavioral.shape[0]*y_val_behavioral.shape[1]))
+                y_eval_emg = torch.stack([v[0] for v in y_eval])
+                y_eval_emg = torch.reshape(y_eval_emg, (y_eval_emg.size()[0]*y_eval_emg.size()[1], y_eval_emg.size()[2]))
+                y_eval_behavioral = np.stack([v[1] for v in y_eval])
+                y_eval_behavioral = np.reshape(y_eval_behavioral, (y_eval_behavioral.shape[0]*y_eval_behavioral.shape[1]))
 
                 # Extract max value across each muscle channel for initializing scalevector
-                max_vals = torch.max(torch.cat((y_train_emg, y_val_emg)), dim=0)[0]
+                max_vals = torch.max(torch.cat((y_train_emg, y_eval_emg)), dim=0)[0]
                 # print(max_vals)
                 # Extract mean value across each muscle channel for initializing global bias vector
-                mean_vals = torch.mean(torch.cat((y_train_emg, y_val_emg)), dim=0)
+                mean_vals = torch.mean(torch.cat((y_train_emg, y_eval_emg)), dim=0)
                 # print(mean_vals)
 
                 # Mean center M1 data
                 if "m1" in self.mean_centering:
                     train_m1_mean = X_train.mean(axis=0)
                     X_train = X_train - train_m1_mean
-                    X_val = X_val - train_m1_mean
+                    X_eval = X_eval - train_m1_mean
 
                 # Mean center EMG data
                 if "emg" in self.mean_centering:
                     train_emg_mean = y_train_emg.mean(axis=0)
                     y_train_emg = y_train_emg - train_emg_mean
-                    y_val_emg = y_val_emg - train_emg_mean
+                    y_eval_emg = y_eval_emg - train_emg_mean
                 
                 # Perform min-max scaling
                 if self.scale_outputs:
@@ -586,7 +602,7 @@ class Cage_Dataset(pl.LightningDataModule):
                     if plot_variance:
                         y_train_emg_unscaled = y_train_emg
                     y_train_emg = torch.Tensor(scaler.transform(y_train_emg))
-                    y_val_emg = torch.Tensor(scaler.transform(y_val_emg))
+                    y_eval_emg = torch.Tensor(scaler.transform(y_eval_emg))
                     # Create plots for variance in EMG data before and after scaling
                     if plot_variance:
                         save_fig = True
@@ -611,7 +627,7 @@ class Cage_Dataset(pl.LightningDataModule):
                             plt.show()
 
                 self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-                self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+                self.eval_dataset = [(X_eval[i], y_eval_emg[i], y_eval_behavioral[i]) for i in range(len(X_eval))]
                 self.N = m1.size()[2]
                 self.M = emg.size()[2]
     
@@ -624,12 +640,12 @@ class Cage_Dataset(pl.LightningDataModule):
                 m1_train = torch.Tensor(np.load("%s/m1_train_%s.npy" % (path, self.kmeans_cluster)))
                 emg_train = torch.Tensor(np.load("%s/emg_train_%s.npy" % (path, self.kmeans_cluster)))
                 labels_train = np.load("%s/labels_train_%s.npy" % (path, self.kmeans_cluster))
-                m1_val = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
-                emg_val = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
-                labels_val = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
+                m1_eval = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
+                emg_eval = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
+                labels_eval = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
 
                 self.train_dataset = [(m1_train[i], emg_train[i], labels_train[i]) for i in range(len(m1_train))]
-                self.val_dataset = [(m1_val[i], emg_val[i], labels_val[i]) for i in range(len(m1_val))]
+                self.eval_dataset = [(m1_eval[i], emg_eval[i], labels_eval[i]) for i in range(len(m1_eval))]
                 self.N = m1_train.shape[1]
                 self.M = emg_train.shape[1]
             
@@ -687,7 +703,7 @@ class Cage_Dataset(pl.LightningDataModule):
             
         # Create train/val splits
         labels_trials = [[emg_trials[i], behavior_trials[i]] for i in range(len(emg_trials))]
-        X_train, X_val, y_train, y_val = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
+        X_train, X_eval, y_train, y_eval = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
 
         # If only loading data with one label
         if labels_to_use != "all":
@@ -699,8 +715,8 @@ class Cage_Dataset(pl.LightningDataModule):
                     curr_X = X_train
                     curr_y = y_train
                 elif split == "val":
-                    curr_X = X_val
-                    curr_y = y_val
+                    curr_X = X_eval
+                    curr_y = y_eval
                 # For each trial in dataset
                 for i in range(len(curr_y)):
                     curr_trial_X = curr_X[i]
@@ -714,18 +730,18 @@ class Cage_Dataset(pl.LightningDataModule):
                     X_train = new_X
                     y_train = new_y
                 elif split == "val":
-                    X_val = new_X
-                    y_val = new_y
+                    X_eval = new_X
+                    y_eval = new_y
 
         # Format back into time stamps
         X_train = torch.Tensor(np.concatenate(X_train))
-        X_val = torch.Tensor(np.concatenate(X_val))
+        X_eval = torch.Tensor(np.concatenate(X_eval))
         y_train_emg = torch.Tensor(np.concatenate([y[0] for y in y_train]))
         y_train_behavioral = np.concatenate([y[1] for y in y_train])
-        y_val_emg = torch.Tensor(np.concatenate([y[0] for y in y_val]))
-        y_val_behavioral = np.concatenate([y[1] for y in y_val])
+        y_eval_emg = torch.Tensor(np.concatenate([y[0] for y in y_eval]))
+        y_eval_behavioral = np.concatenate([y[1] for y in y_eval])
         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.eval_dataset = [(X_eval[i], y_eval_emg[i], y_eval_behavioral[i]) for i in range(len(X_eval))]
         self.N = m1.shape[1]
         self.M = emg.shape[1]
 
@@ -754,18 +770,18 @@ class Cage_Dataset(pl.LightningDataModule):
         m1_train = []
         emg_train = []
         behavior_train = []
-        m1_val = []
-        emg_val = []
-        behavior_val = []
+        m1_eval = []
+        emg_eval = []
+        behavior_eval = []
         for N in range(len(my_cage_data.behave_tags['tag'])):
             curr_behavior = my_cage_data.behave_tags['tag'][N]
             start_idx, end_idx = find_start_end(N, timeframe)
 
             # If running "grooming" or "sitting_still" generalizability experiment
             if curr_behavior in experiment_types:
-                m1_val.append(m1[start_idx:end_idx+1])
-                emg_val.append(emg[start_idx:end_idx+1])
-                behavior_val.append([curr_behavior]*(end_idx-start_idx+1))
+                m1_eval.append(m1[start_idx:end_idx+1])
+                emg_eval.append(emg[start_idx:end_idx+1])
+                behavior_eval.append([curr_behavior]*(end_idx-start_idx+1))
             else:
                 m1_train.append(m1[start_idx:end_idx+1])
                 emg_train.append(emg[start_idx:end_idx+1])
@@ -775,19 +791,19 @@ class Cage_Dataset(pl.LightningDataModule):
         X_train = torch.Tensor(np.concatenate(m1_train))
         y_train_emg = torch.Tensor(np.concatenate(emg_train))
         y_train_behavioral = np.concatenate(behavior_train)
-        X_val = torch.Tensor(np.concatenate(m1_val))
-        y_val_emg = torch.Tensor(np.concatenate(emg_val))
-        y_val_behavioral = np.concatenate(behavior_val)
+        X_eval = torch.Tensor(np.concatenate(m1_eval))
+        y_eval_emg = torch.Tensor(np.concatenate(emg_eval))
+        y_eval_behavioral = np.concatenate(behavior_eval)
 
         # Perform min-max scaling
         if self.scale_outputs:
             scaler = MinMaxScaler()
             scaler.fit(y_train_emg)
             y_train_emg = torch.Tensor(scaler.transform(y_train_emg))
-            y_val_emg = torch.Tensor(scaler.transform(y_val_emg))
+            y_eval_emg = torch.Tensor(scaler.transform(y_eval_emg))
 
         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.eval_dataset = [(X_eval[i], y_eval_emg[i], y_eval_behavioral[i]) for i in range(len(X_eval))]
         self.N = m1.shape[1]
         self.M = emg.shape[1]
 
@@ -832,25 +848,25 @@ class Cage_Dataset(pl.LightningDataModule):
 
         # Create train/val splits
         labels_trials = [[emg_trials[i], behavior_trials[i]] for i in range(len(emg_trials))]
-        X_train, X_val, y_train, y_val = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
+        X_train, X_eval, y_train, y_eval = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
 
         # Format back into time stamps
         X_train = torch.Tensor(np.concatenate(X_train))
-        X_val = torch.Tensor(np.concatenate(X_val))
+        X_eval = torch.Tensor(np.concatenate(X_eval))
         y_train_emg = torch.Tensor(np.concatenate([y[0] for y in y_train]))
         y_train_behavioral = np.concatenate([y[1] for y in y_train])
-        y_val_emg = torch.Tensor(np.concatenate([y[0] for y in y_val]))
-        y_val_behavioral = np.concatenate([y[1] for y in y_val])
+        y_eval_emg = torch.Tensor(np.concatenate([y[0] for y in y_eval]))
+        y_eval_behavioral = np.concatenate([y[1] for y in y_eval])
 
         # Perform min-max scaling
         if self.scale_outputs:
             scaler = MinMaxScaler()
             scaler.fit(y_train_emg)
             y_train_emg = torch.Tensor(scaler.transform(y_train_emg))
-            y_val_emg = torch.Tensor(scaler.transform(y_val_emg))
+            y_eval_emg = torch.Tensor(scaler.transform(y_eval_emg))
 
         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.eval_dataset = [(X_eval[i], y_eval_emg[i], y_eval_behavioral[i]) for i in range(len(X_eval))]
         self.N = m1.shape[1]
         self.M = emg.shape[1]
         
@@ -888,9 +904,9 @@ class Cage_Dataset(pl.LightningDataModule):
         m1_train = []
         emg_train = []
         behavior_train = []
-        m1_val = []
-        emg_val = []
-        behavior_val = []
+        m1_eval = []
+        emg_eval = []
+        behavior_eval = []
         for i in range(len(m1)):
             curr_m1 = m1[i]
             curr_emg = emg[i]
@@ -900,9 +916,9 @@ class Cage_Dataset(pl.LightningDataModule):
             if curr_behavior == "none":
                 # Use either unlabeled or labeled timestamps as validation set
                 if experiment_types == ["unlabeled"]:
-                    m1_val.append(curr_m1)
-                    emg_val.append(curr_emg)
-                    behavior_val.append(curr_behavior)
+                    m1_eval.append(curr_m1)
+                    emg_eval.append(curr_emg)
+                    behavior_eval.append(curr_behavior)
                 elif experiment_types == ["labeled"]:
                     m1_train.append(curr_m1)
                     emg_train.append(curr_emg)
@@ -915,35 +931,35 @@ class Cage_Dataset(pl.LightningDataModule):
                     emg_train.append(curr_emg)
                     behavior_train.append(curr_behavior)
                 elif experiment_types == ["labeled"]:
-                    m1_val.append(curr_m1)
-                    emg_val.append(curr_emg)
-                    behavior_val.append(curr_behavior)
+                    m1_eval.append(curr_m1)
+                    emg_eval.append(curr_emg)
+                    behavior_eval.append(curr_behavior)
 
         # Format back into time stamps
         X_train = torch.Tensor(np.array(m1_train))
         y_train_emg = torch.Tensor(np.array(emg_train))
         y_train_behavioral = np.array(behavior_train)
-        X_val = torch.Tensor(np.array(m1_val))
-        y_val_emg = torch.Tensor(np.array(emg_val))
-        y_val_behavioral = np.array(behavior_val)
+        X_eval = torch.Tensor(np.array(m1_eval))
+        y_eval_emg = torch.Tensor(np.array(emg_eval))
+        y_eval_behavioral = np.array(behavior_eval)
 
         # Perform min-max scaling
         if self.scale_outputs:
             scaler = MinMaxScaler()
             scaler.fit(y_train_emg)
             y_train_emg = torch.Tensor(scaler.transform(y_train_emg))
-            y_val_emg = torch.Tensor(scaler.transform(y_val_emg))
+            y_eval_emg = torch.Tensor(scaler.transform(y_eval_emg))
 
         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.eval_dataset = [(X_eval[i], y_eval_emg[i], y_eval_behavioral[i]) for i in range(len(X_eval))]
         self.N = m1.shape[1]
         self.M = emg.shape[1]
 
 
     def remove_zeros_from_dataset(self):
         train_nozeros = []
-        val_nozeros = []
-        for dataset in [self.train_dataset, self.val_dataset]:
+        eval_nozeros = []
+        for dataset in [self.train_dataset, self.eval_dataset]:
             num_zeros = 0
             zeros_tensor = torch.Tensor([0.0]*95)
             for i in range(len(dataset)):
@@ -955,14 +971,14 @@ class Cage_Dataset(pl.LightningDataModule):
                     # Keep only samples without all zeros
                     if dataset == self.train_dataset:
                         train_nozeros.append(sample)
-                    elif dataset == self.val_dataset:
-                        val_nozeros.append(sample)
+                    elif dataset == self.eval_dataset:
+                        eval_nozeros.append(sample)
             # if dataset == self.train_dataset:
             #     print(f"{num_zeros} zero samples out of {len(dataset)} in train set")
-            # elif dataset == self.val_dataset:
+            # elif dataset == self.eval_dataset:
             #     print(f"{num_zeros} zero samples out of {len(dataset)} in val set")
         self.train_dataset = train_nozeros
-        self.val_dataset = val_nozeros
+        self.eval_dataset = eval_nozeros
 
 
     def __len__(self):
@@ -970,7 +986,7 @@ class Cage_Dataset(pl.LightningDataModule):
         Returns number of samples in the training set.
         """
         
-        return len(self.train_dataset) + len(self.val_dataset)
+        return len(self.train_dataset) + len(self.eval_dataset)
 
 
     def __getitem__(self, index):
@@ -1001,7 +1017,7 @@ class Cage_Dataset(pl.LightningDataModule):
 
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn)
+        return DataLoader(self.eval_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn)
 
 
 class M1_EMG_Dataset_Toy(pl.LightningDataModule):

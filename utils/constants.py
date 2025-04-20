@@ -42,6 +42,7 @@ class Config():
         self.l1_lambda_val = args["l1_lambda_val"]
         self.mean_centering = args["mean_centering"]
         self.overlap_lambda_val = args["overlap_lambda_val"]
+        self.eval_dataset = args["eval_dataset"]
 
 
 def load_config():
