@@ -4,7 +4,7 @@ M: 1
 d: 2  # num_modes
 b: 1
 type: "emg"
-epochs: 500
+epochs: 100
 lr: 0.00001
 record: True
 ev: False
@@ -12,7 +12,7 @@ m1_path: ""
 emg_path: ""
 behavioral_path: ""
 save_path: "checkpoints"
-save_epochs: "none"
+save_epochs: 10
 model: "combined"
 seed: 42
 temperature: 1.0
@@ -32,4 +32,5 @@ label_type: "simulated"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-run_id: 892
+eval_dataset: ""
+run_id: 916

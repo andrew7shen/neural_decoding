@@ -131,7 +131,7 @@ class Simulated_Dataset(pl.LightningDataModule):
         Returns number of samples in the training set.
         """
         
-        return len(self.train_dataset) + len(self.eval_dataset)
+        return len(self.train_dataset)
 
 
     def __getitem__(self, index):

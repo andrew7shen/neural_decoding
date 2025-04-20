@@ -965,6 +965,9 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
     torch.set_printoptions(sci_mode=False)
     # cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
 
+    # TODO: CURRENTLY HERE
+    import pdb; pdb.set_trace()
+
     # Calculate PCs of the 16-dim EMG
     pca = PCA(n_components=2)
     pca_result = pca.fit_transform(train_emg)
@@ -974,7 +977,6 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
     # loadings_pca1 = torch.Tensor(loadings[:,0])
     # loadings_pca2 = torch.Tensor(loadings[:,1])
     train_emg_mean = torch.mean(train_emg, dim=0)
-    import pdb; pdb.set_trace()
 
     # Apply PC loading matrix to dm outputs
     decoder_outputs_dict = {} # key: mode id, value: mode output mapped to 2d space
@@ -1220,26 +1222,129 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
         else:
             plt.show()
 
+
+def decoder_outputs_simulated(model_path, dataset, config, plot_type, model_id, verbose):
+
+    save_fig = True
+
+    if not verbose:
+        return
+
+    # Load trained model
+    eval_mode = True
+    model = CombinedModel(input_dim=dataset.N,
+                          hidden_dim=config.hidden_dim,
+                              output_dim=dataset.M,
+                              num_modes=config.d,
+                              ev=eval_mode,
+                              cluster_model_type=config.cluster_model_type,
+                              decoder_model_type=config.decoder_model_type,
+                              combined_model_type=config.combined_model_type)
+    checkpoint = torch.load(model_path)
+    state_dict = checkpoint["state_dict"]
+    model = TrainingModule(model=model,
+                           lr=config.lr,
+                           weight_decay=config.weight_decay,
+                           record=config.record,
+                           type=config.type,
+                           temperature=config.temperature,
+                           anneal_temperature=config.anneal_temperature,
+                           num_epochs=config.epochs,
+                           end_temperature=config.end_temperature,
+                           lambda_val=config.lambda_val,
+                           l1_lambda_val=config.l1_lambda_val,
+                           overlap_lambda_val=config.overlap_lambda_val)
+    model.load_state_dict(state_dict)
+
+    # Generate cm and dm weights
+    train = dataset.train_dataset
+    train_emg = torch.stack([val[1] for val in train])
+    # train_behavioral_labels = [val[2] for val in train]
+    cluster_probs = []
+    decoder_outputs = []
+    sample_behaviors = []
+    for sample in train:
+        x = sample[0].unsqueeze(0)
+        curr_output = model.forward(x)
+        curr_cluster_probs = curr_output[0]
+        curr_decoder_outputs = curr_output[1]
+        curr_behavior = sample[2]
+        cluster_probs.append(curr_cluster_probs.squeeze())
+        decoder_outputs.append(curr_decoder_outputs.squeeze())
+        sample_behaviors.append(curr_behavior)
+    cluster_probs = torch.stack(cluster_probs)
+
+    # TODO: Calculate discreteness metric
+    # import pdb; pdb.set_trace()
+
+    decoder_outputs = torch.stack(decoder_outputs)
+    torch.set_printoptions(sci_mode=False)
+    # cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
+
+    # Calculate final weighted output
+    final_outputs = cluster_probs*decoder_outputs
+
+    # TODO: Code to plot out dot plot of data (from Copilot)
+    data_to_plot = final_outputs
+    data_np = data_to_plot.detach().numpy()  # Convert to numpy array
+    train_emg_np = train_emg.detach().numpy()
+    num_samples, num_modes = data_np.shape
+    plt.figure(figsize=(10, 6))
+    for mode in range(num_modes):
+        plt.plot(
+        np.arange(num_samples),
+        data_np[:, mode],
+        label=f"Mode {mode + 1}",
+        alpha=0.6,
+        linewidth=2
+    )
+    # Overlay the ground truth EMG outputs
+    for emg_channel in range(train_emg_np.shape[1]):
+        plt.plot(
+            np.arange(num_samples),
+            train_emg_np[:, emg_channel],
+            label=f"Ground Truth EMG Channel {emg_channel + 1}",
+            linestyle="dashed",
+            alpha=0.8,
+            linewidth=2
+        )
+    plt.title("Line Plot")
+    plt.xlabel("Sample Index")
+    plt.ylabel("Input Data")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    # TODO: CURRENTLY HERE
+    quit()
+    import pdb; pdb.set_trace()
         
 
 if __name__ == "__main__":
 
     # Read in configs and dataset
     config = load_config()
-    if config.label_type == "mouse":
-        dataset = Mouse_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+    if config.label_type == "simulated":
+        dataset = Simulated_Dataset(T=config.T, N=config.N, M=config.M, m1_path=config.m1_path, emg_path=config.emg_path, 
                            behavioral_path=config.behavioral_path, num_modes=config.d, 
                            batch_size=config.b, dataset_type=config.type, seed=config.seed,
                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
                            mean_centering=config.mean_centering)
+    elif config.label_type == "mouse":
+        dataset = Mouse_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                           behavioral_path=config.behavioral_path, num_modes=config.d, 
+                           batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                           kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
+                           remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
+                           mean_centering=config.mean_centering, eval_dataset=config.eval_dataset)
     else:
         dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                             behavioral_path=config.behavioral_path, num_modes=config.d, 
                             batch_size=config.b, dataset_type=config.type, seed=config.seed,
                             kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
                             remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
-                            mean_centering=config.mean_centering)
+                            mean_centering=config.mean_centering, eval_dataset=config.eval_dataset)
     
     # Print dataset statistics
     dataset_statistics(dataset=dataset, verbose=False)
@@ -1293,7 +1398,7 @@ if __name__ == "__main__":
                         config=config,
                         plot_type=plot_type,
                         model_id=model_id,
-                        verbose=True)
+                        verbose=False)
 
     # Evaluate model decoding
     # model_id = 120
@@ -1344,7 +1449,10 @@ if __name__ == "__main__":
     # model_ids = [701, 702, 703]
     # model_ids = [723, 721, 724, 725, 726]
     # model_ids = [733, 734, 735, 736]
-    model_ids = [721]
+    # model_ids = [721]
+
+    # model_ids = [891]
+    model_ids = [892]
          
     for model_id in model_ids:
         if model_id in [449, 695]:
@@ -1353,19 +1461,34 @@ if __name__ == "__main__":
             model_path = "checkpoints/checkpoint%s_epoch=599.ckpt" % model_id
         elif model_id in [696]:
             model_path = "checkpoints/checkpoint%s_epoch=999.ckpt" % model_id
+        elif model_id in [891]:
+            model_path = "checkpoints/checkpoint%s_epoch=249.ckpt" % model_id
         else:
             model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
 
             # model_path = "checkpoints/checkpoint%s_epoch=449.ckpt" % model_id
             # model_path = "checkpoints/checkpoint%s_epoch=459.ckpt" % model_id
 
+        # Generate decoder output plots
         for plot_type in plot_types:
-            sep_decoders_R2(dataset=dataset,
-                            model_path=model_path,
-                            config=config,
-                            plot_type=plot_type,
-                            model_id=model_id,
-                            verbose=False)
+            
+            # Generate simulated dataset decoder output plots
+            if config.label_type == "simulated":
+                decoder_outputs_simulated(dataset=dataset,
+                                model_path=model_path,
+                                config=config,
+                                plot_type=plot_type,
+                                model_id=model_id,
+                                verbose=True)
+
+            # Generated regular decoder output plots
+            else:
+                sep_decoders_R2(dataset=dataset,
+                                model_path=model_path,
+                                config=config,
+                                plot_type=plot_type,
+                                model_id=model_id,
+                                verbose=True)
 
     # Calculate full R^2 over separate models
     # If using kmeans split data, format separate datasets
@@ -1385,7 +1508,7 @@ if __name__ == "__main__":
                             behavioral_path=config.behavioral_path, num_modes=config.d, 
                             batch_size=config.b, dataset_type=config.type, seed=config.seed, 
                             kmeans_cluster=k, label_type=config.label_type,
-                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs, eval_dataset=config.eval_dataset)
                 datasets.append(curr_dataset)
         else:
             for k in range(k):
@@ -1393,7 +1516,7 @@ if __name__ == "__main__":
                             behavioral_path=config.behavioral_path, num_modes=config.d, 
                             batch_size=config.b, dataset_type=config.type, seed=config.seed, 
                             kmeans_cluster=k, label_type=config.label_type,
-                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs, eval_dataset=config.eval_dataset)
                 datasets.append(curr_dataset)
     # If using mode data, format separate datasets
     else:
@@ -1406,7 +1529,7 @@ if __name__ == "__main__":
                                 batch_size=config.b, dataset_type=config.type, seed=config.seed,
                                 kmeans_cluster=config.kmeans_cluster, label_type=curr_label_type,
                                 remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
-                                mean_centering=config.mean_centering)
+                                mean_centering=config.mean_centering, eval_dataset=config.eval_dataset)
                 datasets.append(curr_dataset)
         # If using set1 data
         elif dataset.label_type == "set1":
@@ -1416,7 +1539,7 @@ if __name__ == "__main__":
                                 behavioral_path="", num_modes=config.d, 
                                 batch_size=config.b, dataset_type=config.type, seed=config.seed,
                                 kmeans_cluster=config.kmeans_cluster, label_type=curr_label_type,
-                                remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs)
+                                remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs, eval_dataset=config.eval_dataset)
                 datasets.append(curr_dataset)
         # If using set2 data
         else:
@@ -1436,22 +1559,26 @@ if __name__ == "__main__":
                             batch_size=config.b, dataset_type=config.type, seed=config.seed,
                             kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
                             remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
-                            mean_centering=config.mean_centering)
+                            mean_centering=config.mean_centering, eval_dataset=config.eval_dataset)
                 datasets.append(curr_dataset)
 
+    # TODO: Commented this out for now (4/20/25)
+
     # Calculate separate R^2 for each behavioral label in our model
-    model_sep_r2_list = model_sep_R2(dataset=dataset, model_path=model_path,
-                                     config=config, verbose=False)
+    # model_sep_r2_list = model_sep_R2(dataset=dataset, model_path=model_path,
+    #                                  config=config, verbose=False)
 
     # Calculate full R2 value
-    dataset_lengths = [len(dataset) for dataset in datasets]
-    full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
+    # dataset_lengths = [len(dataset) for dataset in datasets]
+    # full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
+    # sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)
+
+    # TODO: Generate plots for simulated dataset
 
 
 
