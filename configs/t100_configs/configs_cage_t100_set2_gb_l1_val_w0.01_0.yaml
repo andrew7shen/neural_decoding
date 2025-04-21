@@ -18,7 +18,7 @@ seed: 42
 temperature: 1.0
 end_temperature: 0.01
 anneal_temperature: "none"
-weight_decay: 0.015
+weight_decay: 0.01
 lambda_val: 0
 l1_lambda_val: 0
 overlap_lambda_val: 0
@@ -37,4 +37,4 @@ mean_centering: "m1 and emg"
 # eval_dataset: ""
 eval_dataset: "val"
 # eval_dataset: "test"
-run_id: 930
+run_id: 929
