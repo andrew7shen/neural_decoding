@@ -37,4 +37,4 @@ mean_centering: "m1 and emg"
 # eval_dataset: ""
 eval_dataset: "val"
 # eval_dataset: "test"
-run_id: 932
+run_id: 938
