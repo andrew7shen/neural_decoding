@@ -1274,18 +1274,12 @@ def decoder_outputs_simulated(model_path, dataset, config, plot_type, model_id, 
         sample_behaviors.append(curr_behavior)
     cluster_probs = torch.stack(cluster_probs)
 
-    # TODO: Calculate discreteness metric
-    # import pdb; pdb.set_trace()
-
     decoder_outputs = torch.stack(decoder_outputs)
     torch.set_printoptions(sci_mode=False)
     # cluster_ids = [val.index(max(val))+1 for val in cluster_probs]
 
     # Calculate final weighted output
     final_outputs = cluster_probs*decoder_outputs
-
-    import pdb; pdb.set_trace()
-    
 
     # TODO: Code to plot out dot plot of data (from Copilot)
     data_to_plot = final_outputs
@@ -1327,14 +1321,13 @@ def decoder_outputs_simulated(model_path, dataset, config, plot_type, model_id, 
     plt.ylabel("Input Data")
     plt.legend()
     plt.tight_layout()
-    plt.savefig(f"/Users/andrewshen/Downloads/{model_id}.png")
+    if save_fig:
+        # plt.savefig(f"/Users/andrewshen/Downloads/{model_id}.png")
+        plt.savefig(f"/Users/andrewshen/Github_Repos/neural_decoding/figures/simulated/{model_id}.png")
     # plt.savefig(f"/Users/andrewshen/Downloads/{model_id}_{curr_id}.png")
-    # plt.show()
+    else:
+        plt.show()
 
-    # TODO: CURRENTLY HERE
-    return
-    import pdb; pdb.set_trace()
-        
 
 if __name__ == "__main__":
 
@@ -1471,6 +1464,8 @@ if __name__ == "__main__":
     # model_ids = [892]
     # model_ids = [916]
     # model_ids = [918]
+    # model_ids = [919, 920, 921, 922]
+    # model_ids = [923, 924, 925, 926, 927]
     
     # TODO: Temp code to generate plots for all 10 checkpoints in #916
     # for curr_id in [9, 19, 29, 39, 49, 59, 69, 79, 89, 99]:
@@ -1478,16 +1473,24 @@ if __name__ == "__main__":
     for model_id in model_ids:
         if model_id in [449, 695]:
             model_path = "checkpoints/checkpoint%s_epoch=749.ckpt" % model_id
-        elif model_id in [448, 694]:
+        elif model_id in [448, 694, 923]:
             model_path = "checkpoints/checkpoint%s_epoch=599.ckpt" % model_id
-        elif model_id in [696]:
+        elif model_id in [696, 927]:
             model_path = "checkpoints/checkpoint%s_epoch=999.ckpt" % model_id
-        elif model_id in [891]:
+        elif model_id in [891, 920]:
             model_path = "checkpoints/checkpoint%s_epoch=249.ckpt" % model_id
         # elif model_id in [916]:
         #     model_path = f"checkpoints/checkpoint%s_epoch={curr_id}.ckpt" % model_id
-        elif model_id in [918]:
+        elif model_id in [918, 919]:
             model_path = "checkpoints/checkpoint%s_epoch=99.ckpt" % model_id
+        elif model_id in [921]:
+            model_path = "checkpoints/checkpoint%s_epoch=349.ckpt" % model_id
+        elif model_id in [924]:
+            model_path = "checkpoints/checkpoint%s_epoch=699.ckpt" % model_id
+        elif model_id in [925]:
+            model_path = "checkpoints/checkpoint%s_epoch=799.ckpt" % model_id
+        elif model_id in [926]:
+            model_path = "checkpoints/checkpoint%s_epoch=899.ckpt" % model_id
         else:
             model_path = "checkpoints/checkpoint%s_epoch=499.ckpt" % model_id
 
