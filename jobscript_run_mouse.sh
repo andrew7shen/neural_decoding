@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A p31796
 #SBATCH -p normal
-#SBATCH -t 6:00:00
+#SBATCH -t 12:00:00
 #SBATCH -N 1
 #SBATCH --mem=30G
 #SBATCH --output=training_mouse_out.txt
@@ -10,6 +10,26 @@
 source quest_decoding_venv/bin/activate
 module load python/3.9.16
 cd neural_decoding/
+
+python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val80_w0.0_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val80_w0.0025_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val80_w0.005_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val80_w0.01_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val80_w0.02_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val80_w0.05_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val70_w0.0_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val70_w0.0025_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val70_w0.005_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val70_w0.01_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val70_w0.02_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val70_w0.05_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val60_w0.0_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val60_w0.0025_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val60_w0.005_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val60_w0.01_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val60_w0.02_0.yaml
+#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_val60_w0.05_0.yaml
 
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_relu0.01_0.yaml
@@ -25,10 +45,10 @@ cd neural_decoding/
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.01_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.012_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.015_0.yaml
-python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.017_0.yaml
-#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.02_0.yaml
-#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.022_0.yaml
-#python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.025_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.017_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.02_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.022_0.yaml
+# python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.025_0.yaml
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_method2_w0.05_0.yaml
 
 # python3 run/run.py configs/mouse_configs/configs_mouse_gb_l1_w0.003_0.yaml

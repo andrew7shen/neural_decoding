@@ -39,14 +39,14 @@ if __name__ == "__main__":
                            batch_size=config.b, dataset_type=config.type, seed=config.seed,
                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
-                           mean_centering=config.mean_centering, eval_dataset=config.eval_dataset)
+                           mean_centering=config.mean_centering, eval_type=config.eval_type)
     else:
         dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                             behavioral_path=config.behavioral_path, num_modes=config.d, 
                             batch_size=config.b, dataset_type=config.type, seed=config.seed,
                             kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
                             remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
-                           mean_centering=config.mean_centering, eval_dataset=config.eval_dataset) # TODO: Added for kmeans split runs, need to create flexible kwargs
+                           mean_centering=config.mean_centering, eval_type=config.eval_type) # TODO: Added for kmeans split runs, need to create flexible kwargs
         # dataset = M1_EMG_Dataset_Toy(num_samples=T, num_neurons=N, num_muscles=M, num_modes=d, batch_size=b, dataset_type=type)
 
     # Define model

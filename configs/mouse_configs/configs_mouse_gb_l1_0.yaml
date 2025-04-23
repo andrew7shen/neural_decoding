@@ -32,4 +32,7 @@ label_type: "mouse"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-run_id: 817
+eval_type: ""
+# eval_type: "val"
+# eval_type: "test"
+run_id: 946

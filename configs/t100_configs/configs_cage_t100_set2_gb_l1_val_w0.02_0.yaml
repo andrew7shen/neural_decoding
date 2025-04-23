@@ -34,7 +34,7 @@ label_type: "set2"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-# eval_dataset: ""
-eval_dataset: "val"
-# eval_dataset: "test"
+# eval_type: ""
+eval_type: "val"
+# eval_type: "test"
 run_id: 942

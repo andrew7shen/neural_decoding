@@ -173,14 +173,14 @@ class Mouse_Dataset(pl.LightningDataModule):
     def __init__(self, m1_path, emg_path, behavioral_path, 
                     num_modes, batch_size, dataset_type, 
                     seed, kmeans_cluster, label_type,
-                    remove_zeros, scale_outputs, mean_centering, eval_dataset):
+                    remove_zeros, scale_outputs, mean_centering, eval_type):
         super().__init__()
 
         # Assign class variables
         self.batch_size = batch_size
         self.num_modes = num_modes
         self.train_dataset = None
-        self.val_dataset = None
+        self.eval_dataset = None
         self.dataset_type = dataset_type
         self.N = None
         self.M = None
@@ -190,7 +190,7 @@ class Mouse_Dataset(pl.LightningDataModule):
         self.remove_zeros = remove_zeros
         self.scale_outputs = scale_outputs
         self.mean_centering = mean_centering
-        self.eval_dataset = eval_dataset
+        self.eval_type = eval_type
 
         # Set manual seed
         torch.manual_seed(seed)
@@ -201,12 +201,12 @@ class Mouse_Dataset(pl.LightningDataModule):
             m1_train = torch.Tensor(np.load("%s/m1_train_%s.npy" % (path, self.kmeans_cluster)))
             emg_train = torch.Tensor(np.load("%s/emg_train_%s.npy" % (path, self.kmeans_cluster)))
             labels_train = np.load("%s/labels_train_%s.npy" % (path, self.kmeans_cluster))
-            m1_val = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
-            emg_val = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
-            labels_val = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
+            m1_eval = torch.Tensor(np.load("%s/m1_val_%s.npy" % (path, self.kmeans_cluster)))
+            emg_eval = torch.Tensor(np.load("%s/emg_val_%s.npy" % (path, self.kmeans_cluster)))
+            labels_eval = np.load("%s/labels_val_%s.npy" % (path, self.kmeans_cluster))
 
             self.train_dataset = [(m1_train[i], emg_train[i], labels_train[i]) for i in range(len(m1_train))]
-            self.val_dataset = [(m1_val[i], emg_val[i], labels_val[i]) for i in range(len(m1_val))]
+            self.val_dataset = [(m1_eval[i], emg_eval[i], labels_eval[i]) for i in range(len(m1_eval))]
             self.N = m1_train.shape[1]
             self.M = emg_train.shape[1]
 
@@ -266,7 +266,52 @@ class Mouse_Dataset(pl.LightningDataModule):
 
         # Create train/val splits
         labels_trials = [[emg_trials[i], behavior_trials[i]] for i in range(len(emg_trials))]
-        X_train, X_val, y_train, y_val = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
+        # TODO: Old code
+        # X_train, X_val, y_train, y_val = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
+
+        # TODO: Determine which evaluation dataset to use
+        if self.eval_type == "":
+            X_train, X_val, y_train, y_val = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
+            X_eval = X_val
+            y_eval = y_val
+        else:
+            # TODO: TEMP CODE TO DO SPLITS
+            # TODO: Try 80/10/10 split
+            if "80" in self.eval_type:
+                X_train, X_val_test, y_train, y_val_test = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
+                X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+            # TODO: Try 60/20/20 split
+            elif "60" in self.eval_type:
+                X_train, X_val_test, y_train, y_val_test = train_test_split(m1_trials, labels_trials, test_size=0.4, random_state=42)
+                X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+            # TODO: Try 70/15/15 split
+            elif "70" in self.eval_type:
+                X_train, X_val_test, y_train, y_val_test = train_test_split(m1_trials, labels_trials, test_size=0.3, random_state=42)
+                X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+            if "val" in self.eval_type:
+                X_eval = X_val
+                y_eval = y_val
+            elif self.eval_type == "test":
+                X_eval = X_test
+                y_eval = y_test
+
+            # # TODO: CURRENT CODE
+            # # TODO: Try 80/10/10 split
+            # X_train, X_val_test, y_train, y_val_test = train_test_split(m1_trials, labels_trials, test_size=0.2, random_state=42)
+            # X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+            # # TODO: Try 60/20/20 split
+            # # X_train, X_val_test, y_train, y_val_test = train_test_split(m1_trials, labels_trials, test_size=0.4, random_state=42)
+            # # X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+            # # TODO: Try 70/15/15 split
+            # # X_train, X_val_test, y_train, y_val_test = train_test_split(m1_trials, labels_trials, test_size=0.3, random_state=42)
+            # # X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+            # if self.eval_type == "val":
+            #     X_eval = X_val
+            #     y_eval = y_val
+            # elif self.eval_type == "test":
+            #     X_eval = X_test
+            #     y_eval = y_test
+
 
         # If only loading data with one label
         if labels_to_use != "all":
@@ -278,8 +323,8 @@ class Mouse_Dataset(pl.LightningDataModule):
                     curr_X = X_train
                     curr_y = y_train
                 elif split == "val":
-                    curr_X = X_val
-                    curr_y = y_val
+                    curr_X = X_eval
+                    curr_y = y_eval
                 # For each trial in dataset
                 for i in range(len(curr_y)):
                     curr_trial_X = curr_X[i]
@@ -293,41 +338,41 @@ class Mouse_Dataset(pl.LightningDataModule):
                     X_train = new_X
                     y_train = new_y
                 elif split == "val":
-                    X_val = new_X
-                    y_val = new_y
+                    X_eval = new_X
+                    y_eval = new_y
 
         # Format back into time stamps
         if len(X_train) != 0:
             X_train = torch.Tensor(np.concatenate(X_train))
             y_train_emg = torch.Tensor(np.concatenate([y[0] for y in y_train]))
             y_train_behavioral = np.concatenate([y[1] for y in y_train])
-        if len(X_val) != 0:
-            X_val = torch.Tensor(np.concatenate(X_val))
-            y_val_emg = torch.Tensor(np.concatenate([y[0] for y in y_val]))
-            y_val_behavioral = np.concatenate([y[1] for y in y_val])
+        if len(X_eval) != 0:
+            X_eval = torch.Tensor(np.concatenate(X_eval))
+            y_eval_emg = torch.Tensor(np.concatenate([y[0] for y in y_eval]))
+            y_eval_behavioral = np.concatenate([y[1] for y in y_eval])
         
         # Extract max value across each muscle channel for initializing scalevector
-        max_vals = torch.max(torch.cat((y_train_emg, y_val_emg)), dim=0)[0]
+        max_vals = torch.max(torch.cat((y_train_emg, y_eval_emg)), dim=0)[0]
         # print(max_vals)
         # Extract mean value across each muscle channel for initializing global bias vector
-        mean_vals = torch.mean(torch.cat((y_train_emg, y_val_emg)), dim=0)
+        mean_vals = torch.mean(torch.cat((y_train_emg, y_eval_emg)), dim=0)
         # print(mean_vals)
 
         # Mean center M1 data
         if "m1" in self.mean_centering:
             train_m1_mean = X_train.mean(axis=0)
             X_train = X_train - train_m1_mean
-            X_val = X_val - train_m1_mean
+            X_eval = X_eval - train_m1_mean
 
         # Mean center EMG data
         if "emg" in self.mean_centering:
             train_emg_mean = y_train_emg.mean(axis=0)
             y_train_emg = y_train_emg - train_emg_mean
-            y_val_emg = y_val_emg - train_emg_mean
+            y_eval_emg = y_eval_emg - train_emg_mean
 
         # Create final datasets for training
         self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
-        self.val_dataset = [(X_val[i], y_val_emg[i], y_val_behavioral[i]) for i in range(len(X_val))]
+        self.eval_dataset = [(X_eval[i], y_eval_emg[i], y_eval_behavioral[i]) for i in range(len(X_eval))]
         self.N = m1.shape[1]
         self.M = emg.shape[1]
 
@@ -424,7 +469,7 @@ class Mouse_Dataset(pl.LightningDataModule):
 
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn)
+        return DataLoader(self.eval_dataset, batch_size=self.batch_size, collate_fn=self.collate_fn)
 
 
 class Cage_Dataset(pl.LightningDataModule):
@@ -432,7 +477,7 @@ class Cage_Dataset(pl.LightningDataModule):
     def __init__(self, m1_path, emg_path, behavioral_path, 
                  num_modes, batch_size, dataset_type, 
                  seed, kmeans_cluster, label_type,
-                 remove_zeros, scale_outputs, mean_centering, eval_dataset):
+                 remove_zeros, scale_outputs, mean_centering, eval_type):
         super().__init__()
 
         # Assign class variables
@@ -449,7 +494,7 @@ class Cage_Dataset(pl.LightningDataModule):
         self.remove_zeros = remove_zeros
         self.scale_outputs = scale_outputs
         self.mean_centering = mean_centering
-        self.eval_dataset = eval_dataset
+        self.eval_type = eval_type
 
         # Set manual seed
         torch.manual_seed(seed)
@@ -552,7 +597,7 @@ class Cage_Dataset(pl.LightningDataModule):
                 labels = [[emg[i], behavioral[i]] for i in range(len(emg))]
 
                 # TODO: Determine which evaluation dataset to use
-                if self.eval_dataset == "":
+                if self.eval_type == "":
                     X_train, X_val, y_train, y_val = train_test_split(m1, labels, test_size=0.2, random_state=42)
                     X_eval = X_val
                     y_eval = y_val
@@ -566,10 +611,10 @@ class Cage_Dataset(pl.LightningDataModule):
                     # TODO: Try 70/15/15 split
                     # X_train, X_val_test, y_train, y_val_test = train_test_split(m1, labels, test_size=0.3, random_state=42)
                     # X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
-                    if self.eval_dataset == "val":
+                    if self.eval_type == "val":
                         X_eval = X_val
                         y_eval = y_val
-                    elif self.eval_dataset == "test":
+                    elif self.eval_type == "test":
                         X_eval = X_test
                         y_eval = y_test
                 

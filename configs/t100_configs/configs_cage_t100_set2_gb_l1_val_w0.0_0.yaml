@@ -6,7 +6,7 @@ b: 8
 type: "emg"
 epochs: 500
 lr: 0.0001
-record: True
+record: False
 ev: False
 m1_path: "data/set2_data/m1_set2_t100.npy"
 emg_path: "data/set2_data/emg_set2_t100.npy"
@@ -34,7 +34,8 @@ label_type: "set2"
 remove_zeros: False
 scale_outputs: False
 mean_centering: "m1 and emg"
-# eval_dataset: ""
-eval_dataset: "val"
-# eval_dataset: "test"
-run_id: 940
+# eval_type: ""
+eval_type: "val"
+# eval_type: "test"
+# run_id: 940
+run_id: "none"
