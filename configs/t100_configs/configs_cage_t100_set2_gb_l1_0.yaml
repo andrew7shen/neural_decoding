@@ -33,8 +33,11 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-mean_centering: "m1 and emg"
-eval_dataset: ""
-# eval_dataset: "val"
-# eval_dataset: "test"
+# mean_centering: "m1 and emg"
+mean_centering: ""
+eval_type: ""
+# eval_type: "val80"
+# eval_type: "val70"
+# eval_type: "val60"
+# eval_type: "test"
 run_id: 911

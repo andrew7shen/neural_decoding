@@ -588,11 +588,11 @@ def full_R2_reg(datasets, verbose):
     for i in range(len(datasets)):
         curr_dataset = datasets[i]
         train_dataset = curr_dataset.train_dataset
-        val_dataset = curr_dataset.val_dataset
+        eval_dataset = curr_dataset.eval_dataset
         total_train_samples += len(train_dataset)
-        total_val_samples += len(val_dataset)
+        total_val_samples += len(eval_dataset)
         # Note: group can mean different modes or different clusters
-        print("\nGroup %s: train (%s), val (%s)" % (i, len(train_dataset), len(val_dataset)))
+        print("\nGroup %s: train (%s), val (%s)" % (i, len(train_dataset), len(eval_dataset)))
 
         # Calculate linear regression model for each cluster
         curr_m1_train = np.array([val[0] for val in train_dataset])
@@ -604,20 +604,20 @@ def full_R2_reg(datasets, verbose):
         train_emgs.append(torch.Tensor(curr_emg_train))
         train_preds.append(torch.Tensor(curr_model.predict(curr_m1_train)))
         # Calculate train R2 for current cluster
-        curr_train_r2 = r2_score(torch.Tensor(curr_emg_train), torch.Tensor(curr_model.predict(curr_m1_train)))
+        curr_train_r2 = r2_score(torch.Tensor(curr_emg_train).numpy(), torch.Tensor(curr_model.predict(curr_m1_train)).numpy())
         print("Train R2: %s" % curr_train_r2)
 
         # Check if there are samples in validation set
-        if len(val_dataset) != 0:
+        if len(eval_dataset) != 0:
 
             # Calculate linear regression model for each cluster
-            curr_m1_val = np.array([val[0] for val in val_dataset])
-            curr_emg_val = np.array([val[1] for val in val_dataset])
+            curr_m1_val = np.array([val[0] for val in eval_dataset])
+            curr_emg_val = np.array([val[1] for val in eval_dataset])
             # Generate val preds and append to full list
             val_emgs.append(torch.Tensor(curr_emg_val))
             val_preds.append(torch.Tensor(curr_model.predict(curr_m1_val)))
             # Calculate val R2 for current cluster
-            curr_val_r2 = r2_score(torch.Tensor(curr_emg_val), torch.Tensor(curr_model.predict(curr_m1_val)))
+            curr_val_r2 = r2_score(torch.Tensor(curr_emg_val).numpy(), torch.Tensor(curr_model.predict(curr_m1_val)).numpy())
             print("Val R2: %s" % curr_val_r2)
         
         else:
@@ -626,10 +626,10 @@ def full_R2_reg(datasets, verbose):
     # Calculate final R^2 value
     train_emgs = torch.cat(train_emgs)
     train_preds = torch.cat(train_preds)
-    train_r2 = r2_score(train_emgs, train_preds)
+    train_r2 = r2_score(train_emgs.numpy(), train_preds.numpy())
     val_emgs = torch.cat(val_emgs)
     val_preds = torch.cat(val_preds)
-    val_r2 = r2_score(val_emgs, val_preds)
+    val_r2 = r2_score(val_emgs.numpy(), val_preds.numpy())
 
     # Format output string
     print("\nFull Dataset %s: train (%s), val (%s)" % (i, total_train_samples, total_val_samples))
@@ -716,35 +716,56 @@ def sep_R2_reg(dataset, verbose):
     
     # Calculate linear regression model
     use_ffnn = True
+    if not use_ffnn:
+        print("Single Decoder evaluation")
+    else:
+        print("Neural Network evaluation")
     train_dataset = dataset.train_dataset
-    val_dataset = dataset.val_dataset
+    eval_dataset = dataset.eval_dataset
     m1_train = np.array([val[0] for val in train_dataset])
     emg_train = np.array([val[1] for val in train_dataset])
-    m1_val = np.array([val[0] for val in val_dataset])
-    emg_val = np.array([val[1] for val in val_dataset])
+    m1_val = np.array([val[0] for val in eval_dataset])
+    emg_val = np.array([val[1] for val in eval_dataset])
     # model = LinearRegression().fit(m1_train, emg_train)
-    # Fit with Ridge regression
-    if not use_ffnn:
-        model = Ridge(alpha=15.0).fit(m1_train, emg_train)
-    # Fit with neural network
-    elif use_ffnn:
-        print("Fitting MLPRegressor...")
-        num_epochs = 300
-        model = MLPRegressor(random_state=1, max_iter=num_epochs, verbose=False).fit(m1_train, emg_train)
+    # Sweep alpha vals or epochs
+    # alpha_epoch_vals = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+    alpha_epoch_vals = [0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+    max_val_r2 = ["num_epochs", [0,0]]
+    for alpha_epoch_val in alpha_epoch_vals:
+        # Fit with Ridge regression
+        if not use_ffnn:
+            model = Ridge(alpha=alpha_epoch_val).fit(m1_train, emg_train)
+        # Fit with neural network
+        elif use_ffnn:
+            if alpha_epoch_val == 0:
+                continue
+            # print("Fitting MLPRegressor...")
+            num_epochs = alpha_epoch_val
+            model = MLPRegressor(random_state=1, max_iter=num_epochs, verbose=False).fit(m1_train, emg_train)
 
-    # Generate train and val preds
-    train_preds = model.predict(m1_train)
-    val_preds = model.predict(m1_val)
+        # Generate train and val preds
+        train_preds = model.predict(m1_train)
+        val_preds = model.predict(m1_val)
 
-    # Calculate train/val R2 for current cluster
-    train_r2 = r2_score(emg_train, train_preds)
-    val_r2 = r2_score(emg_val, val_preds)
-    print("\nFull Dataset: train (%s), val (%s)" % (len(train_dataset), len(val_dataset)))
-    print("Train R2: %s" % train_r2)
-    print("Val R2: %s\n" % val_r2)
+        # Calculate train/val R2 for current cluster
+        train_r2 = r2_score(emg_train, train_preds)
+        val_r2 = r2_score(emg_val, val_preds)
+        print(f"{alpha_epoch_val}: [{train_r2},{val_r2}]")
+        # print("\nFull Dataset: train (%s), val (%s)" % (len(train_dataset), len(eval_dataset)))
+        # print("Train R2: %s" % train_r2)
+        # print("Val R2: %s\n" % val_r2)
+
+        # Update max val R^2 tracking variable
+        if val_r2 > max_val_r2[1][1]:
+            max_val_r2 = [alpha_epoch_val, [train_r2,val_r2]]
+
+    print(f"\nMax is {max_val_r2[0]}: {max_val_r2[1]}")
 
     if use_ffnn:
         return []
+    
+    # TODO: Temp break out of function since the rest isn't working (4/24)
+    return
 
     # Generate predicted value for each input training sample
     r2_list = []
@@ -755,7 +776,7 @@ def sep_R2_reg(dataset, verbose):
         if split == "train":
             curr_dataset = dataset.train_dataset
         elif split == "val":
-            curr_dataset = dataset.val_dataset
+            curr_dataset = dataset.eval_dataset
         for val in curr_dataset:
             curr_m1 = val[0].unsqueeze(0)
             curr_emg = val[1]
@@ -1346,14 +1367,14 @@ if __name__ == "__main__":
                            batch_size=config.b, dataset_type=config.type, seed=config.seed,
                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
-                           mean_centering=config.mean_centering, eval_dataset=config.eval_dataset)
+                           mean_centering=config.mean_centering, eval_type=config.eval_type)
     else:
         dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
                             behavioral_path=config.behavioral_path, num_modes=config.d, 
                             batch_size=config.b, dataset_type=config.type, seed=config.seed,
                             kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
                             remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
-                            mean_centering=config.mean_centering, eval_dataset=config.eval_dataset)
+                            mean_centering=config.mean_centering, eval_type=config.eval_type)
     
     # Print dataset statistics
     dataset_statistics(dataset=dataset, verbose=False)
@@ -1460,13 +1481,13 @@ if __name__ == "__main__":
     # model_ids = [733, 734, 735, 736]
     # model_ids = [721]
 
-    model_ids = [891]
+    # model_ids = [891]
     # model_ids = [892]
     # model_ids = [916]
     # model_ids = [918]
     # model_ids = [919, 920, 921, 922]
     # model_ids = [923, 924, 925, 926, 927]
-    
+
     # TODO: Temp code to generate plots for all 10 checkpoints in #916
     # for curr_id in [9, 19, 29, 39, 49, 59, 69, 79, 89, 99]:
 
@@ -1507,7 +1528,7 @@ if __name__ == "__main__":
                                 config=config,
                                 plot_type=plot_type,
                                 model_id=model_id,
-                                verbose=True)
+                                verbose=False)
 
             # Generated regular decoder output plots
             else:
@@ -1516,9 +1537,14 @@ if __name__ == "__main__":
                                 config=config,
                                 plot_type=plot_type,
                                 model_id=model_id,
-                                verbose=True)
+                                verbose=False)
+                
+    # Calculate separate R^2 for each behavioral label in our model
+    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=True)
+    quit()
+    
 
-    # Calculate full R^2 over separate models
+    # Calculate full R^2 over separate models (i.e. Separate Modes or Clustering Decoders evaluations)
     # If using kmeans split data, format separate datasets
     datasets = []
     if "kmeans_split" in config.m1_path:
@@ -1536,7 +1562,7 @@ if __name__ == "__main__":
                             behavioral_path=config.behavioral_path, num_modes=config.d, 
                             batch_size=config.b, dataset_type=config.type, seed=config.seed, 
                             kmeans_cluster=k, label_type=config.label_type,
-                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs, eval_dataset=config.eval_dataset)
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs, eval_type=config.eval_type)
                 datasets.append(curr_dataset)
         else:
             for k in range(k):
@@ -1544,7 +1570,7 @@ if __name__ == "__main__":
                             behavioral_path=config.behavioral_path, num_modes=config.d, 
                             batch_size=config.b, dataset_type=config.type, seed=config.seed, 
                             kmeans_cluster=k, label_type=config.label_type,
-                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs, eval_dataset=config.eval_dataset)
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs, eval_type=config.eval_type)
                 datasets.append(curr_dataset)
     # If using mode data, format separate datasets
     else:
@@ -1557,7 +1583,7 @@ if __name__ == "__main__":
                                 batch_size=config.b, dataset_type=config.type, seed=config.seed,
                                 kmeans_cluster=config.kmeans_cluster, label_type=curr_label_type,
                                 remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
-                                mean_centering=config.mean_centering, eval_dataset=config.eval_dataset)
+                                mean_centering=config.mean_centering, eval_type=config.eval_type)
                 datasets.append(curr_dataset)
         # If using set1 data
         elif dataset.label_type == "set1":
@@ -1567,7 +1593,7 @@ if __name__ == "__main__":
                                 behavioral_path="", num_modes=config.d, 
                                 batch_size=config.b, dataset_type=config.type, seed=config.seed,
                                 kmeans_cluster=config.kmeans_cluster, label_type=curr_label_type,
-                                remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs, eval_dataset=config.eval_dataset)
+                                remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs, eval_type=config.eval_type)
                 datasets.append(curr_dataset)
         # If using set2 data
         else:
@@ -1582,12 +1608,20 @@ if __name__ == "__main__":
                     curr_m1_path = "data/set2_data/m1_set2_t100_%s.npy" % mode
                     curr_emg_path = "data/set2_data/emg_set2_t100_%s.npy" % mode
                     curr_behavioral_path = "data/set2_data/behavioral_set2_t100_%s.npy" % mode
+                # TODO: Old code, going forward with this (4/24)
                 curr_dataset = Cage_Dataset(m1_path=curr_m1_path, emg_path=curr_emg_path, 
                             behavioral_path=curr_behavioral_path, num_modes=config.d, 
                             batch_size=config.b, dataset_type=config.type, seed=config.seed,
                             kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
                             remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
-                            mean_centering=config.mean_centering, eval_dataset=config.eval_dataset)
+                            mean_centering=config.mean_centering, eval_type=config.eval_type)
+                # TODO: New code (4/24)
+                # curr_dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                #             behavioral_path=config.behavioral_path, num_modes=config.d, 
+                #             batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                #             kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
+                #             remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
+                #             mean_centering=config.mean_centering, eval_type=config.eval_type)
                 datasets.append(curr_dataset)
 
     # TODO: Commented this out for now (4/20/25)
@@ -1597,11 +1631,8 @@ if __name__ == "__main__":
     #                                  config=config, verbose=False)
 
     # Calculate full R2 value
-    # dataset_lengths = [len(dataset) for dataset in datasets]
-    # full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
-
-    # Calculate separate R^2 for each behavioral label in our model
-    # sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
+    dataset_lengths = [len(dataset) for dataset in datasets]
+    full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)

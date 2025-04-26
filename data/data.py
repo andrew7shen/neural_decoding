@@ -351,6 +351,9 @@ class Mouse_Dataset(pl.LightningDataModule):
             y_eval_emg = torch.Tensor(np.concatenate([y[0] for y in y_eval]))
             y_eval_behavioral = np.concatenate([y[1] for y in y_eval])
         
+        if len(X_eval) == 0:
+            import pdb; pdb.set_trace()
+        
         # Extract max value across each muscle channel for initializing scalevector
         max_vals = torch.max(torch.cat((y_train_emg, y_eval_emg)), dim=0)[0]
         # print(max_vals)
@@ -438,7 +441,7 @@ class Mouse_Dataset(pl.LightningDataModule):
         Returns number of samples in the training set.
         """
         
-        return len(self.train_dataset) + len(self.val_dataset)
+        return len(self.train_dataset) + len(self.eval_dataset)
 
 
     def __getitem__(self, index):
@@ -602,21 +605,42 @@ class Cage_Dataset(pl.LightningDataModule):
                     X_eval = X_val
                     y_eval = y_val
                 else:
+                    # TODO: TEMP CODE TO DO SPLITS
                     # TODO: Try 80/10/10 split
-                    X_train, X_val_test, y_train, y_val_test = train_test_split(m1, labels, test_size=0.2, random_state=42)
-                    X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+                    if "80" in self.eval_type:
+                        X_train, X_val_test, y_train, y_val_test = train_test_split(m1, labels, test_size=0.2, random_state=42)
+                        X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
                     # TODO: Try 60/20/20 split
-                    # X_train, X_val_test, y_train, y_val_test = train_test_split(m1, labels, test_size=0.4, random_state=42)
-                    # X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+                    elif "60" in self.eval_type:
+                        X_train, X_val_test, y_train, y_val_test = train_test_split(m1, labels, test_size=0.4, random_state=42)
+                        X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
                     # TODO: Try 70/15/15 split
-                    # X_train, X_val_test, y_train, y_val_test = train_test_split(m1, labels, test_size=0.3, random_state=42)
-                    # X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
-                    if self.eval_type == "val":
+                    elif "70" in self.eval_type:
+                        X_train, X_val_test, y_train, y_val_test = train_test_split(m1, labels, test_size=0.3, random_state=42)
+                        X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+                    if "val" in self.eval_type:
                         X_eval = X_val
                         y_eval = y_val
                     elif self.eval_type == "test":
                         X_eval = X_test
                         y_eval = y_test
+
+                    # # TODO: CURRENT CODE
+                    # # TODO: Try 80/10/10 split
+                    # X_train, X_val_test, y_train, y_val_test = train_test_split(m1, labels, test_size=0.2, random_state=42)
+                    # X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+                    # # TODO: Try 60/20/20 split
+                    # # X_train, X_val_test, y_train, y_val_test = train_test_split(m1, labels, test_size=0.4, random_state=42)
+                    # # X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+                    # # TODO: Try 70/15/15 split
+                    # # X_train, X_val_test, y_train, y_val_test = train_test_split(m1, labels, test_size=0.3, random_state=42)
+                    # # X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=0.5, random_state=42)
+                    # if self.eval_type == "val":
+                    #     X_eval = X_val
+                    #     y_eval = y_val
+                    # elif self.eval_type == "test":
+                    #     X_eval = X_test
+                    #     y_eval = y_test
                 
                 # Reformat back into timestamps
                 X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
