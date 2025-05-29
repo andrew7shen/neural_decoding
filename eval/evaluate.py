@@ -569,6 +569,7 @@ def full_R2(dataset, config, verbose):
     return r2_list
 
 
+# For Separate Modes and Clustering Decoders baselines
 def full_R2_reg(datasets, verbose):
     """
     Fits linear regressions for each dataset and calculates full R^2 value
@@ -597,31 +598,81 @@ def full_R2_reg(datasets, verbose):
         # Calculate linear regression model for each cluster
         curr_m1_train = np.array([val[0] for val in train_dataset])
         curr_emg_train = np.array([val[1] for val in train_dataset])
-        curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
-        # Fit with Ridge regression
-        curr_model = Ridge(alpha=15.0).fit(curr_m1_train, curr_emg_train)
-        # Generate train preds and append to full list
-        train_emgs.append(torch.Tensor(curr_emg_train))
-        train_preds.append(torch.Tensor(curr_model.predict(curr_m1_train)))
-        # Calculate train R2 for current cluster
-        curr_train_r2 = r2_score(torch.Tensor(curr_emg_train).numpy(), torch.Tensor(curr_model.predict(curr_m1_train)).numpy())
-        print("Train R2: %s" % curr_train_r2)
+        # curr_model = LinearRegression().fit(curr_m1_train, curr_emg_train)
 
-        # Check if there are samples in validation set
-        if len(eval_dataset) != 0:
 
-            # Calculate linear regression model for each cluster
-            curr_m1_val = np.array([val[0] for val in eval_dataset])
-            curr_emg_val = np.array([val[1] for val in eval_dataset])
-            # Generate val preds and append to full list
-            val_emgs.append(torch.Tensor(curr_emg_val))
-            val_preds.append(torch.Tensor(curr_model.predict(curr_m1_val)))
-            # Calculate val R2 for current cluster
-            curr_val_r2 = r2_score(torch.Tensor(curr_emg_val).numpy(), torch.Tensor(curr_model.predict(curr_m1_val)).numpy())
-            print("Val R2: %s" % curr_val_r2)
+
+        # TODO: Old code
+        # curr_model = Ridge(alpha=450.0).fit(curr_m1_train, curr_emg_train)
+        # # Generate train preds and append to full list
+        # train_emgs.append(torch.Tensor(curr_emg_train))
+        # train_preds.append(torch.Tensor(curr_model.predict(curr_m1_train)))
+        # # Calculate train R2 for current cluster
+        # curr_train_r2 = r2_score(torch.Tensor(curr_emg_train).numpy(), torch.Tensor(curr_model.predict(curr_m1_train)).numpy())
+        # print("Train R2: %s" % curr_train_r2)
+        # # Check if there are samples in validation set
+        # if len(eval_dataset) != 0:
+        #     # Calculate linear regression model for each cluster
+        #     curr_m1_val = np.array([val[0] for val in eval_dataset])
+        #     curr_emg_val = np.array([val[1] for val in eval_dataset])
+        #     # Generate val preds and append to full list
+        #     val_emgs.append(torch.Tensor(curr_emg_val))
+        #     val_preds.append(torch.Tensor(curr_model.predict(curr_m1_val)))
+        #     # Calculate val R2 for current cluster
+        #     curr_val_r2 = r2_score(torch.Tensor(curr_emg_val).numpy(), torch.Tensor(curr_model.predict(curr_m1_val)).numpy())
+        #     print("Val R2: %s" % curr_val_r2)
+        # else:
+        #     print("Val R2: None")
+
+
+
+        # TODO: Sweep alpha vals or epochs
+        alpha_epoch_vals = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+        max_val_r2 = ["num_epochs", [float("-inf"),float("-inf")]]
+        curr_best_val_emg = None
+        curr_best_val_pred = None
+        for alpha_epoch_val in alpha_epoch_vals:
+            # Fit with Ridge regression
+            curr_model = Ridge(alpha=alpha_epoch_val).fit(curr_m1_train, curr_emg_train)
+
+            # Fit with Ridge regression
+            # curr_model = Ridge(alpha=15.0).fit(curr_m1_train, curr_emg_train)
+            # Generate train preds and append to full list
+            train_emgs.append(torch.Tensor(curr_emg_train))
+            train_preds.append(torch.Tensor(curr_model.predict(curr_m1_train)))
+            # Calculate train R2 for current cluster
+            curr_train_r2 = r2_score(torch.Tensor(curr_emg_train).numpy(), torch.Tensor(curr_model.predict(curr_m1_train)).numpy())
+            # print("Train R2: %s" % curr_train_r2)
+
+            # Check if there are samples in validation set
+            if len(eval_dataset) != 0:
+                # Calculate linear regression model for each cluster
+                curr_m1_val = np.array([val[0] for val in eval_dataset])
+                curr_emg_val = np.array([val[1] for val in eval_dataset])
+                # Generate val preds and append to full list
+                # val_emgs.append(torch.Tensor(curr_emg_val))
+                # val_preds.append(torch.Tensor(curr_model.predict(curr_m1_val)))
+                # Calculate val R2 for current cluster
+                curr_val_r2 = r2_score(torch.Tensor(curr_emg_val).numpy(), torch.Tensor(curr_model.predict(curr_m1_val)).numpy())
+                # print("Val R2: %s" % curr_val_r2)
+            else:
+                print("Val R2: None")
+            
+            print(f"{alpha_epoch_val}: [{curr_train_r2},{curr_val_r2}]")
+            # Update max val R^2 tracking variable
+            if curr_val_r2 > max_val_r2[1][1]:
+                max_val_r2 = [alpha_epoch_val, [curr_train_r2,curr_val_r2]]
+                # Generate val preds and append to full list
+                curr_best_val_emg = torch.Tensor(curr_emg_val)
+                curr_best_val_pred = torch.Tensor(curr_model.predict(curr_m1_val))
         
-        else:
-            print("Val R2: None")
+        print(f"Max is {max_val_r2[0]}: {max_val_r2[1]}")
+        val_emgs.append(curr_best_val_emg)
+        val_preds.append(curr_best_val_pred)
+
+
+
+
 
     # Calculate final R^2 value
     train_emgs = torch.cat(train_emgs)
@@ -705,7 +756,7 @@ def model_sep_R2(dataset, model_path, config, verbose):
 
     return r2_list
 
-
+# For Single Decoder and Neural Network baselines 
 def sep_R2_reg(dataset, verbose):
     """
     Fits linear regression to entire dataset, and calculates separate R^2 values for each of the individual behavioral labels in Set2
@@ -715,7 +766,7 @@ def sep_R2_reg(dataset, verbose):
         return
     
     # Calculate linear regression model
-    use_ffnn = True
+    use_ffnn = False
     if not use_ffnn:
         print("Single Decoder evaluation")
     else:
@@ -728,8 +779,10 @@ def sep_R2_reg(dataset, verbose):
     emg_val = np.array([val[1] for val in eval_dataset])
     # model = LinearRegression().fit(m1_train, emg_train)
     # Sweep alpha vals or epochs
-    # alpha_epoch_vals = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
-    alpha_epoch_vals = [0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+    if not use_ffnn:
+        alpha_epoch_vals = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+    if use_ffnn:
+        alpha_epoch_vals = [0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
     max_val_r2 = ["num_epochs", [0,0]]
     for alpha_epoch_val in alpha_epoch_vals:
         # Fit with Ridge regression
@@ -1243,6 +1296,7 @@ def sep_decoders_R2(model_path, dataset, config, plot_type, model_id, verbose):
         else:
             plt.show()
 
+
 def decoder_outputs_simulated(model_path, dataset, config, plot_type, model_id, verbose):
 # def decoder_outputs_simulated(model_path, dataset, config, plot_type, model_id, curr_id, verbose):
 
@@ -1349,6 +1403,44 @@ def decoder_outputs_simulated(model_path, dataset, config, plot_type, model_id, 
     else:
         plt.show()
 
+# Generate Separate Modes baseline datasets
+def separate_modes_datasets(config):
+    """
+    Generate separate datasets for each mode for Separate Modes baseline
+    """
+    # Generate datasets for each mode
+    modes = ["crawl", "precision", "power"]
+    datasets = []
+    for mode in modes:
+        curr_dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                            behavioral_path=config.behavioral_path, num_modes=config.d, 
+                            batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
+                            mean_centering=config.mean_centering, eval_type=config.eval_type, filter_type=mode)
+        datasets.append(curr_dataset)
+    return datasets
+
+# Generate Clustering Decoders baseline datasets
+def clustering_decoders_datasets(config):
+    """
+    Generate separate datasets for each mode for Clustering Decoders baseline
+    """
+    # Generate datasets for each mode
+    modes = ["0", "1", "2"]
+    # modes = ["0", "1", "2", "3", "4", "5"]
+    datasets = []
+    for mode in modes:
+        curr_dataset = Cage_Dataset(m1_path=config.m1_path, emg_path=config.emg_path, 
+                            behavioral_path=config.behavioral_path, num_modes=config.d, 
+                            batch_size=config.b, dataset_type=config.type, seed=config.seed,
+                            kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
+                            remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
+                            mean_centering=config.mean_centering, eval_type=config.eval_type, filter_type=mode)
+        datasets.append(curr_dataset)
+    return datasets
+        
+
 
 if __name__ == "__main__":
 
@@ -1374,7 +1466,7 @@ if __name__ == "__main__":
                             batch_size=config.b, dataset_type=config.type, seed=config.seed,
                             kmeans_cluster=config.kmeans_cluster, label_type=config.label_type,
                             remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
-                            mean_centering=config.mean_centering, eval_type=config.eval_type)
+                            mean_centering=config.mean_centering, eval_type=config.eval_type, filter_type=config.filter_type)
     
     # Print dataset statistics
     dataset_statistics(dataset=dataset, verbose=False)
@@ -1540,10 +1632,19 @@ if __name__ == "__main__":
                                 verbose=False)
                 
     # Calculate separate R^2 for each behavioral label in our model
-    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=True)
-    quit()
-    
+    # Calculate Single Decoder or Neural Network baseline
+    sep_r2_list = sep_R2_reg(dataset=dataset, verbose=False)
 
+    # Calculate Separate Modes baseline
+    datasets = separate_modes_datasets(config=config)
+    full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
+
+    # Calculate Clustering Decoders baeline
+    datasets = clustering_decoders_datasets(config=config)
+    full_r2_list = full_R2_reg(datasets=datasets, verbose=True)
+
+    # TODO: Outdated code that requires separate dataset files for Separate Modes or Clustering Decoders (5/28/25)
+    """
     # Calculate full R^2 over separate models (i.e. Separate Modes or Clustering Decoders evaluations)
     # If using kmeans split data, format separate datasets
     datasets = []
@@ -1575,6 +1676,7 @@ if __name__ == "__main__":
     # If using mode data, format separate datasets
     else:
         # If using mouse data
+        # TODO: Need to fix this when generating mouse baselines (4/26)
         if dataset.label_type == "mouse":
             for mode in ["0.0", "1.0", "2.0", "3.0", "4.0", "5.0", "6.0", "7.0", "8.0", "9.0", "10.0"]:
                 curr_label_type = "%s_%s" % (config.label_type, mode)
@@ -1623,6 +1725,7 @@ if __name__ == "__main__":
                 #             remove_zeros=config.remove_zeros, scale_outputs=config.scale_outputs,
                 #             mean_centering=config.mean_centering, eval_type=config.eval_type)
                 datasets.append(curr_dataset)
+    """
 
     # TODO: Commented this out for now (4/20/25)
 
@@ -1631,8 +1734,8 @@ if __name__ == "__main__":
     #                                  config=config, verbose=False)
 
     # Calculate full R2 value
-    dataset_lengths = [len(dataset) for dataset in datasets]
-    full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
+    # dataset_lengths = [len(dataset) for dataset in datasets]
+    # full_r2_list = full_R2_reg(datasets=datasets, verbose=False)
 
     # Run kmeans on points to get learned clusters
     # m1, preds = run_kmeans_M1(dataset, config)

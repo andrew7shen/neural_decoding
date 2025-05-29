@@ -43,6 +43,7 @@ class Config():
         self.mean_centering = args["mean_centering"]
         self.overlap_lambda_val = args["overlap_lambda_val"]
         self.eval_type = args["eval_type"]
+        self.filter_type = args["filter_type"]
 
 
 def load_config():

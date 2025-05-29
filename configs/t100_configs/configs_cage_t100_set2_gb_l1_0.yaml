@@ -33,11 +33,12 @@ set_decoder_weights: "none"
 label_type: "set2"
 remove_zeros: False
 scale_outputs: False
-# mean_centering: "m1 and emg"
-mean_centering: ""
+mean_centering: "m1 and emg"
+# mean_centering: ""
 eval_type: ""
 # eval_type: "val80"
 # eval_type: "val70"
 # eval_type: "val60"
 # eval_type: "test"
+filter_type: "none"
 run_id: 911

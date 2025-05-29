@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 # from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import cage_data
 import pickle as pickle
@@ -480,7 +481,7 @@ class Cage_Dataset(pl.LightningDataModule):
     def __init__(self, m1_path, emg_path, behavioral_path, 
                  num_modes, batch_size, dataset_type, 
                  seed, kmeans_cluster, label_type,
-                 remove_zeros, scale_outputs, mean_centering, eval_type):
+                 remove_zeros, scale_outputs, mean_centering, eval_type, filter_type):
         super().__init__()
 
         # Assign class variables
@@ -498,6 +499,7 @@ class Cage_Dataset(pl.LightningDataModule):
         self.scale_outputs = scale_outputs
         self.mean_centering = mean_centering
         self.eval_type = eval_type
+        self.filter_type = filter_type
 
         # Set manual seed
         torch.manual_seed(seed)
@@ -641,7 +643,17 @@ class Cage_Dataset(pl.LightningDataModule):
                     # elif self.eval_type == "test":
                     #     X_eval = X_test
                     #     y_eval = y_test
-                
+
+                # TODO: Filter data based on behavior (for Separate Modes baseline)
+                if self.filter_type in ["crawl", "precision", "power"]:
+                    # Filter out data based on behavior
+                    filter_indices_train = np.where(np.array([sample[-1][0] for sample in y_train]) == self.filter_type)[0]
+                    filter_indices_eval = np.where(np.array([sample[-1][0] for sample in y_eval]) == self.filter_type)[0]
+                    X_train = X_train[filter_indices_train]
+                    y_train = [y_train[i] for i in filter_indices_train]
+                    X_eval = X_eval[filter_indices_eval]
+                    y_eval = [y_eval[i] for i in filter_indices_eval]
+
                 # Reformat back into timestamps
                 X_train = torch.reshape(X_train, (X_train.size()[0]*X_train.size()[1], X_train.size()[2]))
                 X_eval = torch.reshape(X_eval, (X_eval.size()[0]*X_eval.size()[1], X_eval.size()[2]))
@@ -704,6 +716,28 @@ class Cage_Dataset(pl.LightningDataModule):
                             plt.savefig("%s/figures/misc/scaled_var_diff.png" % curr_dir)
                         else:
                             plt.show()
+
+                # TODO: Filter data based on cluster (for Clustering Decoders baseline)
+                if self.filter_type in ["0", "1", "2"]:
+                # if self.filter_type in ["0", "1", "2", "3", "4", "5"]:
+                    
+                    # Learn clusters using KMeans
+                    k = 3
+                    # k = 6
+                    kmeans = KMeans(n_clusters=k, n_init=10, random_state=42)
+                    kmeans.fit(X_train)
+                    preds = kmeans.labels_
+                    eval_preds = kmeans.predict(X_eval)
+
+                    # Filter based on cluster type
+                    filter_indices_train = np.where(np.array(preds == int(self.filter_type)))[0]
+                    filter_indices_eval = np.where(np.array(eval_preds == int(self.filter_type)))[0]
+                    X_train = X_train[filter_indices_train]
+                    y_train_emg = [y_train_emg[i] for i in filter_indices_train]
+                    y_train_behavioral = [y_train_behavioral[i] for i in filter_indices_train]
+                    X_eval = X_eval[filter_indices_eval]
+                    y_eval_emg = [y_eval_emg[i] for i in filter_indices_eval]
+                    y_eval_behavioral = [y_eval_behavioral[i] for i in filter_indices_eval]
 
                 self.train_dataset = [(X_train[i], y_train_emg[i], y_train_behavioral[i]) for i in range(len(X_train))]
                 self.eval_dataset = [(X_eval[i], y_eval_emg[i], y_eval_behavioral[i]) for i in range(len(X_eval))]
